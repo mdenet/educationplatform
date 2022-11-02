@@ -1,0 +1,162 @@
+.modelPanel {
+	height: 100%;
+}
+
+.editor { 
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+}
+
+.diagram {
+	display:none;
+}
+
+.standaloneDiagram {
+	height:100%;
+	width:100%;
+}
+
+.rendering-error {
+	margin: 10px;
+	padding: 10px;
+	background-color: #CD352C;
+	color: white;
+}
+
+.mif-16::before {
+	position: relative;
+	top: 4px;
+	margin: 0px;
+}
+
+.mif-example-16::before {
+	position: relative;
+	top: 2px;
+	margin: 0px;
+}
+
+.mif-eol::before {
+	content: url("images/eol.gif");
+}
+
+.mif-egl::before {
+    content: url("images/egl.png");
+}
+
+.mif-etl::before {
+    content: url("images/etl.gif");
+}
+
+.mif-epl::before {
+    content: url("images/epl.gif");
+}
+
+.mif-evl::before {
+    content: url("images/evl.gif");
+}
+
+.mif-flexmi::before {
+    content: url("images/flexmi.png");
+}
+
+.mif-html::before {
+    content: url("images/html.gif");
+}
+
+.mif-emfatic::before {
+    content: url("images/emfatic.png");
+}
+
+.mif-clear::before {
+	content: url("images/clear.gif");
+}
+
+.mif-console::before {
+	content: url("images/console.gif");
+}
+
+.mif-diagram::before {
+	content: url("images/diagram.gif");
+}
+
+.mif-refresh::before {
+	content: url("images/refresh.png");
+}
+
+.mif-run::before {
+	content: url("images/run.png");
+}
+
+.mif-info::before {
+	content: url("images/info.png");
+}
+
+.mif-link::before {
+	content: url("images/link.png");
+}
+
+.mif-help::before {
+	content: url("images/help.png");
+}
+
+.mif-problems::before {
+	content: url("images/problems.png");
+}
+
+.mif-editor::before {
+	content: url("images/editor.gif");
+}
+
+.mif-highlight::before {
+	content: url("images/highlight.png");
+}
+
+.mif-download::before {
+	content: url("images/download.png");
+}
+
+.mif-settings::before {
+	content: url("images/settings.png");
+}
+
+.panel .panel-title .custom-buttons {
+	margin-right: 10px;
+}
+
+.navview .navview-menu .caption {
+	position: relative;
+	left: -6px;
+}
+
+.panel .panel-title .icon {
+	border-right: 0px;
+	width: 20px;
+	margin-left:10px;
+}
+
+.panel .panel-title .caption {
+	padding-left: 6px;
+}
+
+.panel .panel-title .btn-custom {
+	width: 20px;
+}
+
+.panel .panel-title .button {
+	background-color: transparent;
+	border-left: 0px;
+	border-right: 0px;
+	padding-left: 15px;
+}
+
+body {
+	font-size: 16px
+}
+
+.hidden {
+	display:none;
+}
