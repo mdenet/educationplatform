@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
   entry: {
 	 main: './src/Playground.js',
@@ -5,7 +7,7 @@ module.exports = {
 
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'dist/js'),
+    clean: true,
   },
-
 };

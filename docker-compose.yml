@@ -1,0 +1,19 @@
+services:
+    mdenet-ep:
+        build: .
+        ports:
+            - "8080:80"
+
+    mdenet-test-tools:
+        image: "nginx:1.23"
+        ports:
+            - "8081:80"
+        volumes:
+            - ./test/tool-config:/usr/share/nginx/html
+
+    mdenet-test-activities:
+        image: "nginx:1.23"
+        ports:
+            - "8082:80"
+        volumes:
+            - ./test/activity-config:/usr/share/nginx/html

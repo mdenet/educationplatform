@@ -1,0 +1,265 @@
+{
+
+    "activities": [
+
+        {
+
+            "id": "activity-eol",
+
+            "title": "Query Project Plan",
+
+            "layout": {
+
+                    "area": [
+
+                        ["panel-eol",     "panel-model"],
+
+                        ["panel-console", "panel-mm"]
+
+                    ],
+
+                },
+
+            "action": {
+
+                "source": "panel-eol",
+
+                "parameters": ["psl.eol",
+
+                                "psl.flexmi",
+
+                                "psl.emf
+
+                ],
+
+                "output": "panel-console"
+
+            },
+
+
+
+            "panels": [
+
+                {
+
+                    "id": "panel-eol",
+
+                    "name": "Program(EOL)",
+
+                    "ref": "eol",
+
+                    "file": "psl.eol"
+
+                },
+
+                {
+
+                    "id": "panel-model",
+
+                    "name": "Model",
+
+                    "ref": "flexmi",
+
+                    "file": "psl.flexmi"
+
+                },
+
+                {
+
+                    "id": "panel-mm",
+
+                    "name": "Metamodel",
+
+                    "ref": "emf",
+
+                    "file": "psl.emf"
+
+                },
+
+                {
+
+                    "id": "panel-console",
+
+                    "name": "Console",
+
+                    "ref": "console"
+
+                }
+
+            ]
+
+        },
+
+
+
+        {
+
+            "id": "evl",
+
+            "title": "Validate Project Plan",
+
+            "layout": {
+
+                    "area": ["", "", ""]["", ""]
+
+                },
+
+            "action": {
+
+                },
+
+            "panels": [
+
+                {
+
+                    "id": "",
+
+                    "name": "Constraints(EVL)",
+
+                    "ref": "evl",
+
+                    "file": "psl.evl"
+
+                },
+
+                {
+
+                    "id": "",
+
+                    "name": "Model",
+
+                    "ref": " flexmi ",
+
+                    "file": "psl - evl.flexmi"
+
+                },
+
+                {
+
+                    "id": "",
+
+                    "name": "Metamodel",
+
+                    "ref": "emf",
+
+                    "file": "psl.emf"
+
+                },
+
+                {
+
+                    "id": "",
+
+                    "name": "Console",
+
+                    "ref": "console"
+
+                },
+
+                {
+
+                    "id": "",
+
+                    "name": "Problems",
+
+                    "ref": "problem"
+
+                }
+
+            ]
+
+        },
+
+
+
+    {
+
+        "id": "etl",
+
+        "title": "Transform to Deliverables",
+
+        "layout": {
+
+                "area": ["", "", ""]["", "", ""]
+
+            },
+
+        "action": {
+
+            },
+
+        "panels": [
+
+            {
+
+                "id": "",
+
+                "name": "Transformation(ETL)",
+
+                "ref": "etl",
+
+                "file": "psl2pdl.etl"
+
+            },
+
+            {
+
+                "id": "",
+
+                "name": "Source Model",
+
+                "language": "flexmi",
+
+                "file": "psl2pdl.flexmi"
+
+            },
+
+            {
+
+                "id": "",
+
+                "name": "Source Metamodel",
+
+                "ref": "emf",
+
+                "file": "psl.emf"
+
+            },
+
+            {
+
+                "id": "",
+
+                "name": "Target Metamodel",
+
+                "ref": "emf",
+
+                "file": "pdl.emf"
+
+            },
+
+            {
+
+                "id": "",
+
+                "name": "Target Model"
+
+                "ref": "emfgraph"
+
+            },
+
+            {
+
+                "id": "",
+
+                "name": "Console"
+
+                "ref": "console"
+
+            }
+
+        ]
+
+    }
+
+} 

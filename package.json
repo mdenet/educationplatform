@@ -1,6 +1,11 @@
 {
   "private": true,
-  "name": "epsilon-playground-demo",
+  "name": "mdenet-educationplatform",
+  "version": "0.0.1",
+  "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "build": "webpack --mode=development"
+     },
   "devDependencies": {
     "webpack-cli": "^5.0.1"
   },

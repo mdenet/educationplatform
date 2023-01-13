@@ -1,0 +1,123 @@
+{
+
+    "name": "Epsilon",
+
+    "functions": [
+
+        {
+
+            "id": "function-eol",
+
+            "name": "eol",
+
+            "parameters": ["flexmi","emfatic"],
+
+            "path": "RunEpsilonFunction.java"
+
+        },
+
+        {
+
+            "id": "function-etl",
+
+            "name": "etl",
+
+            "parameters": ["flexmi","emfatic","emfatic-target"],
+
+            "path": "RunEpsilonFunction.java"
+
+        },
+
+        {
+
+            "id": "function-egl",
+
+            "name": "egl",
+
+            "parameters": ["flexmi","emfatic"],
+
+            "path": "RunEpsilonFunction.java"
+
+        },
+
+        {
+
+            "id": "function-flexmitograph",
+
+            "name": "FlexmiToGraphviz",
+
+            "parameters": ["flemi","emfatic"],
+
+            "path": "FlexmiToGraphvizFunction.java"
+
+        }
+
+    ],
+
+
+
+    "panelDefs": [
+
+        {
+
+            "id": "eol",
+
+            "name": "eol",
+
+            "icon": "image/eol.gif",
+
+            "help": "https://www.eclipse.org/epsilon/doc/eol/",
+
+            "grammar": "eol.js",
+
+            "actionFunction": "function-eol",
+
+        },
+
+        {
+
+            "id": "etl",
+
+            "name": "etl",
+
+            "icon": "images/etl.gif",
+
+            "help": "https://www.eclipse.org/epsilon/doc/etl/",
+
+            "grammar": "etl.js",
+
+            "actionFunction": "function-etl",
+
+        },
+
+        {
+
+            "id": "egl",
+
+            "name": "egl",
+
+            "icon": "images/egl.gif",
+
+            "help": "https://www.eclipse.org/epsilon/doc/egl/",
+
+            "grammar": "egl.js",
+
+            "actionFunction": "function-egl",
+
+        },
+
+        {
+
+            "id": "emfgraph",
+
+            "name": "emfgraphviz",
+
+            "icon": "images/diagram.gif",
+
+            "actionFunction": "function-flexmitograph",
+
+        },
+
+    ]
+
+} 
