@@ -12,7 +12,10 @@ import { ModelPanel } from './ModelPanel.js';
 import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
 import { OutputPanel } from "./OutputPanel.js";
-import { ExampleManager } from './ExampleManager.js';
+
+//import { ExampleManager } from './ExampleManager.js';
+import { ActivityManager } from './ActivityManager.js';
+
 import { DownloadDialog } from './DownloadDialog.js';
 import { MetamodelPanel } from './MetamodelPanel.js';
 import { SettingsDialog } from './SettingsDialog.js';
@@ -21,6 +24,9 @@ import { Backend } from './Backend.js';
 import { Layout } from './Layout.js';
 import 'metro4';
 import './highlighting/highlighting.js';
+import { TestPanel } from './TestPanel .js';
+
+
 
 export var language = "eol";
 var outputType = "text";
@@ -42,36 +48,71 @@ var downloadDialog = new DownloadDialog();
 var settingsDialog = new SettingsDialog();
 var preloader = new Preloader();
 export var backend = new Backend();
-export var examplesManager = new ExampleManager();
+
+//export var examplesManager = new ExampleManager();
+export var examplesManager = new ActivityManager();
+
 var panels = [];
 
 backend.configure();
 
-example = examplesManager.getSelectedExample();
+//example = examplesManager.getSelectedExample();
+example = examplesManager.getSelectedActivity();
 setup();
 
 function setup() {
 
 
-    if (example.eol != null) { example.program = example.eol; language = "eol";}
-    else {language = example.language};
+    if (example.eol != null) { 
+        example.program = example.eol; language = "eol";
+    }
+    else {
+        language = example.language
+    };
+    
     console.log("Language: " + language);
 
-    if (example.outputType != null) {outputType = example.outputType;}
-    if (example.outputLanguage != null) {outputLanguage = example.outputLanguage;}
+    if (example.outputType != null) {
+        outputType = example.outputType;
+    }
+    
+    if (example.outputLanguage != null) {
+        outputLanguage = example.outputLanguage;
+    }
     
     var secondModelEditable = !(language == "etl" || language == "flock");
 
     secondModelPanel = new ModelPanel("secondModel", secondModelEditable, secondMetamodelPanel);
     thirdModelPanel = new OutputPanel("thirdModel", language, outputType, outputLanguage);
 
-    new Layout().create("navview-content", language);
+    // Generalised and moved to after creation of activity panels
+    //new Layout().create("navview-content", language);
     
-    panels = [programPanel, secondProgramPanel, consolePanel, firstModelPanel, firstMetamodelPanel, secondModelPanel, secondMetamodelPanel, thirdModelPanel];
+    //panels = [programPanel, secondProgramPanel, consolePanel, firstModelPanel, firstMetamodelPanel, secondModelPanel, secondMetamodelPanel, thirdModelPanel];
     
+    // Create panenls for the given activites
+    
+       
+    const activity = examplesManager.getSelectedActivity()  
+
+    for ( let apanel of activity.panels ){
+        
+        var newPanel= new TestPanel(apanel.id);
+
+        newPanel.setTitle(apanel.name);
+
+        panels.push(newPanel);
+    }
+        
+
+    new Layout().createFromPanels("navview-content", panels);
+    
+
     arrangePanels();
 
     //TODO: Fix "undefined" when fields are empty
+    
+    /* 
     programPanel.setLanguage(language);
     if (language == "egx") secondProgramPanel.setLanguage("egl");
 
@@ -81,6 +122,7 @@ function setup() {
     firstMetamodelPanel.setValue(example.emfatic);
     secondModelPanel.setValue(example.secondFlexmi);
     secondMetamodelPanel.setValue(example.secondEmfatic);
+    */
 
     document.getElementById("navview").style.display = "block";
     
@@ -98,7 +140,10 @@ function setup() {
     });
 
     Metro.init();
-    examplesManager.openActiveExamplesSubMenu();
+
+    //examplesManager.openActiveExamplesSubMenu();
+    examplesManager.openActiveActivitiesSubMenu();
+    
     fit();
 }
 
@@ -156,6 +201,9 @@ function copyToClipboard(str) {
 
 function arrangePanels() {
 
+
+
+    /*
     if (language == "egl" || language == "egx") {
         if (outputType == "dot") {
             thirdModelPanel.showDiagram();
@@ -204,6 +252,8 @@ function arrangePanels() {
             thirdModelPanel.setTitleAndIcon("Pattern Matches", "diagram");
         }
     }
+*/
+
 }
 
 function getPanelTitle(panelId) {

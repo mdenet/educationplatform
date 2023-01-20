@@ -16,7 +16,7 @@
 
                         ["panel-console", "panel-mm"]
 
-                    ],
+                    ]
 
                 },
 
@@ -28,7 +28,7 @@
 
                                 "psl.flexmi",
 
-                                "psl.emf
+                                "psl.emf"
 
                 ],
 
@@ -44,7 +44,7 @@
 
                     "id": "panel-eol",
 
-                    "name": "Program(EOL)",
+                    "name": "Program (EOL)",
 
                     "ref": "eol",
 
@@ -100,7 +100,10 @@
 
             "layout": {
 
-                    "area": ["", "", ""]["", ""]
+                    "area": [
+                                ["", "", ""],
+                                ["", ""]
+                    ]
 
                 },
 
@@ -112,7 +115,7 @@
 
                 {
 
-                    "id": "",
+                    "id": "panel-evl",
 
                     "name": "Constraints(EVL)",
 
@@ -124,7 +127,7 @@
 
                 {
 
-                    "id": "",
+                    "id": "panel-model",
 
                     "name": "Model",
 
@@ -136,7 +139,7 @@
 
                 {
 
-                    "id": "",
+                    "id": "panel-mm",
 
                     "name": "Metamodel",
 
@@ -148,7 +151,7 @@
 
                 {
 
-                    "id": "",
+                    "id": "panel-console",
 
                     "name": "Console",
 
@@ -158,7 +161,7 @@
 
                 {
 
-                    "id": "",
+                    "id": "panel-problems",
 
                     "name": "Problems",
 
@@ -180,7 +183,10 @@
 
         "layout": {
 
-                "area": ["", "", ""]["", "", ""]
+                "area": [
+                            ["", "", ""],
+                            ["", "", ""]
+                        ]
 
             },
 
@@ -192,7 +198,7 @@
 
             {
 
-                "id": "",
+                "id": "panel-etl",
 
                 "name": "Transformation(ETL)",
 
@@ -204,7 +210,7 @@
 
             {
 
-                "id": "",
+                "id": "panel-smodel",
 
                 "name": "Source Model",
 
@@ -216,7 +222,7 @@
 
             {
 
-                "id": "",
+                "id": "panel-smm",
 
                 "name": "Source Metamodel",
 
@@ -228,7 +234,7 @@
 
             {
 
-                "id": "",
+                "id": "panel-tmm",
 
                 "name": "Target Metamodel",
 
@@ -240,9 +246,9 @@
 
             {
 
-                "id": "",
+                "id": "panel-tmodel",
 
-                "name": "Target Model"
+                "name": "Target Model",
 
                 "ref": "emfgraph"
 
@@ -250,9 +256,9 @@
 
             {
 
-                "id": "",
+                "id": "panel-console",
 
-                "name": "Console"
+                "name": "Console",
 
                 "ref": "console"
 
@@ -261,5 +267,4 @@
         ]
 
     }
-
-} 
+] } 
