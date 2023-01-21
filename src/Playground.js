@@ -25,13 +25,14 @@ import { Layout } from './Layout.js';
 import 'metro4';
 import './highlighting/highlighting.js';
 import { TestPanel } from './TestPanel .js';
+import { ToolManager as ToolsManager } from './ToolsManager.js';
 
 
 
 export var language = "eol";
 var outputType = "text";
 var outputLanguage = "text";
-var example;
+var activity;
 var url = window.location + "";
 var questionMark = url.indexOf("?");
 
@@ -49,6 +50,8 @@ var settingsDialog = new SettingsDialog();
 var preloader = new Preloader();
 export var backend = new Backend();
 
+
+export var toolsManager = new ToolsManager();
 //export var examplesManager = new ExampleManager();
 export var examplesManager = new ActivityManager();
 
@@ -56,28 +59,29 @@ var panels = [];
 
 backend.configure();
 
+
 //example = examplesManager.getSelectedExample();
-example = examplesManager.getSelectedActivity();
+activity = examplesManager.getSelectedActivity(); 
 setup();
 
 function setup() {
 
 
-    if (example.eol != null) { 
-        example.program = example.eol; language = "eol";
+    if (activity.eol != null) { 
+        activity.program = activity.eol; language = "eol";
     }
     else {
-        language = example.language
+        language = activity.language
     };
     
     console.log("Language: " + language);
 
-    if (example.outputType != null) {
-        outputType = example.outputType;
+    if (activity.outputType != null) {
+        outputType = activity.outputType;
     }
     
-    if (example.outputLanguage != null) {
-        outputLanguage = example.outputLanguage;
+    if (activity.outputLanguage != null) {
+        outputLanguage = activity.outputLanguage;
     }
     
     var secondModelEditable = !(language == "etl" || language == "flock");
@@ -92,16 +96,42 @@ function setup() {
     
     // Create panenls for the given activites
     
-       
-    const activity = examplesManager.getSelectedActivity()  
+      var debug = new TestPanel("debugp");
 
     for ( let apanel of activity.panels ){
         
-        var newPanel= new TestPanel(apanel.id);
+        //var newPanel= new TestPanel(apanel.id); // Coloured test panels
 
-        newPanel.setTitle(apanel.name);
+        // Get the panel to creates associated definition from the tool config and create the panel
+        const newPanelDef = toolsManager.getPanelDefinition(apanel.ref);
 
-        panels.push(newPanel);
+  
+
+        if (newPanelDef != null){
+            
+            //var newPanel = new [newPanelDef.panelclass](apanel.id);     
+            
+            var newPanel;
+
+            // TODO Populate the different panel types from the tool panel definition.
+            switch(newPanelDef.panelclass) {
+                case "a":
+                  // code block
+                  break;
+                case "b":
+                  // code block
+                  break;
+                default:
+                   newPanel = new TestPanel(apanel.id);
+              }
+            
+            newPanel.setTitle(apanel.name);
+
+            
+
+            panels.push(newPanel);
+        }
+        
     }
         
 
@@ -112,7 +142,8 @@ function setup() {
 
     //TODO: Fix "undefined" when fields are empty
     
-    /* 
+    /* Setting the contents of the editors
+
     programPanel.setLanguage(language);
     if (language == "egx") secondProgramPanel.setLanguage("egl");
 

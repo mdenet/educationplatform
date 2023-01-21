@@ -6,6 +6,8 @@ class ActivityManager {
     visibleActivities = 15;
     activitiesUrl = new URL("activities/activities.json", document.baseURI).href;
     customActivitiesUrl = false;
+    toolsUrl;
+    customToolsUrl= false;
     activities = {};
     activeSubMenu;
 
@@ -18,9 +20,17 @@ class ActivityManager {
             this.activitiesUrl = parameters.get("activities");
         }
 
+        //TODO - Other future parameters will need to be handled more generally
+        if (parameters.has("tools")) {
+            this.customToolsUrl = true;
+            this.toolsUrl = parameters.get("tools");
+        }
+
+
+
         var parameterKeys = Array.from(parameters.keys());
 
-        // Retrivie selected activity from the url parameters 
+        // Retrieve selected activity from the url parameters 
         for (const key of parameterKeys) {
             if (!parameters.get(key)) {
                 this.activityId = key;
@@ -114,11 +124,14 @@ class ActivityManager {
 
         // Add a link for the activity to the left hand side menu
         var li = document.createElement("li");
-                
+        
         var a = document.createElement("a");
         a.href = "?" + activity.id;
         if (this.customActivitiesUrl) {
             a.href += "&activities=" + this.activitiesUrl;
+        }
+        if (this.customToolsUrl){
+            a.href += "&tools=" + this.toolsUrl;
         }
         li.appendChild(a);
 

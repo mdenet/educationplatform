@@ -70,7 +70,7 @@
 
                     "name": "Metamodel",
 
-                    "ref": "emf",
+                    "ref": "emfatic",
 
                     "file": "psl.emf"
 
@@ -131,7 +131,7 @@
 
                     "name": "Model",
 
-                    "ref": " flexmi ",
+                    "ref": "flexmi",
 
                     "file": "psl - evl.flexmi"
 
@@ -143,7 +143,7 @@
 
                     "name": "Metamodel",
 
-                    "ref": "emf",
+                    "ref": "emfatic",
 
                     "file": "psl.emf"
 
@@ -214,6 +214,8 @@
 
                 "name": "Source Model",
 
+                "ref": "flexmi",
+
                 "language": "flexmi",
 
                 "file": "psl2pdl.flexmi"
@@ -226,7 +228,7 @@
 
                 "name": "Source Metamodel",
 
-                "ref": "emf",
+                "ref": "emfatic",
 
                 "file": "psl.emf"
 
@@ -238,7 +240,7 @@
 
                 "name": "Target Metamodel",
 
-                "ref": "emf",
+                "ref": "emfatic",
 
                 "file": "pdl.emf"
 

@@ -1,123 +1,216 @@
 {
-
-    "name": "Epsilon",
-
-    "functions": [
-
+    "tools": [
         {
+            "id": "epsilon",
 
-            "id": "function-eol",
+            "name": "Epsilon",
 
-            "name": "eol",
+            "functions": [
 
-            "parameters": ["flexmi","emfatic"],
+                {
 
-            "path": "RunEpsilonFunction.java"
+                    "id": "function-eol",
 
-        },
+                    "name": "eol",
 
-        {
+                    "parameters": ["flexmi","emfatic"],
 
-            "id": "function-etl",
+                    "path": "RunEpsilonFunction.java"
 
-            "name": "etl",
+                },
 
-            "parameters": ["flexmi","emfatic","emfatic-target"],
+                {
 
-            "path": "RunEpsilonFunction.java"
+                    "id": "function-etl",
 
-        },
+                    "name": "etl",
 
-        {
+                    "parameters": ["flexmi","emfatic","emfatic-target"],
 
-            "id": "function-egl",
+                    "path": "RunEpsilonFunction.java"
 
-            "name": "egl",
+                },
 
-            "parameters": ["flexmi","emfatic"],
+                {
 
-            "path": "RunEpsilonFunction.java"
+                    "id": "function-egl",
 
-        },
+                    "name": "egl",
 
-        {
+                    "parameters": ["flexmi","emfatic"],
 
-            "id": "function-flexmitograph",
+                    "path": "RunEpsilonFunction.java"
 
-            "name": "FlexmiToGraphviz",
+                },
 
-            "parameters": ["flemi","emfatic"],
+                {
 
-            "path": "FlexmiToGraphvizFunction.java"
+                    "id": "function-flexmitograph",
 
+                    "name": "FlexmiToGraphviz",
+
+                    "parameters": ["flemi","emfatic"],
+
+                    "path": "FlexmiToGraphvizFunction.java"
+
+                }
+
+            ],
+
+
+
+            "panelDefs": [
+
+                {
+
+                    "id": "eol",
+
+                    "name": "eol",
+
+                    "panelclass": "ProgramPanel",
+
+                    "icon": "image/eol.gif",
+
+                    "help": "https://www.eclipse.org/epsilon/doc/eol/",
+
+                    "language": "eol",
+
+                    "actionFunction": "function-eol"
+
+                },
+
+                {
+
+                    "id": "etl",
+
+                    "name": "etl",
+
+                    "panelclass": "ProgramPanel",
+
+                    "icon": "images/etl.gif",
+
+                    "help": "https://www.eclipse.org/epsilon/doc/etl/",
+
+                    "language": "etl",
+
+                    "actionFunction": "function-etl"
+
+                },
+
+                {
+
+                    "id": "egl",
+
+                    "name": "egl",
+
+                    "panelclass": "ProgramPanel",
+
+                    "icon": "images/egl.gif",
+
+                    "help": "https://www.eclipse.org/epsilon/doc/egl/",
+
+                    "language": "egl",
+
+                    "actionFunction": "function-egl"
+
+                },
+
+                {
+
+                    "id": "evl",
+
+                    "name": "evl",
+
+                    "panelclass": "ProgramPanel",
+
+                    "icon": "images/evl.gif",
+
+                    "help": "https://www.eclipse.org/epsilon/doc/evl/",
+
+                    "language": "evl",
+
+                    "actionFunction": "function-evl"
+
+                },
+
+                {
+
+                    "id": "flexmi",
+
+                    "name": "flexmi",
+
+                    "panelclass": "ProgramPanel",
+
+                    "icon": "images/flexmi.png",
+
+                    "help": "https://www.eclipse.org/epsilon/doc/flexmi/",
+
+                    "language": "flexmi",
+
+                    "actionFunction": "function-flexmi"
+
+                },
+
+                {
+
+                    "id": "emfatic",
+
+                    "name": "emfatic",
+
+                    "panelclass": "ProgramPanel",
+
+                    "icon": "images/emfatic.png",
+
+                    "help": "https://www.eclipse.org/epsilon/doc/emfatic/",
+
+                    "language": "emfatic",
+
+                    "actionFunction": "function-emfatic"
+
+                },
+
+                {
+
+                    "id": "console",
+
+                    "name": "console",
+
+                    "panelclass": "ConsolePanel",
+
+                    "icon": "images/console.gif"
+
+                },
+
+                {
+
+                    "id": "problem",
+
+                    "name": "problem",
+                    
+                    "panelclass": "OutputPanel",
+
+                    "icon": "images/problems.png",
+
+                    "actionFunction": "function-problem"
+
+                },
+
+                {
+
+                    "id": "emfgraph",
+
+                    "name": "emfgraphviz",
+                    
+                    "panelclass": "OutputPanel",
+
+                    "icon": "images/diagram.gif",
+
+                    "actionFunction": "function-flexmitograph"
+
+                }
+
+            ]
         }
 
-    ],
-
-
-
-    "panelDefs": [
-
-        {
-
-            "id": "eol",
-
-            "name": "eol",
-
-            "icon": "image/eol.gif",
-
-            "help": "https://www.eclipse.org/epsilon/doc/eol/",
-
-            "grammar": "eol.js",
-
-            "actionFunction": "function-eol",
-
-        },
-
-        {
-
-            "id": "etl",
-
-            "name": "etl",
-
-            "icon": "images/etl.gif",
-
-            "help": "https://www.eclipse.org/epsilon/doc/etl/",
-
-            "grammar": "etl.js",
-
-            "actionFunction": "function-etl",
-
-        },
-
-        {
-
-            "id": "egl",
-
-            "name": "egl",
-
-            "icon": "images/egl.gif",
-
-            "help": "https://www.eclipse.org/epsilon/doc/egl/",
-
-            "grammar": "egl.js",
-
-            "actionFunction": "function-egl",
-
-        },
-
-        {
-
-            "id": "emfgraph",
-
-            "name": "emfgraphviz",
-
-            "icon": "images/diagram.gif",
-
-            "actionFunction": "function-flexmitograph",
-
-        },
-
     ]
-
 } 
