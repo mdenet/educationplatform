@@ -203,12 +203,17 @@ class ActivityManager {
         }
         else {
             var activity = this.activities[id];
+
+            for ( let apanel of activity.panels ){
+                if (apanel.file != null) apanel.file = this.fetchFile(apanel.file);
+            }
+            /* Fixed panel fetching 
             if (activity.program != null) activity.program = this.fetchFile(activity.program);
             if (activity.secondProgram != null) activity.secondProgram = this.fetchFile(activity.secondProgram);
             if (activity.flexmi != null) activity.flexmi = this.fetchFile(activity.flexmi);
             if (activity.emfatic != null) activity.emfatic = this.fetchFile(activity.emfatic);
             if (activity.secondFlexmi != null) activity.secondFlexmi = this.fetchFile(activity.secondFlexmi);
-            if (activity.secondEmfatic != null) activity.secondEmfatic = this.fetchFile(activity.secondEmfatic);
+            if (activity.secondEmfatic != null) activity.secondEmfatic = this.fetchFile(activity.secondEmfatic); */
             return activity;
         }
 

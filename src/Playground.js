@@ -115,8 +115,10 @@ function setup() {
 
             // TODO Populate the different panel types from the tool panel definition.
             switch(newPanelDef.panelclass) {
-                case "a":
-                  // code block
+                case "ProgramPanel":
+                    newPanel =  new ProgramPanel(apanel.id);
+                    newPanel.setValue(apanel.file);
+
                   break;
                 case "b":
                   // code block
