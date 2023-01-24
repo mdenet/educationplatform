@@ -1,6 +1,8 @@
 import { Panel } from "./Panel.js";
 import { Layout } from "./Layout.js";
 
+import svgPanZoom from 'svg-pan-zoom';
+
 class ModelPanel extends Panel {
 
     editable;
@@ -19,6 +21,18 @@ class ModelPanel extends Panel {
         $("#" + this.id + "Diagram").show();
     }
 
+    hideDiagram() {
+        $("#" + this.id + "Diagram").hide();
+    }
+
+    showEditor() {
+        $("#" + this.id + "Editor").show();
+    }
+
+    hideEditor() {
+        $("#" + this.id + "Editor").hide();
+    }
+    
     refreshDiagram() {
         this.refreshDiagramImpl(backend.getFlexmiToPlantUMLService(), this.id + "Diagram", "model", this.getEditor(), this.metamodelPanel.getEditor());
     }
@@ -94,6 +108,28 @@ class ModelPanel extends Panel {
         xhr.send(data);
         longNotification("Rendering " + diagramName + " diagram");
     }
+
+
+    renderDiagram(svg) {
+        var diagramId = this.id + "Diagram";
+        var diagramElement = document.getElementById(diagramId);
+        diagramElement.innerHTML = svg;
+        var svg = document.getElementById(diagramId).firstElementChild;
+        
+        //if (diagramId == "outputDiagram") {
+            diagramElement.parentElement.style.padding = "0px";
+        //}
+    
+        svg.style.width = diagramElement.offsetWidth + "px";
+        svg.style.height = diagramElement.offsetHeight + "px";
+    
+        svgPanZoom(svg, {
+          zoomEnabled: true,
+          fit: true,
+          center: true
+        });
+    }
+    
 
     modelToJson(modelEditor, metamodelEditor) {
         return JSON.stringify(

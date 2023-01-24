@@ -66,14 +66,16 @@ activity = examplesManager.getSelectedActivity();
 setup();
 
 function setup() {
+    const toolPanelDefinitionId = examplesManager.getPanelRefId(activity.actions[0].source); // Source panel refernces a tool panel definition
+    language = toolsManager.getPanelDefinition(toolPanelDefinitionId).language; // Use the source from config file 
 
-
-    if (activity.eol != null) { 
+  
+   /* if (activity.eol != null) { 
         activity.program = activity.eol; language = "eol";
     }
     else {
         language = activity.language
-    };
+    }; */
     
     console.log("Language: " + language);
 
@@ -88,7 +90,7 @@ function setup() {
     var secondModelEditable = !(language == "etl" || language == "flock");
 
     secondModelPanel = new ModelPanel("secondModel", secondModelEditable, secondMetamodelPanel);
-    thirdModelPanel = new OutputPanel("thirdModel", language, outputType, outputLanguage);
+    thirdModelPanel = {}// new OutputPanel("thirdModel", language, outputType, outputLanguage);
 
     // Generalised and moved to after creation of activity panels
     //new Layout().create("navview-content", language);
@@ -125,18 +127,30 @@ function setup() {
                     //TODO add panel button function
 
                     // Set from the activity 
-                    newPanel.setValue(apanel.file);
-                    
+                    newPanel.setValue(apanel.file); 
                   break;
+               
                 case "ConsolePanel":
-                    newPanel =  new ConsolePanel()
+                    newPanel =  new ConsolePanel(apanel.id);
 
                     // TODO Support for multiple consoles
                     consolePanel = newPanel; 
+                   break;
 
+                case "OutputPanel":
+                
+                    const panelDef =  toolsManager.getPanelDefinition(apanel.id);
+
+                    newPanel =  new OutputPanel(apanel.id, language, outputType, outputLanguage);
+                
+                    newPanel.setIcon(newPanelDef.icon);
+                    
+                    newPanel.hideEditor();
+                    newPanel.showDiagram();
 
                   break;
 
+                  // TODO create other panel types e.g. models and metamodels so the text is formatted correctly
                 default:
                    newPanel = new TestPanel(apanel.id);
               }
@@ -391,9 +405,10 @@ const currentAction = activity.actions[0];
 // Lookup the target actionfunction  via the source activity action panel reference 
 const toolPanelDefinitionId = examplesManager.getPanelRefId(currentAction.source); // Source panel refernces a tool panel definition
 const actionFunctionId = toolsManager.getPanelDefinition(toolPanelDefinitionId).actionFunction; // Panel definition has the id of th tool function 
-
+const language = toolsManager.getPanelDefinition(toolPanelDefinitionId).language; // Use the source from config file 
 const actionFunction = toolsManager.getActionFunction(actionFunctionId);
 //------
+const outputPanel = panels.find(pn => pn.id == currentAction.output);
 
     var xhr = new XMLHttpRequest();
     //var url = backend.getRunEpsilonService();
@@ -414,13 +429,19 @@ const actionFunction = toolsManager.getActionFunction(actionFunctionId);
                     consolePanel.setOutput(response.output);
                     
                     if (language == "etl" || language == "flock") {
-                        renderDiagram("secondModelDiagram", response.targetModelDiagram);
+                        outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
+                        outputPanel.showDiagram();
+                        outputPanel.renderDiagram(response.targetModelDiagram);
+                        outputPanel.showDiagram();
                     }
                     else if (language == "evl") {
-                        renderDiagram("thirdModelDiagram", response.validatedModelDiagram);
+                        outputPanel.hideEditor();
+                        outputPanel.showDiagram();
+                        outputPanel.renderDiagram(response.validatedModelDiagram); //Use the output panel id.
+                        outputPanel.showDiagram();
                     }
                     else if (language == "epl") {
-                        renderDiagram("thirdModelDiagram", response.patternMatchedModelDiagram);
+                        outputPanel.renderDiagram(response.patternMatchedModelDiagram); //Use the output panel id.
                     }
                     else if (language == "egx") {
                         thirdModelPanel.setGeneratedFiles(response.generatedFiles);
@@ -458,7 +479,7 @@ const actionFunction = toolsManager.getActionFunction(actionFunctionId);
                             krokiXhr.onreadystatechange = function () {
                                 if (krokiXhr.readyState === 4) {
                                     if (krokiXhr.status === 200) {
-                                        renderDiagram("thirdModelDiagram", krokiXhr.responseText);
+                                        outputPanel.renderDiagram(krokiXhr.responseText);
                                     }
                                 }
                             };
@@ -499,24 +520,6 @@ function toggle(elementId, onEmpty) {
     updateGutterVisibility();
 }
 
-function renderDiagram(diagramId, svg) {
-    var diagramElement = document.getElementById(diagramId);
-    diagramElement.innerHTML = svg;
-    var svg = document.getElementById(diagramId).firstElementChild;
-
-    if (diagramId == "thirdModelDiagram") {
-        diagramElement.parentElement.style.padding = "0px";
-    }
-
-    svg.style.width = diagramElement.offsetWidth + "px";
-    svg.style.height = diagramElement.offsetHeight + "px";
-
-    svgPanZoom(svg, {
-      zoomEnabled: true,
-      fit: true,
-      center: true
-    });
-}
 
 function updateGutterVisibility() {
     for (const gutter of Array.prototype.slice.call(document.getElementsByClassName("gutter"))) {
@@ -583,7 +586,7 @@ window.panels = panels;
 
 window.backend = backend;
 window.toggle = toggle;
-window.renderDiagram = renderDiagram;
+//window.renderDiagram = renderDiagram;
 window.longNotification = longNotification;
 window.showDownloadOptions = showDownloadOptions;
 window.showSettings = showSettings;

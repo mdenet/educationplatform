@@ -81,7 +81,7 @@
 
                     "panelclass": "ProgramPanel",
 
-                    "icon": "image/eol.gif",
+                    "icon": "eol",
 
                     "help": "https://www.eclipse.org/epsilon/doc/eol/",
 
@@ -99,7 +99,7 @@
 
                     "panelclass": "ProgramPanel",
 
-                    "icon": "images/etl.gif",
+                    "icon": "etl",
 
                     "help": "https://www.eclipse.org/epsilon/doc/etl/",
 
@@ -117,7 +117,7 @@
 
                     "panelclass": "ProgramPanel",
 
-                    "icon": "images/egl.gif",
+                    "icon": "egl",
 
                     "help": "https://www.eclipse.org/epsilon/doc/egl/",
 
@@ -135,7 +135,7 @@
 
                     "panelclass": "ProgramPanel",
 
-                    "icon": "images/evl.gif",
+                    "icon": "evl",
 
                     "help": "https://www.eclipse.org/epsilon/doc/evl/",
 
@@ -153,7 +153,7 @@
 
                     "panelclass": "ProgramPanel",
 
-                    "icon": "images/flexmi.png",
+                    "icon": "flexmi",
 
                     "help": "https://www.eclipse.org/epsilon/doc/flexmi/",
 
@@ -171,7 +171,7 @@
 
                     "panelclass": "ProgramPanel",
 
-                    "icon": "images/emfatic.png",
+                    "icon": "emfatic",
 
                     "help": "https://www.eclipse.org/epsilon/doc/emfatic/",
 
@@ -201,7 +201,7 @@
                     
                     "panelclass": "OutputPanel",
 
-                    "icon": "images/problems.png",
+                    "icon": "problems",
 
                     "actionFunction": "function-problem"
 
@@ -215,7 +215,7 @@
                     
                     "panelclass": "OutputPanel",
 
-                    "icon": "images/diagram.gif",
+                    "icon": "diagram",
 
                     "actionFunction": "function-flexmitograph"
 

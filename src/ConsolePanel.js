@@ -5,8 +5,8 @@ import { define } from "ace-builds";
 
 class ConsolePanel extends Panel {
 
-    constructor() {
-        super("console");
+    constructor(id) {
+        super(id);
         this.editor.setReadOnly(true);
         this.editor.setValue("", 1);
         this.element.dataset.customButtons = JSON.stringify(this.getButtons());
@@ -23,14 +23,14 @@ class ConsolePanel extends Panel {
     }
 
     setOutput(str) {
-        document.getElementById("consoleEditor").style.color = "black";
+        document.getElementById(this.id + "Editor").style.color = "black";
         this.editor.getSession().setUseWrapMode(false);
         this.editor.setValue(str, 1);
 
     }
 
     setError(str) {
-        document.getElementById("consoleEditor").style.color = "#CD352C";
+        document.getElementById(this.id + "Editor").style.color = "#CD352C";
         this.editor.getSession().setUseWrapMode(true);
         this.editor.setValue(str, 1);
     }
