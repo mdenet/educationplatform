@@ -58,6 +58,19 @@ class ToolManager {
         return this.tools.keys();
     }
 
+    getParametersForToolFunction(functionId){
+
+        for ( const toolskey of  Object.keys(this.tools)){
+
+            const foundFunction = this.tools[toolskey].functions.find( fn => fn.id==functionId );
+
+            if (foundFunction != undefined) {
+                return ([...foundFunction.parameters])
+            } 
+        }
+
+        return null; // Not toolfunction with matching id was found.
+    }
 
     getPanelDefinition(panelId) {
 
@@ -74,6 +87,25 @@ class ToolManager {
         return null;
     }
 
+
+    /**
+     * Finds the action function for an action function Id
+     * @param {*} actionFuntionId 
+     */
+    getActionFunction(actionFuntionId) {
+        for ( const toolskey of  Object.keys(this.tools)){
+
+            const foundFunction = this.tools[toolskey].functions.find( fn => fn.id==actionFuntionId );
+
+            if ( foundFunction != undefined){
+                return foundFunction;
+            } 
+        } 
+        
+        console.log("Tool with function id '" + actionFuntionId + "' was not found.");
+        return null;
+
+    }
     
     hasPanelDefinition(panelId){
         

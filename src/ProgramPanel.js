@@ -24,6 +24,20 @@ class ProgramPanel extends Panel {
         this.setTitleAndIcon(title + " (" + (language == "flock" ? "Flock" : language.toUpperCase()) + ")", language);
     }
 
+    /**
+     *  Sets the modes and add the buttons 
+     * 
+     *  TODO Generalise buttons
+     * @param {*} language 
+     * @param {boolean} hasAction Enable the run action button 
+     */
+    setMode(language, hasAction){
+        this.editor.getSession().setMode("ace/mode/" + language);
+        this.element.dataset.customButtons = JSON.stringify(this.getButtons(language, hasAction));
+        console.log(language);
+    }
+
+
     fit() {
         var editorElement = document.getElementById(this.id + "Editor");
         if (editorElement != null) {
@@ -32,14 +46,20 @@ class ProgramPanel extends Panel {
         this.editor.resize();
     }
 
-    getButtons(language) {
+    /**
+     * Configures the buttons to display.
+     * @param {*} language  The languange for help links
+     * @param {boolean} hasAction Enable the run action button 
+     * @returns 
+     */
+    getButtons(language, hasAction) {
         var languageName = (language == "flock" ? "Flock" : language.toUpperCase());
         var buttons = [{
             html: this.buttonHtml("help", languageName + " language reference"),
             cls: "sys-button",
             onclick: "window.open('https://www.eclipse.org/epsilon/doc/" + language + "');"
         }];
-        if (this.id == "program") {
+        if (hasAction) {
             buttons.push({
                 html: this.buttonHtml("run", "Run the program (Ctrl/Cmd+S)"),
                 cls: "sys-button",

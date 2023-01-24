@@ -20,21 +20,22 @@
 
                 },
 
-            "action": {
+            "actions": [
 
-                "source": "panel-eol",
+                {
+                    "source": "panel-eol",
 
-                "parameters": ["psl.eol",
+                    "parameters": {
+                        "program": "panel-eol",
+                        "flexmi": "panel-model",
+                         "emfatic":"panel-mm"
 
-                                "psl.flexmi",
+                    },
 
-                                "psl.emf"
+                    "output": "panel-console"
 
-                ],
-
-                "output": "panel-console"
-
-            },
+                }
+            ],
 
 
 
@@ -107,9 +108,20 @@
 
                 },
 
-            "action": {
+            "actions": [
+                {
+                    "source": "panel-evl",
 
-                },
+                    "parameters": {
+                        "program": "panel-evl",
+                        "flexmi": "panel-model",
+                        "emfatic": "panel-mm"
+                    },
+
+                    "output": "panel-problems"
+
+                }
+                ],
 
             "panels": [
 
@@ -190,9 +202,21 @@
 
             },
 
-        "action": {
+        "actions": [
+            {
+                "source": "panel-etl",
 
-            },
+                "parameters": {
+                    "program": "panel-etl",
+                    "flexmi": "panel-smodel",
+                    "emfatic": "panel-smm",
+                    "secondEmfatic": "panel-tmm"
+                },
+
+                "output": "panel-tmodel"
+
+            }
+            ],
 
         "panels": [
 
@@ -215,8 +239,6 @@
                 "name": "Source Model",
 
                 "ref": "flexmi",
-
-                "language": "flexmi",
 
                 "file": "psl2pdl.flexmi"
 

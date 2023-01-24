@@ -44,7 +44,7 @@ export var firstModelPanel = new ModelPanel("firstModel", true, firstMetamodelPa
 export var secondModelPanel;
 export var thirdModelPanel;
 
-export var consolePanel = new ConsolePanel();
+export var consolePanel;
 var downloadDialog = new DownloadDialog();
 var settingsDialog = new SettingsDialog();
 var preloader = new Preloader();
@@ -57,7 +57,8 @@ export var examplesManager = new ActivityManager();
 
 var panels = [];
 
-backend.configure();
+// Now handled by ToolManager
+//backend.configure();
 
 
 //example = examplesManager.getSelectedExample();
@@ -94,7 +95,7 @@ function setup() {
     
     //panels = [programPanel, secondProgramPanel, consolePanel, firstModelPanel, firstMetamodelPanel, secondModelPanel, secondMetamodelPanel, thirdModelPanel];
     
-    // Create panenls for the given activites
+    // Create panels for the given activites
     
       var debug = new TestPanel("debugp");
 
@@ -117,12 +118,25 @@ function setup() {
             switch(newPanelDef.panelclass) {
                 case "ProgramPanel":
                     newPanel =  new ProgramPanel(apanel.id);
+
+                    // Set from the tool panel  
+                    newPanel.setIcon(newPanelDef.icon);
+                    newPanel.setMode(newPanelDef.language, examplesManager.panelHasAction(newPanel.id));
+                    //TODO add panel button function
+
+                    // Set from the activity 
                     newPanel.setValue(apanel.file);
+                    
+                  break;
+                case "ConsolePanel":
+                    newPanel =  new ConsolePanel()
+
+                    // TODO Support for multiple consoles
+                    consolePanel = newPanel; 
+
 
                   break;
-                case "b":
-                  // code block
-                  break;
+
                 default:
                    newPanel = new TestPanel(apanel.id);
               }
@@ -294,9 +308,55 @@ function getPanelTitle(panelId) {
 }
 
 function editorsToJsonObject() {
-    return {
-        "language": language,
-        "outputType": outputType,
+    var actionRequestData = {};
+
+    
+
+    /* TODO support multiple actions - need to know the button pressed here we just 
+    use the first one in the current activity. */
+    const currentAction = activity.actions[0];
+       
+    // Lookup the target actionfunction  via the source activity action panel reference 
+    const toolPanelDefinitionId = examplesManager.getPanelRefId(currentAction.source); // Source panel refernces a tool panel definition
+    const actionFunctionId = toolsManager.getPanelDefinition(toolPanelDefinitionId).actionFunction; // Panel definition has the id of th tool function 
+    
+    const actionFunction = toolsManager.getActionFunction(actionFunctionId);
+    const panelDefinitionLanguage = toolsManager.getPanelDefinition(toolPanelDefinitionId).language; 
+
+
+
+    //Populate the parameters for processing the action request
+    for ( const param  of actionFunction.parameters ){
+
+        // Get editor values from their panels
+        const panelId = currentAction.parameters[param]; 
+        const panel = panels.find( pn => pn.id ==  panelId );
+
+        if (panelId == undefined){
+            // Set unused parameters in the request to undefined as the backend function expect them all. 
+            actionRequestData[param] = "undefined";
+
+        } else if (panel != undefined){
+            // There is a panel so add its contents to request
+            actionRequestData[param] = panel.getValue();
+
+        } else {
+            console.log("Panel id '" + panelId +  "' not found when building request.")
+        }
+    }
+
+
+    actionRequestData.language = panelDefinitionLanguage;
+    
+    // TODO support output and language 
+    actionRequestData.outputType = outputType;
+    actionRequestData.outputLanguage = outputLanguage;
+
+    return  actionRequestData; 
+    
+    /*{
+            language = language;
+            "outputType": outputType,
         "outputLanguage": outputLanguage,
         "program": programPanel.getValue(), 
         "secondProgram": secondProgramPanel.getValue(),
@@ -304,8 +364,10 @@ function editorsToJsonObject() {
         "flexmi": firstModelPanel.getValue(),
         "secondEmfatic": secondMetamodelPanel.getValue(),
         "secondFlexmi": secondModelPanel.getValue()
-    };
+    }; */
 }
+
+
 
 function editorsToJson() {
     return JSON.stringify(editorsToJsonObject());
@@ -323,9 +385,20 @@ function fit() {
 
 function runProgram() {
 	
+//----- TODO Consolidate this duplicated code for testing from editorsToJsonObject 
+const currentAction = activity.actions[0];
+       
+// Lookup the target actionfunction  via the source activity action panel reference 
+const toolPanelDefinitionId = examplesManager.getPanelRefId(currentAction.source); // Source panel refernces a tool panel definition
+const actionFunctionId = toolsManager.getPanelDefinition(toolPanelDefinitionId).actionFunction; // Panel definition has the id of th tool function 
+
+const actionFunction = toolsManager.getActionFunction(actionFunctionId);
+//------
+
     var xhr = new XMLHttpRequest();
-    var url = backend.getRunEpsilonService();
-    
+    //var url = backend.getRunEpsilonService();
+    var url = actionFunction.path;
+
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {

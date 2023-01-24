@@ -51,6 +51,7 @@ class ActivityManager {
         xhr.send();
         if (xhr.status === 200) {    
             var json = JSON.parse(xhr.responseText);
+            
             for (const activity of json.activities) {
 
                 if (activity.id) {
@@ -180,6 +181,26 @@ class ActivityManager {
     }
 
     /**
+     * Returns the tool panel definition id that a Panel definition references 
+     * @param {*} panelId 
+     * @returns 
+     */
+    getPanelRefId(panelId){
+        
+        for ( const activitykey of  Object.keys(this.activities)){
+
+            const foundPanel = this.activities[activitykey].panels.find( pn => pn.id==panelId );
+
+            if ( foundPanel != undefined){
+                return foundPanel.ref;
+            } 
+        } 
+        
+        console.log("Panel with definition id '" + panelId + "' not found.");
+        return null;
+    }
+
+    /**
      * Fetches the contents of the activity with the provided ID
      */ 
     fetchActivity(id) {
@@ -243,6 +264,37 @@ class ActivityManager {
         }
     }
 
+
+    /**
+     * Finds an action where the panel is the source.
+     * @param {*} panelId 
+     * @returns The first found action otherwise null.
+     */
+    getPanelAction(panelId){
+        for ( const activitykey of  Object.keys(this.activities)){
+
+            const foundActivity = this.activities[activitykey].actions.find( ac => ac.source==panelId );
+
+            if ( foundActivity != undefined){
+                return foundActivity;
+            } 
+        } 
+        
+        console.log("Panel with definition id '" + panelId + "' has no action.");
+        return null;
+    }   
+    
+
+    /**
+     * Returns true if the supplied panel ID has an action. 
+     * @param {*} panelId the id of the panel to check. 
+     */
+    panelHasAction(panelId){
+  
+        return ( this.getPanelAction(panelId) != null );
+    }   
 }
+
+
 
 export {ActivityManager};

@@ -3,6 +3,7 @@ class Backend {
     services = {};
 
     configure() {
+        /*
         var xhr = new XMLHttpRequest();
         var url = "backend.json";
         xhr.open("GET", url, false);
@@ -13,6 +14,7 @@ class Backend {
                 this.services[service.name] = service.url;
             }
         }
+        */
     }
 
     getRunEpsilonService() {

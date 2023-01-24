@@ -13,9 +13,9 @@
 
                     "name": "eol",
 
-                    "parameters": ["flexmi","emfatic"],
+                    "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
 
-                    "path": "RunEpsilonFunction.java"
+                    "path": "http://localhost:9000/services/RunEpsilonFunction"
 
                 },
 
@@ -25,9 +25,9 @@
 
                     "name": "etl",
 
-                    "parameters": ["flexmi","emfatic","emfatic-target"],
+                    "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
 
-                    "path": "RunEpsilonFunction.java"
+                    "path": "http://localhost:9000/services/RunEpsilonFunction"
 
                 },
 
@@ -37,9 +37,21 @@
 
                     "name": "egl",
 
-                    "parameters": ["flexmi","emfatic"],
+                    "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
 
-                    "path": "RunEpsilonFunction.java"
+                    "path": "http://localhost:9000/services/RunEpsilonFunction"
+
+                },
+
+                {
+
+                    "id": "function-evl",
+
+                    "name": "evl",
+
+                    "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
+
+                    "path": "http://localhost:9000/services/RunEpsilonFunction"
 
                 },
 
@@ -49,9 +61,9 @@
 
                     "name": "FlexmiToGraphviz",
 
-                    "parameters": ["flemi","emfatic"],
+                    "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
 
-                    "path": "FlexmiToGraphvizFunction.java"
+                    "path": "http://localhost:9000/services/FlexmiToPlantUMLFunction"
 
                 }
 
