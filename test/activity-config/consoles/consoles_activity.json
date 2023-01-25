@@ -1,0 +1,337 @@
+{
+
+    "activities": [
+
+        {
+            "id": "activity-1c",
+
+            "title": "One Console",
+
+            "layout": {
+
+                    "area": [
+
+                        ["panel-eol",     "panel-model"],
+
+                        ["panel-console", "panel-mm"]
+
+                    ]
+
+                },
+
+            "actions": [
+                {
+                    "source": "panel-console1",
+
+                    "parameters": {
+
+                    },
+
+                    "output": "panel-console1"
+
+                }
+            ],
+
+
+
+            "panels": [
+
+                {
+
+                    "id": "panel-console1",
+
+                    "name": "Console 1",
+
+                    "ref": "console"
+
+                }
+
+            ]
+
+        },
+        {
+            "id": "activity-2c",
+
+            "title": "Two Consoles",
+
+            "layout": {
+
+                    "area": [
+
+                        ["panel-eol",     "panel-model"],
+
+                        ["panel-console", "panel-mm"]
+
+                    ]
+
+                },
+
+            "actions": [
+                {
+                    "source": "panel-console1",
+
+                    "parameters": {
+
+                    },
+
+                    "output": "panel-console1"
+
+                }
+            ],
+
+
+
+            "panels": [
+
+                {
+
+                    "id": "panel-console1",
+
+                    "name": "Console 1",
+
+                    "ref": "console"
+
+                },
+                {
+
+                    "id": "panel-console2",
+
+                    "name": "Console 2",
+
+                    "ref": "console"
+
+                }
+
+            ]
+
+        },
+
+        {
+            "id": "activity-3c",
+
+            "title": "Three Consoles",
+
+            "layout": {
+
+                    "area": [
+
+                        ["panel-eol",     "panel-model"],
+
+                        ["panel-console", "panel-mm"]
+
+                    ]
+
+                },
+
+            "actions": [
+                {
+                    "source": "panel-console1",
+
+                    "parameters": {
+
+                    },
+
+                    "output": "panel-console1"
+
+                }
+            ],
+
+
+
+            "panels": [
+
+                {
+
+                    "id": "panel-console1",
+
+                    "name": "Console 1",
+
+                    "ref": "console"
+
+                },
+                {
+
+                    "id": "panel-console2",
+
+                    "name": "Console 2",
+
+                    "ref": "console"
+
+                },
+                {
+
+                    "id": "panel-console3",
+
+                    "name": "Console 3",
+
+                    "ref": "console"
+
+                }
+
+            ]
+
+        },
+
+        {
+            "id": "activity-4c",
+
+            "title": "Four Consoles",
+
+            "layout": {
+
+                    "area": [
+
+                        ["panel-eol",     "panel-model"],
+
+                        ["panel-console", "panel-mm"]
+
+                    ]
+
+                },
+
+            "actions": [
+                {
+                    "source": "panel-console1",
+
+                    "parameters": {
+
+                    },
+
+                    "output": "panel-console1"
+
+                }
+            ],
+
+
+
+            "panels": [
+
+                {
+
+                    "id": "panel-console1",
+
+                    "name": "Console 1",
+
+                    "ref": "console"
+
+                },
+                {
+
+                    "id": "panel-console2",
+
+                    "name": "Console 2",
+
+                    "ref": "console"
+
+                },
+                {
+
+                    "id": "panel-console3",
+
+                    "name": "Console 3",
+
+                    "ref": "console"
+
+                },
+                {
+
+                    "id": "panel-console4",
+
+                    "name": "Console 4",
+
+                    "ref": "console"
+
+                }
+
+
+            ]
+
+        },
+
+        {
+            "id": "activity-5c",
+
+            "title": "Five Consoles",
+
+            "layout": {
+
+                    "area": [
+
+                        ["panel-eol",     "panel-model"],
+
+                        ["panel-console", "panel-mm"]
+
+                    ]
+
+                },
+
+            "actions": [
+                {
+                    "source": "panel-console1",
+
+                    "parameters": {
+
+                    },
+
+                    "output": "panel-console1"
+
+                }
+            ],
+
+
+
+            "panels": [
+
+                {
+
+                    "id": "panel-console1",
+
+                    "name": "Console 1",
+
+                    "ref": "console"
+
+                },
+                {
+
+                    "id": "panel-console2",
+
+                    "name": "Console 2",
+
+                    "ref": "console"
+
+                },
+                {
+
+                    "id": "panel-console3",
+
+                    "name": "Console 3",
+
+                    "ref": "console"
+
+                },
+                {
+
+                    "id": "panel-console4",
+
+                    "name": "Console 4",
+
+                    "ref": "console"
+
+                },
+                {
+
+                    "id": "panel-console5",
+
+                    "name": "Console 5",
+
+                    "ref": "console"
+
+                }
+
+
+            ]
+
+        }
+    ] 
+
+} 
