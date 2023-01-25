@@ -7,6 +7,8 @@
 
             "title": "One Console",
 
+            "tools": [ "http://localhost:8081/epsilon_tool.json"],
+
             "layout": {
 
                     "area": [
@@ -53,6 +55,8 @@
             "id": "activity-2c",
 
             "title": "Two Consoles",
+
+            "tools": [ "http://localhost:8081/epsilon_tool.json"],
 
             "layout": {
 
@@ -110,6 +114,8 @@
             "id": "activity-3c",
 
             "title": "Three Consoles",
+
+            "tools": [ "http://localhost:8081/epsilon_tool.json"],
 
             "layout": {
 
@@ -176,6 +182,8 @@
             "id": "activity-4c",
 
             "title": "Four Consoles",
+
+            "tools": [ "http://localhost:8081/epsilon_tool.json"],
 
             "layout": {
 
@@ -252,6 +260,8 @@
             "id": "activity-5c",
 
             "title": "Five Consoles",
+
+            "tools": [ "http://localhost:8081/epsilon_tool.json"],
 
             "layout": {
 

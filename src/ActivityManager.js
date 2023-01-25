@@ -20,13 +20,6 @@ class ActivityManager {
             this.activitiesUrl = parameters.get("activities");
         }
 
-        //TODO - Other future parameters will need to be handled more generally
-        if (parameters.has("tools")) {
-            this.customToolsUrl = true;
-            this.toolsUrl = parameters.get("tools");
-        }
-
-
 
         var parameterKeys = Array.from(parameters.keys());
 
@@ -131,9 +124,7 @@ class ActivityManager {
         if (this.customActivitiesUrl) {
             a.href += "&activities=" + this.activitiesUrl;
         }
-        if (this.customToolsUrl){
-            a.href += "&tools=" + this.toolsUrl;
-        }
+
         li.appendChild(a);
 
         var icon = document.createElement("span");
@@ -293,6 +284,21 @@ class ActivityManager {
   
         return ( this.getPanelAction(panelId) != null );
     }   
+
+    /**
+     * Returns all of the tool urls used by the activities removing duplicates.
+     * @returns 
+     */
+    getToolUrls(){
+         var toolUrls = [];
+
+         for ( const activitykey of  Object.keys(this.activities)){
+            
+            toolUrls = toolUrls.concat( this.activities[activitykey].tools );
+         }
+
+         return ( new Set(toolUrls) );
+    }
 }
 
 

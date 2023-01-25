@@ -8,6 +8,8 @@
 
             "title": "Model-to-Model Example",
 
+            "tools": [ "http://localhost:8081/epsilon_tool.json"],
+
             "layout": {
 
                     "area": [

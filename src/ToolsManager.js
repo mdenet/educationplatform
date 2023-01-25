@@ -2,25 +2,14 @@
 class ToolManager {
 
     toolId;
-    toolsUrl;
+    toolsUrls;
     tools = {};
 
-    constructor(){
-
-        var parameters = new URLSearchParams(window.location.search);
+    constructor(urls){
         
-        //Retrive the tools url from platform url parameters
-        if (parameters.has("tools")){
-            this.toolsUrl = parameters.get("tools");
+        this.toolsUrls = urls;
 
-            var parameterKeys = Array.from(parameters.keys());
-            
-            this.fetchTools();
-
-        } else {
-            console.log("No tools URL parameter provided.")
-        }
-
+        this.fetchTools();
     }
 
     /*
@@ -28,25 +17,27 @@ class ToolManager {
      * functions and panel definitions.
      */
     fetchTools(){
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", this.toolsUrl, false);
-        xhr.send();
 
-        if (xhr.status === 200) {    
-            var json = JSON.parse(xhr.responseText);
+        for (const url of this.toolsUrls) {
 
-            // Store the tools found in the given json
-            for (const atool of json.tools) {
-
-                if (atool.id){
-                    this.storeTool(atool);
-                    
-                    //TODO update any tool mangement menu. 
-                }
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url, false);
+            xhr.send();
+    
+            if (xhr.status === 200) {    
+                var json = JSON.parse(xhr.responseText);
+    
+                // Store the tool found in the given json
+    
+                    if (json.tool.id){
+                        this.storeTool(json.tool);
+                        
+                        //TODO update any tool mangement menu. 
+                    }
+                
             }
-        }
 
-        
+        }
     }
 
     storeTool(newTool){

@@ -1,228 +1,228 @@
 {
-    "tools": [
-        {
-            "id": "epsilon",
+"tool": 
+    {
+        "id": "epsilon",
 
-            "name": "Epsilon",
+        "name": "Epsilon",
 
-            "functions": [
+        "functions": [
 
-                {
+            {
 
-                    "id": "function-eol",
+                "id": "function-eol",
 
-                    "name": "eol",
+                "name": "eol",
 
-                    "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
+                "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
 
-                    "path": "http://localhost:9000/services/RunEpsilonFunction"
+                "path": "http://localhost:9000/services/RunEpsilonFunction"
 
-                },
+            },
 
-                {
+            {
 
-                    "id": "function-etl",
+                "id": "function-etl",
 
-                    "name": "etl",
+                "name": "etl",
 
-                    "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
+                "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
 
-                    "path": "http://localhost:9000/services/RunEpsilonFunction"
+                "path": "http://localhost:9000/services/RunEpsilonFunction"
 
-                },
+            },
 
-                {
+            {
 
-                    "id": "function-egl",
+                "id": "function-egl",
 
-                    "name": "egl",
+                "name": "egl",
 
-                    "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
+                "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
 
-                    "path": "http://localhost:9000/services/RunEpsilonFunction"
+                "path": "http://localhost:9000/services/RunEpsilonFunction"
 
-                },
+            },
 
-                {
+            {
 
-                    "id": "function-evl",
+                "id": "function-evl",
 
-                    "name": "evl",
+                "name": "evl",
 
-                    "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
+                "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
 
-                    "path": "http://localhost:9000/services/RunEpsilonFunction"
+                "path": "http://localhost:9000/services/RunEpsilonFunction"
 
-                },
+            },
 
-                {
+            {
 
-                    "id": "function-flexmitograph",
+                "id": "function-flexmitograph",
 
-                    "name": "FlexmiToGraphviz",
+                "name": "FlexmiToGraphviz",
 
-                    "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
+                "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
 
-                    "path": "http://localhost:9000/services/FlexmiToPlantUMLFunction"
+                "path": "http://localhost:9000/services/FlexmiToPlantUMLFunction"
 
-                }
+            }
 
-            ],
+        ],
 
 
 
-            "panelDefs": [
+        "panelDefs": [
 
-                {
+            {
 
-                    "id": "eol",
+                "id": "eol",
 
-                    "name": "eol",
+                "name": "eol",
 
-                    "panelclass": "ProgramPanel",
+                "panelclass": "ProgramPanel",
 
-                    "icon": "eol",
+                "icon": "eol",
 
-                    "help": "https://www.eclipse.org/epsilon/doc/eol/",
+                "help": "https://www.eclipse.org/epsilon/doc/eol/",
 
-                    "language": "eol",
+                "language": "eol",
 
-                    "actionFunction": "function-eol"
+                "actionFunction": "function-eol"
 
-                },
+            },
 
-                {
+            {
 
-                    "id": "etl",
+                "id": "etl",
 
-                    "name": "etl",
+                "name": "etl",
 
-                    "panelclass": "ProgramPanel",
+                "panelclass": "ProgramPanel",
 
-                    "icon": "etl",
+                "icon": "etl",
 
-                    "help": "https://www.eclipse.org/epsilon/doc/etl/",
+                "help": "https://www.eclipse.org/epsilon/doc/etl/",
 
-                    "language": "etl",
+                "language": "etl",
 
-                    "actionFunction": "function-etl"
+                "actionFunction": "function-etl"
 
-                },
+            },
 
-                {
+            {
 
-                    "id": "egl",
+                "id": "egl",
 
-                    "name": "egl",
+                "name": "egl",
 
-                    "panelclass": "ProgramPanel",
+                "panelclass": "ProgramPanel",
 
-                    "icon": "egl",
+                "icon": "egl",
 
-                    "help": "https://www.eclipse.org/epsilon/doc/egl/",
+                "help": "https://www.eclipse.org/epsilon/doc/egl/",
 
-                    "language": "egl",
+                "language": "egl",
 
-                    "actionFunction": "function-egl"
+                "actionFunction": "function-egl"
 
-                },
+            },
 
-                {
+            {
 
-                    "id": "evl",
+                "id": "evl",
 
-                    "name": "evl",
+                "name": "evl",
 
-                    "panelclass": "ProgramPanel",
+                "panelclass": "ProgramPanel",
 
-                    "icon": "evl",
+                "icon": "evl",
 
-                    "help": "https://www.eclipse.org/epsilon/doc/evl/",
+                "help": "https://www.eclipse.org/epsilon/doc/evl/",
 
-                    "language": "evl",
+                "language": "evl",
 
-                    "actionFunction": "function-evl"
+                "actionFunction": "function-evl"
 
-                },
+            },
 
-                {
+            {
 
-                    "id": "flexmi",
+                "id": "flexmi",
 
-                    "name": "flexmi",
+                "name": "flexmi",
 
-                    "panelclass": "ProgramPanel",
+                "panelclass": "ProgramPanel",
 
-                    "icon": "flexmi",
+                "icon": "flexmi",
 
-                    "help": "https://www.eclipse.org/epsilon/doc/flexmi/",
+                "help": "https://www.eclipse.org/epsilon/doc/flexmi/",
 
-                    "language": "flexmi",
+                "language": "flexmi",
 
-                    "actionFunction": "function-flexmi"
+                "actionFunction": "function-flexmi"
 
-                },
+            },
 
-                {
+            {
 
-                    "id": "emfatic",
+                "id": "emfatic",
 
-                    "name": "emfatic",
+                "name": "emfatic",
 
-                    "panelclass": "ProgramPanel",
+                "panelclass": "ProgramPanel",
 
-                    "icon": "emfatic",
+                "icon": "emfatic",
 
-                    "help": "https://www.eclipse.org/epsilon/doc/emfatic/",
+                "help": "https://www.eclipse.org/epsilon/doc/emfatic/",
 
-                    "language": "emfatic",
+                "language": "emfatic",
 
-                    "actionFunction": "function-emfatic"
+                "actionFunction": "function-emfatic"
 
-                },
+            },
 
-                {
+            {
 
-                    "id": "console",
+                "id": "console",
 
-                    "name": "console",
+                "name": "console",
 
-                    "panelclass": "ConsolePanel",
+                "panelclass": "ConsolePanel",
 
-                    "icon": "images/console.gif"
+                "icon": "images/console.gif"
 
-                },
+            },
 
-                {
+            {
 
-                    "id": "problem",
+                "id": "problem",
 
-                    "name": "problem",
-                    
-                    "panelclass": "OutputPanel",
+                "name": "problem",
+                
+                "panelclass": "OutputPanel",
 
-                    "icon": "problems",
+                "icon": "problems",
 
-                    "actionFunction": "function-problem"
+                "actionFunction": "function-problem"
 
-                },
+            },
 
-                {
+            {
 
-                    "id": "emfgraph",
+                "id": "emfgraph",
 
-                    "name": "emfgraphviz",
-                    
-                    "panelclass": "OutputPanel",
+                "name": "emfgraphviz",
+                
+                "panelclass": "OutputPanel",
 
-                    "icon": "diagram",
+                "icon": "diagram",
 
-                    "actionFunction": "function-flexmitograph"
+                "actionFunction": "function-flexmitograph"
 
-                }
+            }
 
-            ]
-        }
+        ]
+    }
 
-    ]
+
 } 

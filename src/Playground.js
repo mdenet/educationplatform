@@ -51,9 +51,10 @@ var preloader = new Preloader();
 export var backend = new Backend();
 
 
-export var toolsManager = new ToolsManager();
-//export var examplesManager = new ExampleManager();
 export var examplesManager = new ActivityManager();
+export var toolsManager = new ToolsManager( examplesManager.getToolUrls() );
+//export var examplesManager = new ExampleManager();
+
 
 var panels = [];
 

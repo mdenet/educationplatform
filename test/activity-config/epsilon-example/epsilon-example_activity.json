@@ -8,6 +8,8 @@
 
             "title": "Query Project Plan",
 
+            "tools": [ "http://localhost:8081/epsilon_tool.json"],
+
             "layout": {
 
                     "area": [
@@ -98,6 +100,8 @@
             "id": "evl",
 
             "title": "Validate Project Plan",
+
+            "tools": [ "http://localhost:8081/epsilon_tool.json"],
 
             "layout": {
 
@@ -192,6 +196,8 @@
         "id": "etl",
 
         "title": "Transform to Deliverables",
+
+        "tools": [ "http://localhost:8081/epsilon_tool.json"],
 
         "layout": {
 
