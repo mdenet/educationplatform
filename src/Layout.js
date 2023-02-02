@@ -1,4 +1,3 @@
-import {programPanel, secondProgramPanel, consolePanel, firstModelPanel, firstMetamodelPanel, secondModelPanel, secondMetamodelPanel, thirdModelPanel} from './Playground.js';
 
 class Layout {
 
@@ -39,70 +38,6 @@ class Layout {
             }
 
             splitter = Layout.createHorizontalSplitter( verticalSplitters, splitProportions);   
-        }
-
-        splitter.setAttribute("class", "h-100");
-        splitter.setAttribute("id", "splitter");
-        splitter.setAttribute("style", "min-height:800px");
-        root.appendChild(splitter);
-    }
-
-    create(rootId, language) {
-        var root = document.getElementById(rootId);
-        root.innerHTML = "";
-
-        var splitter;
-        
-        if (language == "eol") {
-            splitter = Layout.createHorizontalSplitter(
-                [
-                    Layout.createVerticalSplitter([programPanel.getElement(), consolePanel.getElement()]),
-                    Layout.createVerticalSplitter([firstModelPanel.getElement(), firstMetamodelPanel.getElement()])
-                ]
-            );
-        }
-        else if (language == "evl" || language == "epl" || language == "egl") {
-            splitter = Layout.createHorizontalSplitter(
-                [
-                    Layout.createVerticalSplitter([programPanel.getElement(), consolePanel.getElement()]),
-                    Layout.createHorizontalSplitter([
-                        Layout.createVerticalSplitter([firstModelPanel.getElement(), firstMetamodelPanel.getElement()]),
-                        Layout.createVerticalSplitter([thirdModelPanel.getElement()])
-                    ], "50, 50")
-                ], "33, 64"
-            );
-        }
-        else if (language == "etl" || language == "flock") {
-            splitter = Layout.createHorizontalSplitter(
-                [
-                    Layout.createVerticalSplitter([programPanel.getElement(), consolePanel.getElement()]),
-                    Layout.createHorizontalSplitter([
-                        Layout.createVerticalSplitter([firstModelPanel.getElement(), firstMetamodelPanel.getElement()]),
-                        Layout.createVerticalSplitter([secondModelPanel.getElement(), secondMetamodelPanel.getElement()])
-                    ], "50, 50")
-                ], "33, 64"
-            );
-        }
-        else if (language == "egx") {
-            splitter = Layout.createHorizontalSplitter(
-                [
-                    Layout.createVerticalSplitter([Layout.createVerticalSplitter([programPanel.getElement(), secondProgramPanel.getElement()]), consolePanel.getElement()]),
-                    Layout.createHorizontalSplitter([
-                        Layout.createVerticalSplitter([firstModelPanel.getElement(), firstMetamodelPanel.getElement()]),
-                        Layout.createVerticalSplitter([thirdModelPanel.getElement()])
-                    ], "50, 50")
-                ], "33, 64"
-            );
-        } else {
-
-            // Language not defined
-            splitter = Layout.createHorizontalSplitter(
-                [
-                    Layout.createVerticalSplitter([programPanel.getElement(), consolePanel.getElement()]),
-                    Layout.createVerticalSplitter([firstModelPanel.getElement(), firstMetamodelPanel.getElement()]),
-                    Layout.createVerticalSplitter([secondModelPanel.getElement(), secondMetamodelPanel.getElement()])
-                ]
-            );        
         }
 
         splitter.setAttribute("class", "h-100");

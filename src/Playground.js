@@ -13,7 +13,7 @@ import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
 import { OutputPanel } from "./OutputPanel.js";
 
-//import { ExampleManager } from './ExampleManager.js';
+
 import { ActivityManager } from './ActivityManager.js';
 
 import { DownloadDialog } from './DownloadDialog.js';
@@ -37,14 +37,6 @@ var activity;
 var url = window.location + "";
 var questionMark = url.indexOf("?");
 
-export var programPanel = new ProgramPanel();
-export var secondProgramPanel = new ProgramPanel("secondProgram");
-export var firstMetamodelPanel = new MetamodelPanel("firstMetamodel");
-export var secondMetamodelPanel = new MetamodelPanel("secondMetamodel");
-export var firstModelPanel = new ModelPanel("firstModel", true, firstMetamodelPanel);
-export var secondModelPanel;
-export var thirdModelPanel;
-
 export var consolePanel;
 var downloadDialog = new DownloadDialog();
 var settingsDialog = new SettingsDialog();
@@ -53,28 +45,23 @@ export var backend = new Backend();
 
 var panels = [];
 
-export var examplesManager;
+export var activityManager;
 export var toolsManager;
 
 var urlParameters = new URLSearchParams(window.location.search);    
+
 if (urlParameters.has("activities")) {
 
-    examplesManager = new ActivityManager();
-    toolsManager = new ToolsManager( examplesManager.getToolUrls() );
-    //export var examplesManager = new ExampleManager();
+    // An activity configuration has been provided
+    activityManager = new ActivityManager();
+    toolsManager = new ToolsManager( activityManager.getToolUrls() );
 
-    // Now handled by ToolManager
-    //backend.configure();
-
-
-    //example = examplesManager.getSelectedExample();
-    activity = examplesManager.getSelectedActivity(); 
-
+    activity = activityManager.getSelectedActivity(); 
 
     setup();
 
-
 } else {
+
     // No activity configuration has been given
     const contentPanelName = "content-panel";
  
@@ -98,16 +85,9 @@ if (urlParameters.has("activities")) {
 }
 
 function setup() {
-    const toolPanelDefinitionId = examplesManager.getPanelRefId(activity.actions[0].source); // Source panel refernces a tool panel definition
-    language = toolsManager.getPanelDefinition(toolPanelDefinitionId).language; // Use the source from config file 
 
-  
-   /* if (activity.eol != null) { 
-        activity.program = activity.eol; language = "eol";
-    }
-    else {
-        language = activity.language
-    }; */
+    const toolPanelDefinitionId = activityManager.getPanelRefId(activity.actions[0].source); // Source panel refernces a tool panel definition
+    language = toolsManager.getPanelDefinition(toolPanelDefinitionId).language; // Use the source from config file 
     
     console.log("Language: " + language);
 
@@ -119,33 +99,15 @@ function setup() {
         outputLanguage = activity.outputLanguage;
     }
     
-    var secondModelEditable = !(language == "etl" || language == "flock");
-
-    secondModelPanel = new ModelPanel("secondModel", secondModelEditable, secondMetamodelPanel);
-    thirdModelPanel = {}// new OutputPanel("thirdModel", language, outputType, outputLanguage);
-
-    // Generalised and moved to after creation of activity panels
-    //new Layout().create("navview-content", language);
-    
-    //panels = [programPanel, secondProgramPanel, consolePanel, firstModelPanel, firstMetamodelPanel, secondModelPanel, secondMetamodelPanel, thirdModelPanel];
     
     // Create panels for the given activites
-    
-      var debug = new TestPanel("debugp");
-
     for ( let apanel of activity.panels ){
         
-        //var newPanel= new TestPanel(apanel.id); // Coloured test panels
-
         // Get the panel to creates associated definition from the tool config and create the panel
         const newPanelDef = toolsManager.getPanelDefinition(apanel.ref);
 
-  
-
         if (newPanelDef != null){
-            
-            //var newPanel = new [newPanelDef.panelclass](apanel.id);     
-            
+                
             var newPanel;
 
             // TODO Populate the different panel types from the tool panel definition.
@@ -155,7 +117,7 @@ function setup() {
 
                     // Set from the tool panel  
                     newPanel.setIcon(newPanelDef.icon);
-                    newPanel.setMode(newPanelDef.language, examplesManager.panelHasAction(newPanel.id));
+                    newPanel.setMode(newPanelDef.language, activityManager.panelHasAction(newPanel.id));
                     //TODO add panel button function
 
                     // Set from the activity 
@@ -198,24 +160,7 @@ function setup() {
         
 
     new Layout().createFromPanels("navview-content", panels);
-    
 
-    arrangePanels();
-
-    //TODO: Fix "undefined" when fields are empty
-    
-    /* Setting the contents of the editors
-
-    programPanel.setLanguage(language);
-    if (language == "egx") secondProgramPanel.setLanguage("egl");
-
-    programPanel.setValue(example.program);
-    secondProgramPanel.setValue(example.secondProgram);
-    firstModelPanel.setValue(example.flexmi);
-    firstMetamodelPanel.setValue(example.emfatic);
-    secondModelPanel.setValue(example.secondFlexmi);
-    secondMetamodelPanel.setValue(example.secondEmfatic);
-    */
 
     document.getElementById("navview").style.display = "block";
     
@@ -234,12 +179,10 @@ function setup() {
 
     Metro.init();
 
-    //examplesManager.openActiveExamplesSubMenu();
-    examplesManager.openActiveActivitiesSubMenu();
+    activityManager.openActiveActivitiesSubMenu();
     
     fit();
 }
-
 
 function copyShortenedLink(event) {
     event.preventDefault();
@@ -292,63 +235,6 @@ function copyToClipboard(str) {
     document.body.removeChild(el);
 }
 
-function arrangePanels() {
-
-
-
-    /*
-    if (language == "egl" || language == "egx") {
-        if (outputType == "dot") {
-            thirdModelPanel.showDiagram();
-            thirdModelPanel.setTitleAndIcon("Graphviz", "diagram");
-        }
-        else if (outputType == "html") {
-            thirdModelPanel.showDiagram();
-            thirdModelPanel.setTitleAndIcon("HTML", "html");
-        }
-        else if (outputType == "puml") {
-            thirdModelPanel.showDiagram();
-            thirdModelPanel.setTitleAndIcon("PlantUML", "diagram");
-        }
-        else if (outputType == "code") {
-            $("#thirdModelDiagram").hide();
-            $("#thirdModelEditor").show();
-            thirdModelPanel.setTitleAndIcon("Generated Text", "editor");           
-        }
-    }
-    else if (language == "etl") {
-        $("#secondModelDiagram").show();
-        $("#secondModelEditor").hide();
-
-        firstModelPanel.setTitle("Source Model");
-        firstMetamodelPanel.setTitle("Source Metamodel");
-        secondModelPanel.setTitle("Target Model");
-        secondMetamodelPanel.setTitle("Target Metamodel");
-        secondModelPanel.setIcon("diagram");
-    }
-    else if (language == "flock") {
-        $("#secondModelDiagram").show();
-        $("#secondModelEditor").hide();
-
-        firstModelPanel.setTitle("Original Model");
-        firstMetamodelPanel.setTitle("Original Metamodel");
-        secondModelPanel.setTitle("Migrated Model");
-        secondMetamodelPanel.setTitle("Evolved Metamodel");
-        secondModelPanel.setIcon("diagram");
-    }
-    else if (language == "evl" || language == "epl") {
-        $("#thirdModelDiagram").show();
-        if (language == "evl") {
-            thirdModelPanel.setTitleAndIcon("Problems", "problems");
-        }
-        else {
-            thirdModelPanel.setTitleAndIcon("Pattern Matches", "diagram");
-        }
-    }
-*/
-
-}
-
 function getPanelTitle(panelId) {
     return $("#" + panelId)[0].dataset.titleCaption;
 }
@@ -363,7 +249,7 @@ function editorsToJsonObject() {
     const currentAction = activity.actions[0];
        
     // Lookup the target actionfunction  via the source activity action panel reference 
-    const toolPanelDefinitionId = examplesManager.getPanelRefId(currentAction.source); // Source panel refernces a tool panel definition
+    const toolPanelDefinitionId = activityManager.getPanelRefId(currentAction.source); // Source panel refernces a tool panel definition
     const actionFunctionId = toolsManager.getPanelDefinition(toolPanelDefinitionId).actionFunction; // Panel definition has the id of th tool function 
     
     const actionFunction = toolsManager.getActionFunction(actionFunctionId);
@@ -399,18 +285,6 @@ function editorsToJsonObject() {
     actionRequestData.outputLanguage = outputLanguage;
 
     return  actionRequestData; 
-    
-    /*{
-            language = language;
-            "outputType": outputType,
-        "outputLanguage": outputLanguage,
-        "program": programPanel.getValue(), 
-        "secondProgram": secondProgramPanel.getValue(),
-        "emfatic": firstMetamodelPanel.getValue(), 
-        "flexmi": firstModelPanel.getValue(),
-        "secondEmfatic": secondMetamodelPanel.getValue(),
-        "secondFlexmi": secondModelPanel.getValue()
-    }; */
 }
 
 
@@ -435,7 +309,7 @@ function runProgram() {
 const currentAction = activity.actions[0];
        
 // Lookup the target actionfunction  via the source activity action panel reference 
-const toolPanelDefinitionId = examplesManager.getPanelRefId(currentAction.source); // Source panel refernces a tool panel definition
+const toolPanelDefinitionId = activityManager.getPanelRefId(currentAction.source); // Source panel refernces a tool panel definition
 const actionFunctionId = toolsManager.getPanelDefinition(toolPanelDefinitionId).actionFunction; // Panel definition has the id of th tool function 
 const language = toolsManager.getPanelDefinition(toolPanelDefinitionId).language; // Use the source from config file 
 const actionFunction = toolsManager.getActionFunction(actionFunctionId);
@@ -605,15 +479,7 @@ function showSettings(event) {
     window.fit = fit;
     window.updateGutterVisibility = updateGutterVisibility;
     window.runProgram = runProgram;
-
-    window.programPanel = programPanel;
-    window.secondProgramPanel = secondProgramPanel;
     window.consolePanel = consolePanel;
-    window.firstModelPanel = firstModelPanel;
-    window.secondModelPanel = secondModelPanel;
-    window.thirdModelPanel = thirdModelPanel;
-    window.firstMetamodelPanel = firstMetamodelPanel;
-    window.secondMetamodelPanel = secondMetamodelPanel;
     window.panels = panels;
 
     window.backend = backend;
