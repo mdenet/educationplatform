@@ -1,0 +1,27 @@
+package DB;
+
+class Database {
+	val DatabaseElement[*]#database contents;
+}
+
+abstract class DatabaseElement {
+	attr String name;
+	ref Database#contents database;
+}
+
+class Table extends DatabaseElement {
+	val Column[*]#table columns;
+	ref Column[*] primaryKeys;
+}
+
+class Column extends DatabaseElement {
+	ref Table#columns table;
+	attr String type;
+}
+
+class ForeignKey extends DatabaseElement {
+    @diagram(direction="left")
+	ref Column parent;
+	@diagram(direction="left")
+	ref Column child;
+}
