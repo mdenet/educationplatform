@@ -26,6 +26,7 @@ import 'metro4';
 import './highlighting/highlighting.js';
 import { TestPanel } from './TestPanel .js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
+import { BlankPanel } from './BlankPanel .js';
 
 
 
@@ -50,21 +51,51 @@ var settingsDialog = new SettingsDialog();
 var preloader = new Preloader();
 export var backend = new Backend();
 
-
-export var examplesManager = new ActivityManager();
-export var toolsManager = new ToolsManager( examplesManager.getToolUrls() );
-//export var examplesManager = new ExampleManager();
-
-
 var panels = [];
 
-// Now handled by ToolManager
-//backend.configure();
+export var examplesManager;
+export var toolsManager;
+
+var urlParameters = new URLSearchParams(window.location.search);    
+if (urlParameters.has("activities")) {
+
+    examplesManager = new ActivityManager();
+    toolsManager = new ToolsManager( examplesManager.getToolUrls() );
+    //export var examplesManager = new ExampleManager();
+
+    // Now handled by ToolManager
+    //backend.configure();
 
 
-//example = examplesManager.getSelectedExample();
-activity = examplesManager.getSelectedActivity(); 
-setup();
+    //example = examplesManager.getSelectedExample();
+    activity = examplesManager.getSelectedActivity(); 
+
+
+    setup();
+
+
+} else {
+    // No activity configuration has been given
+    const contentPanelName = "content-panel";
+ 
+    panels.push(new BlankPanel(contentPanelName));
+    panels[0].setVisible(true);
+
+    new Layout().createFromPanels("navview-content", panels);
+   
+    document.getElementById("copyShortened").remove();
+    document.getElementById("showDownloadOptions").remove();
+    document.getElementById("showSettings").remove();
+
+    document.getElementById("navview").style.display = "block"; // Show the navigation menu
+
+    Metro.init();
+    fit();
+
+    var contentPanelDiv = document.getElementById(contentPanelName);
+    var content = document.createTextNode("No activity configuration has been specified.");
+    contentPanelDiv.append(content);
+}
 
 function setup() {
     const toolPanelDefinitionId = examplesManager.getPanelRefId(activity.actions[0].source); // Source panel refernces a tool panel definition
@@ -568,30 +599,30 @@ function showSettings(event) {
     settingsDialog.show(event);
 }
 
-// Some functions and variables are accessed  
-// by onclick - or similer - events
-// We need to use window.x = x for this to work
-window.fit = fit;
-window.updateGutterVisibility = updateGutterVisibility;
-window.runProgram = runProgram;
+    // Some functions and variables are accessed  
+    // by onclick - or similer - events
+    // We need to use window.x = x for this to work
+    window.fit = fit;
+    window.updateGutterVisibility = updateGutterVisibility;
+    window.runProgram = runProgram;
 
-window.programPanel = programPanel;
-window.secondProgramPanel = secondProgramPanel;
-window.consolePanel = consolePanel;
-window.firstModelPanel = firstModelPanel;
-window.secondModelPanel = secondModelPanel;
-window.thirdModelPanel = thirdModelPanel;
-window.firstMetamodelPanel = firstMetamodelPanel;
-window.secondMetamodelPanel = secondMetamodelPanel;
-window.panels = panels;
+    window.programPanel = programPanel;
+    window.secondProgramPanel = secondProgramPanel;
+    window.consolePanel = consolePanel;
+    window.firstModelPanel = firstModelPanel;
+    window.secondModelPanel = secondModelPanel;
+    window.thirdModelPanel = thirdModelPanel;
+    window.firstMetamodelPanel = firstMetamodelPanel;
+    window.secondMetamodelPanel = secondMetamodelPanel;
+    window.panels = panels;
 
-window.backend = backend;
-window.toggle = toggle;
-//window.renderDiagram = renderDiagram;
-window.longNotification = longNotification;
-window.showDownloadOptions = showDownloadOptions;
-window.showSettings = showSettings;
-window.copyShortenedLink = copyShortenedLink;
-window.downloadDialog = downloadDialog;
-window.language = language;
-window.getPanelTitle = getPanelTitle;
+    window.backend = backend;
+    window.toggle = toggle;
+    //window.renderDiagram = renderDiagram;
+    window.longNotification = longNotification;
+    window.showDownloadOptions = showDownloadOptions;
+    window.showSettings = showSettings;
+    window.copyShortenedLink = copyShortenedLink;
+    window.downloadDialog = downloadDialog;
+    window.language = language;
+    window.getPanelTitle = getPanelTitle;
