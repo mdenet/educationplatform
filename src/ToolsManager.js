@@ -1,16 +1,20 @@
-
 class ToolManager {
 
     toolId;
     toolsUrls;
     tools = {};
 
-    constructor(urls){
-        
-        this.toolsUrls = urls;
-
-        this.fetchTools();
+    constructor(){
     }
+
+    setToolsUrls(urls){
+
+        if(this.toolsUrls==null) {
+            this.toolsUrls = urls;
+            this.fetchTools();
+        }
+    }
+
 
     /*
      * Fetches the tools from the tools url and populates tool's
@@ -63,18 +67,24 @@ class ToolManager {
         return null; // Not toolfunction with matching id was found.
     }
 
-    getPanelDefinition(panelId) {
+
+    /**
+     * Find a panel defintion by id
+     * @param {string} panelDefId 
+     * @returns {PanelDefinition|null} the found panel definition  
+     */
+    getPanelDefinition(panelDefId) {
 
         for ( const toolskey of  Object.keys(this.tools)){
 
-            const foundDefinition = this.tools[toolskey].panelDefs.find( pd => pd.id==panelId );
+            const foundDefinition = this.tools[toolskey].panelDefs.find( pd => pd.id==panelDefId );
 
             if ( foundDefinition != undefined){
                 return foundDefinition;
             } 
         } 
         
-        console.log("Tool with panel definition id '" + panelId + "' was not found.");
+        console.log("Tool with panel definition id '" + panelDefId + "' was not found.");
         return null;
     }
 
@@ -98,11 +108,12 @@ class ToolManager {
 
     }
     
-    hasPanelDefinition(panelId){
+    hasPanelDefinition(panelDefId){
         
-        return (this.getPanelDefinition(panelId) != null);
+        return (this.getPanelDefinition(panelDefId) != null);
 
     }
+
 
 }
 

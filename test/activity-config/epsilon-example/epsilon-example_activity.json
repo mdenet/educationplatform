@@ -27,6 +27,8 @@
                 {
                     "source": "panel-eol",
 
+                    "sourceButton": "action-button",
+
                     "parameters": {
                         "program": "panel-eol",
                         "flexmi": "panel-model",
@@ -115,6 +117,8 @@
             "actions": [
                 {
                     "source": "panel-evl",
+
+                    "sourceButton": "action-button",
 
                     "parameters": {
                         "program": "panel-evl",
@@ -211,6 +215,8 @@
         "actions": [
             {
                 "source": "panel-etl",
+
+                "sourceButton": "action-button",
 
                 "parameters": {
                     "program": "panel-etl",

@@ -11,7 +11,11 @@ class ActivityManager {
     activities = {};
     activeSubMenu;
 
-    constructor() {
+    accessPanelDef;
+
+    constructor( panelDefAccessor ) {
+
+        this.accessPanelDef = panelDefAccessor; // Obtain tool panel definitions from thier ID
 
         // Retrieve the url of the activities configuration
         var parameters = new URLSearchParams(window.location.search);
@@ -32,6 +36,48 @@ class ActivityManager {
         }
 
         this.fetchActivities();
+
+        for(var activityKey of Object.keys(this.activities)) {
+            this.resolveActionReferences( this.activities[activityKey].id );
+        }
+    }
+
+
+
+    resolveActionReferences(activityId){
+        
+        var activity = this.activities[activityId];
+        
+        for( var action of activity.actions ) {
+            action.source = this.resolvePanelReference(activityId, action.source); 
+            
+            for ( const paramKey of Object.keys(action.parameters) ){
+
+                action.parameters[paramKey] = this.resolvePanelReference( activityId, action.parameters[paramKey] );
+            }
+            
+            action.output = this.resolvePanelReference(activityId, action.output);
+        }
+    }
+
+    /**
+     * Finds the panel for a given reference 
+     * @param {*} activityId 
+     * @param {*} panelRef 
+     * @returns {Panel|any} The found panel or the unchanged reference
+     */
+    resolvePanelReference(activityId, panelRef){
+
+        const foundPanel = this.activities[activityId].panels.find( pnl => pnl.id == panelRef );
+
+        if ( foundPanel != undefined && typeof foundPanel.id == "string" ){
+            
+            return foundPanel;
+
+        } else {
+
+            return panelRef;
+        }
     }
 
     /**
@@ -155,8 +201,13 @@ class ActivityManager {
     }
 
     storeActivity(activity) {
-        if (!this.activityId) this.activityId = activity.id;
+
+        if (!this.activityId) {
+            this.activityId = activity.id;
+        }
+        
         this.activities[activity.id] = activity;
+    
     }
 
     getSelectedActivity() {
@@ -218,14 +269,13 @@ class ActivityManager {
 
             for ( let apanel of activity.panels ){
                 if (apanel.file != null) apanel.file = this.fetchFile(apanel.file);
+
+                // Resolve the panel definition reference  
+                if ( typeof apanel.ref == "string" ){
+                    apanel.ref = this.accessPanelDef(apanel.ref);
+                }
             }
-            /* Fixed panel fetching 
-            if (activity.program != null) activity.program = this.fetchFile(activity.program);
-            if (activity.secondProgram != null) activity.secondProgram = this.fetchFile(activity.secondProgram);
-            if (activity.flexmi != null) activity.flexmi = this.fetchFile(activity.flexmi);
-            if (activity.emfatic != null) activity.emfatic = this.fetchFile(activity.emfatic);
-            if (activity.secondFlexmi != null) activity.secondFlexmi = this.fetchFile(activity.secondFlexmi);
-            if (activity.secondEmfatic != null) activity.secondEmfatic = this.fetchFile(activity.secondEmfatic); */
+        
             return activity;
         }
 
@@ -274,7 +324,21 @@ class ActivityManager {
         console.log("Panel with definition id '" + panelId + "' has no action.");
         return null;
     }   
+
     
+    getActionForCurrentActivity(source, sourceButton){
+        
+        const foundAction = this.activities[this.activityId].actions.find( ac => (ac.source.id==source && ac.sourceButton==sourceButton) );
+
+        if (foundAction != undefined) { 
+            return foundAction;
+
+        } else {
+            console.log("Action with source '" + source + "' and button " + sourceButton + " not found.");
+            return null;
+        }
+    }
+
 
     /**
      * Returns true if the supplied panel ID has an action. 
@@ -299,7 +363,11 @@ class ActivityManager {
 
          return ( new Set(toolUrls) );
     }
+
+
 }
+
+
 
 
 

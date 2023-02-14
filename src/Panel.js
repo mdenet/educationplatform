@@ -23,6 +23,10 @@ class Panel {
         this.visible = true;
     }
 
+    getId(){
+        return this.id;
+    }
+
     setTitleAndIcon(title, icon) {
         this.setTitle(title);
         this.setIcon(icon);
@@ -59,6 +63,31 @@ class Panel {
     buttonHtml(icon, hint) {
         return "<span class='mif-" + icon + "' data-role='hint' data-hint-text='" + hint + "' data-hint-position='bottom'></span>";
     }
+
+
+    /**
+     * Add the buttons to the page
+     * @param {object[]} buttons  Objects with attributes: icon, hint, action
+     * 
+     * TODO Support image files for icon
+     */
+    addButtons(buttons){
+
+        var buttonViewData= buttons.map( (btn) => {
+            var buttonData={};
+            
+            buttonData.html= this.buttonHtml(btn.icon, btn.hint);
+            buttonData.cls= "sys-button";
+            buttonData.onclick= btn.action;
+
+            return buttonData;
+        }); 
+
+        buttonViewData.reverse(); // So they are displayed in the order they are defined
+
+        this.element.dataset.customButtons = JSON.stringify(buttonViewData);
+    }
+
 
     fit() {}
 

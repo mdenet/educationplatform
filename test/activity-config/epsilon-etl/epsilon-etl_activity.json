@@ -27,6 +27,8 @@
                 {
                     "source": "panel-etl",
 
+                    "sourceButton": "action-button",
+
                     "parameters": {
                         "program": "panel-etl",
                         "flexmi": "panel-smodel",

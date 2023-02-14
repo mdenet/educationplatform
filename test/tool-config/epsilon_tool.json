@@ -83,11 +83,22 @@
 
                 "icon": "eol",
 
-                "help": "https://www.eclipse.org/epsilon/doc/eol/",
-
                 "language": "eol",
 
-                "actionFunction": "function-eol"
+                "buttons" : [ 
+                    { 
+                      "id": "action-button", 
+                      "icon": "run",
+                      "actionfunction": "function-eol",
+                      "hint": "Run the program (Ctrl/Cmd+S)" 
+                    }, 
+                    { 
+                      "id": "help-button", 
+                      "icon": "info",
+                      "url": "https://www.eclipse.org/epsilon/doc/eol/",
+                      "hint": "EOL Language Reference" 
+                    }
+                ]
 
             },
 
@@ -101,11 +112,22 @@
 
                 "icon": "etl",
 
-                "help": "https://www.eclipse.org/epsilon/doc/etl/",
-
                 "language": "etl",
 
-                "actionFunction": "function-etl"
+                "buttons" : [ 
+                    { 
+                      "id": "action-button", 
+                      "icon": "run",
+                      "actionfunction": "function-etl",
+                      "hint": "Run the program (Ctrl/Cmd+S)" 
+                    }, 
+                    { 
+                      "id": "help-button", 
+                      "icon": "info",
+                      "url": "https://www.eclipse.org/epsilon/doc/etl/",
+                      "hint": "ETL Language Reference" 
+                    }
+                ]
 
             },
 
@@ -123,7 +145,20 @@
 
                 "language": "egl",
 
-                "actionFunction": "function-egl"
+                "buttons" : [ 
+                    { 
+                      "id": "action-button", 
+                      "icon": "run",
+                      "actionfunction": "function-egl",
+                      "hint": "Run the program (Ctrl/Cmd+S)" 
+                    }, 
+                    { 
+                      "id": "help-button", 
+                      "icon": "info",
+                      "url": "https://www.eclipse.org/epsilon/doc/egl/",
+                      "hint": "EGL Language Reference" 
+                    }          
+                ]
 
             },
 
@@ -137,12 +172,22 @@
 
                 "icon": "evl",
 
-                "help": "https://www.eclipse.org/epsilon/doc/evl/",
-
                 "language": "evl",
 
-                "actionFunction": "function-evl"
-
+                "buttons" : [ 
+                    { 
+                      "id": "action-button", 
+                      "icon": "run",
+                      "actionfunction": "function-evl",
+                      "hint": "Run the program (Ctrl/Cmd+S)" 
+                    }, 
+                    { 
+                      "id": "help-button", 
+                      "icon": "info",
+                      "url": "https://www.eclipse.org/epsilon/doc/evl/",
+                      "hint": "EVL Language Reference" 
+                    }          
+                ]
             },
 
             {
@@ -155,11 +200,24 @@
 
                 "icon": "flexmi",
 
-                "help": "https://www.eclipse.org/epsilon/doc/flexmi/",
-
                 "language": "flexmi",
 
-                "actionFunction": "function-flexmi"
+                "actionFunction": "function-flexmi",
+
+                "buttons" : [ 
+                    { 
+                      "id": "refresh-button", 
+                      "icon": "refresh",
+                      "renderfunction": "function-flexmitograph",
+                      "hint": "Render the model object diagram" 
+                    }, 
+                    { 
+                      "id": "help-button", 
+                      "icon": "info",
+                      "url": "https://www.eclipse.org/epsilon/doc/flexmi/",
+                      "hint": "Flexmi Language Reference" 
+                    }          
+                ]
 
             },
 
@@ -173,11 +231,22 @@
 
                 "icon": "emfatic",
 
-                "help": "https://www.eclipse.org/epsilon/doc/emfatic/",
-
                 "language": "emfatic",
 
-                "actionFunction": "function-emfatic"
+                "buttons" : [ 
+                    { 
+                      "id": "refresh-button", 
+                      "icon": "refresh",
+                      "renderfunction": "function-emfatic",
+                      "hint": "Render the metamodel class diagram" 
+                    }, 
+                    { 
+                      "id": "help-button", 
+                      "icon": "info",
+                      "url": "https://www.eclipse.org/emfatic/",
+                      "hint": "Flexmi Language Reference" 
+                    }          
+                ]
 
             },
 
@@ -215,9 +284,7 @@
                 
                 "panelclass": "OutputPanel",
 
-                "icon": "diagram",
-
-                "actionFunction": "function-flexmitograph"
+                "icon": "diagram"
 
             }
 
