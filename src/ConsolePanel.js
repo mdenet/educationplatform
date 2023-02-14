@@ -213,10 +213,6 @@ class ConsolePanel extends Panel {
                 var Range = ace.require("ace/range").Range;
                 var panel = programPanel;
 
-                if (language == "egx" && matches[2].split(".").pop() == "egl") {
-                    panel = secondProgramPanel;
-                }
-
                 panel.getEditor().selection.setRange(new Range(
                     parseInt(matches[3]) - 1, parseInt(matches[4]),
                     parseInt(matches[5]) - 1, parseInt(matches[6])));

@@ -96,18 +96,26 @@ class OutputPanel extends ModelPanel {
         var root = super.createElement();
         root.setAttribute("style", "padding: 0px");
 
-        if (language == "egx") {
-            var select = document.createElement("select");
-            select.setAttribute("data-role", "select");
-            select.setAttribute("data-on-item-select", this, id + "Panel.generatedFileSelected()");
-            select.setAttribute("id", "generatedFiles");
-            select.setAttribute("style","width:100%");
-            root.insertBefore(select, root.children[0]);
-            console.log(this.select);
-        }
+        // TODO add support for multiple files, create selector here.
 
         return root;
     }
+
+    /**
+     *  Adds the file selection dropdown to the panel on the page
+     */
+    createFileSelector(){
+
+        var select = document.createElement("select");
+
+        select.setAttribute("data-role", "select");
+        select.setAttribute("data-on-item-select", this, id + "Panel.generatedFileSelected()");
+        select.setAttribute("id", "generatedFiles");
+        select.setAttribute("style","width:100%");
+        root.insertBefore(select, root.children[0]);
+        console.log(this.select);
+    }
+
 }
 
 export { OutputPanel };

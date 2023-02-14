@@ -281,7 +281,7 @@ class ActivityManager {
 
         // If we are here it means that such an activity has not been found
         var activity = {};
-        activity.language = "eol";
+        activity.language = "";
         activity.program = "// Activity " + id + " has not been found";
         activity.secondProgram = "";
         activity.flexmi = "";

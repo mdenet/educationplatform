@@ -30,7 +30,6 @@ import { BlankPanel } from './BlankPanel .js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
 
 
-export var language = "eol";
 var outputType = "text";
 var outputLanguage = "text";
 var activity;
@@ -87,10 +86,6 @@ if (urlParameters.has("activities")) {
 }
 
 function setup() {
-
-    if (activity.outputType != null) {
-        outputType = activity.outputType;
-    }
     
     if (activity.outputLanguage != null) {
         outputLanguage = activity.outputLanguage;
@@ -541,5 +536,4 @@ function showSettings(event) {
     window.showSettings = showSettings;
     window.copyShortenedLink = copyShortenedLink;
     window.downloadDialog = downloadDialog;
-    window.language = language;
     window.getPanelTitle = getPanelTitle;
