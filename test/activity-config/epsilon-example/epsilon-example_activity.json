@@ -108,8 +108,8 @@
             "layout": {
 
                     "area": [
-                                ["", "", ""],
-                                ["", ""]
+                                ["panel-evl"    , "panel-model", "panel-problems"],
+                                ["panel-console", "panel-mm",    ""]
                     ]
 
                 },
@@ -206,8 +206,8 @@
         "layout": {
 
                 "area": [
-                            ["", "", ""],
-                            ["", "", ""]
+                            ["panel-etl",   "panel-smodel", "panel-tmodel"],
+                            ["panel-console", "panel-smm",  "panel-tmm"]
                         ]
 
             },

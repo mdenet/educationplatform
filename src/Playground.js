@@ -55,7 +55,7 @@ if (urlParameters.has("activities")) {
     // An activity configuration has been provided
     toolsManager = new ToolsManager();
     activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager) );
-    toolsManager.setToolsUrls(activityManager.getToolUrls())
+    toolsManager.setToolsUrls(activityManager.getToolUrls());
 
     activity = activityManager.getSelectedActivity(); 
 
@@ -98,11 +98,8 @@ function setup() {
         panels.push(newPanel);
     }    
 
-    new Layout().createFromPanels("navview-content", panels);
 
-
-
-
+    new Layout().createFrom2dArray("navview-content", panels, activity.layout.area);
 
 
     PlaygroundUtility.showMenu();

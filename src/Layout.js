@@ -2,9 +2,10 @@
 class Layout {
 
     /**
-     * Creates a layout given a set of panels.
-     * @param {*} rootId 
-     * @param {*} panels 
+     * Creates the layout on the page for given a set of panels with no control over the order 
+     * they are displayed.
+     * @param {*} rootId  the containing page element id
+     * @param {*} panels[] the instantiated panels
      */
     createFromPanels(rootId, panels){
 
@@ -23,11 +24,12 @@ class Layout {
             var panelsToLayout = [...panels];            
             var numberOfVerticalSplitters= Math.floor(panels.length / 2 );
             var verticalSplitters = [];
-            var splitProportions =  ("10, ".repeat(numberOfVerticalSplitters)).slice(0, -2)
+            var splitProportions =  ("10, ".repeat(numberOfVerticalSplitters)).slice(0, -2);
 
             // Layout pairs of panels
             for ( let sNo = 0; sNo < numberOfVerticalSplitters; sNo++) {
                 verticalSplitters.push( 
+                    // Appearance:                                Top               ,                  Bottom 
                     Layout.createVerticalSplitter([panelsToLayout.pop().getElement(), panelsToLayout.pop().getElement()] ) 
                 ); 
             }
@@ -39,6 +41,54 @@ class Layout {
 
             splitter = Layout.createHorizontalSplitter( verticalSplitters, splitProportions);   
         }
+
+        splitter.setAttribute("class", "h-100");
+        splitter.setAttribute("id", "splitter");
+        splitter.setAttribute("style", "min-height:800px");
+        root.appendChild(splitter);
+    }
+
+
+    /**
+     * Creates the layout on the page for given a set of panels corresponding to the position 
+     * in the layout array parameter.
+     * @param {*} rootId the containing page element id
+     * @param {*} panels[] the instantiated panels
+     * @param {*} layout[][] panel ids 
+     */
+    createFrom2dArray(rootId, panels, layout){
+
+        let root = document.getElementById(rootId);
+        root.innerHTML = "";
+
+        let verticalSplitters=[];
+        let splitter;
+
+
+        // Get the number of rows and columns
+        let numberOfRows = layout.length;
+        let numberOfColumns = layout[0].length;
+
+        for(let column=0; column < numberOfColumns; column++  ) {
+
+            let panelsToLayout=[];
+
+            for(let row=0; row < numberOfRows; row++){
+                // Lookup the panels in the row
+                let panel = panels.find( pn => (pn.id==layout[row][column]) ); 
+
+                if (panel!=undefined){
+                    panelsToLayout.push(panel);
+;                }
+            }
+
+            // Create the splitters for the row
+            verticalSplitters.push ( Layout.createVerticalSplitter( panelsToLayout.map( pn => pn.getElement() ) ) );
+        }
+        
+        let splitProportions =  ("10, ".repeat(verticalSplitters.length)).slice(0, -2); //
+
+        splitter = Layout.createHorizontalSplitter( verticalSplitters, splitProportions); 
 
         splitter.setAttribute("class", "h-100");
         splitter.setAttribute("id", "splitter");
