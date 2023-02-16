@@ -5,6 +5,7 @@ import 'ace-builds/src-min-noconflict/mode-yaml';
 import 'ace-builds/src-min-noconflict/mode-java';
 import 'ace-builds/src-min-noconflict/mode-html';
 import 'ace-builds/src-min-noconflict/ext-modelist';
+import {define} from "ace-builds";
 
 import svgPanZoom from 'svg-pan-zoom';
 
@@ -52,6 +53,19 @@ if (urlParameters.has("activities")) {
     toolsManager = new ToolsManager();
     activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager) );
     toolsManager.setToolsUrls(activityManager.getToolUrls());
+
+    // Import tool grammar higlighting 
+    //define=ace.define;
+    //window.require=ace.require;
+
+    const  toolImports = toolsManager.getToolsImports(); 
+    for(let ipt in toolImports) {
+        let importsScriptElement  = document.createElement("script");
+        
+        importsScriptElement.setAttribute("src", toolImports[ipt]);
+        document.body.appendChild(importsScriptElement);
+    }
+
 
     activity = activityManager.getSelectedActivity(); 
 

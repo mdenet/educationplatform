@@ -8,9 +8,19 @@ class ToolManager {
     }
 
     setToolsUrls(urls){
-
         if(this.toolsUrls==null) {
-            this.toolsUrls = urls;
+
+            this.toolsUrls = [];
+            
+            for(let url of urls){
+                
+                let toolUrl = new Object();
+                toolUrl.id = ""; // Populate when tool is fetched
+                toolUrl.url = url;
+
+                this.toolsUrls.push(toolUrl);
+            }
+
             this.fetchTools();
         }
     }
@@ -22,10 +32,10 @@ class ToolManager {
      */
     fetchTools(){
 
-        for (const url of this.toolsUrls) {
+        for (let toolUrl of this.toolsUrls) {
 
             var xhr = new XMLHttpRequest();
-            xhr.open("GET", url, false);
+            xhr.open("GET", toolUrl.url, false);
             xhr.send();
     
             if (xhr.status === 200) {    
@@ -36,6 +46,8 @@ class ToolManager {
                     if (json.tool.id){
                         this.storeTool(json.tool);
                         
+                        toolUrl.id = json.tool.id;
+
                         //TODO update any tool mangement menu. 
                     }
                 
@@ -112,6 +124,44 @@ class ToolManager {
         
         return (this.getPanelDefinition(panelDefId) != null);
 
+    }
+
+
+    getToolGrammars(toolId){
+        const tool = this.tools[toolId]; 
+
+        let grammars = [];
+
+        for (let pdef of tool.panelDefs ) {
+            if ( pdef.language != undefined ) {
+                grammars.push(pdef.language);
+            }
+        }
+
+        return [...new Set(grammars)];
+    }
+
+
+    /**
+     * Returns the tool imports for highlighting  
+     * @returns string[] imports 
+     */
+    getToolsImports(){
+        let imports = [];
+
+        for( let tool in this.tools ){
+            //remove the config to get tool path
+            const toolUrl = this.toolsUrls.find( tu => tu.id == tool ).url;
+            let toolPath=  toolUrl.substring(0, toolUrl.lastIndexOf("/"));
+
+            let toolGrammars = this.getToolGrammars(tool);
+
+            for (let grammar of toolGrammars ) {
+                imports.push( toolPath + "/highlighting/" + grammar + ".js" );
+            }
+        }
+    
+        return imports;
     }
 
 
