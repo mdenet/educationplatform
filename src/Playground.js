@@ -55,18 +55,13 @@ if (urlParameters.has("activities")) {
     toolsManager.setToolsUrls(activityManager.getToolUrls());
 
     // Import tool grammar higlighting 
-    //define=ace.define;
-    //window.require=ace.require;
+    const  toolImports = toolsManager.getToolsGrammarImports(); 
 
-    const  toolImports = toolsManager.getToolsImports(); 
-    for(let ipt in toolImports) {
-        let importsScriptElement  = document.createElement("script");
-        
-        importsScriptElement.setAttribute("src", toolImports[ipt]);
-        document.body.appendChild(importsScriptElement);
+    for(let ipt of toolImports) {
+        ace.config.setModuleUrl(ipt.module, ipt.url);
     }
 
-
+    
     activity = activityManager.getSelectedActivity(); 
 
     setup();

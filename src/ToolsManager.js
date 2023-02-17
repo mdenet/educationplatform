@@ -143,22 +143,31 @@ class ToolManager {
 
 
     /**
-     * Returns the tool imports for highlighting  
-     * @returns string[] imports 
+     * Returns the tool details for importing grammars for higlighting  
+     * @returns Object[] import details tha have module and url attributes
      */
-    getToolsImports(){
+    getToolsGrammarImports(){
         let imports = [];
 
         for( let tool in this.tools ){
             //remove the config to get tool path
             const toolUrl = this.toolsUrls.find( tu => tu.id == tool ).url;
-            let toolPath=  toolUrl.substring(0, toolUrl.lastIndexOf("/"));
+            let toolPath=  toolUrl.substring(0, toolUrl.lastIndexOf("/")); // Baseurl without the file
 
+            
             let toolGrammars = this.getToolGrammars(tool);
 
             for (let grammar of toolGrammars ) {
-                imports.push( toolPath + "/highlighting/" + grammar + ".js" );
+             
+                let grammarImportDetails = new Object();
+
+                 grammarImportDetails.module = "ace/mode/" + grammar; // The name in tool config must match ace mode   
+                 grammarImportDetails.url = toolPath + "/highlighting.js"; //  Grammars for a tool are bundled
+
+                 imports.push( grammarImportDetails );
             }
+
+            imports.push();
         }
     
         return imports;
