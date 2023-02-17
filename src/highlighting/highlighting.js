@@ -1,11 +1,3 @@
-import './eol.js';
-import './etl.js';
-import './flock.js';
-import './evl.js';
-import './epl.js';
-import './egl.js';
-import './egx.js';
-import './emfatic.js';
 
 const CDN = 'https://cdn.jsdelivr.net/npm/ace-builds@1.14.0/src-min-noconflict';
 

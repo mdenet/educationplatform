@@ -202,8 +202,6 @@
 
                 "language": "flexmi",
 
-                "actionFunction": "function-flexmi",
-
                 "buttons" : [ 
                     { 
                       "id": "refresh-button", 
@@ -270,9 +268,7 @@
                 
                 "panelclass": "OutputPanel",
 
-                "icon": "problems",
-
-                "actionFunction": "function-problem"
+                "icon": "problems"
 
             },
 

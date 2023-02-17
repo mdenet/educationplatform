@@ -7,15 +7,13 @@
 
             "title": "One Console",
 
-            "tools": [ "http://localhost:8081/epsilon_tool.json"],
+            "tools": [ "http://localhost:8081/epsilon/epsilon_tool.json"],
 
             "layout": {
 
                     "area": [
 
-                        ["panel-eol",     "panel-model"],
-
-                        ["panel-console", "panel-mm"]
+                        ["panel-console1"]
 
                     ]
 
@@ -56,15 +54,15 @@
 
             "title": "Two Consoles",
 
-            "tools": [ "http://localhost:8081/epsilon_tool.json"],
+            "tools": [ "http://localhost:8081/epsilon/epsilon_tool.json"],
 
             "layout": {
 
                     "area": [
 
-                        ["panel-eol",     "panel-model"],
+                        ["panel-console1"],
 
-                        ["panel-console", "panel-mm"]
+                        ["panel-console2"]
 
                     ]
 
@@ -115,15 +113,17 @@
 
             "title": "Three Consoles",
 
-            "tools": [ "http://localhost:8081/epsilon_tool.json"],
+            "tools": [ "http://localhost:8081/epsilon/epsilon_tool.json"],
 
             "layout": {
 
                     "area": [
 
-                        ["panel-eol",     "panel-model"],
+                        ["panel-console1"],
 
-                        ["panel-console", "panel-mm"]
+                        ["panel-console2"],
+
+                        ["panel-console3"]
 
                     ]
 
@@ -183,15 +183,15 @@
 
             "title": "Four Consoles",
 
-            "tools": [ "http://localhost:8081/epsilon_tool.json"],
+            "tools": [ "http://localhost:8081/epsilon/epsilon_tool.json"],
 
             "layout": {
 
                     "area": [
 
-                        ["panel-eol",     "panel-model"],
+                        ["panel-console1",     "panel-console2", "panel-console3"],
 
-                        ["panel-console", "panel-mm"]
+                        ["panel-console4"]
 
                     ]
 
@@ -261,15 +261,17 @@
 
             "title": "Five Consoles",
 
-            "tools": [ "http://localhost:8081/epsilon_tool.json"],
+            "tools": [ "http://localhost:8081/epsilon/epsilon_tool.json"],
 
             "layout": {
 
                     "area": [
 
-                        ["panel-eol",     "panel-model"],
+                        ["panel-console1"],
 
-                        ["panel-console", "panel-mm"]
+                        ["panel-console2", "panel-console3", "panel-console4" ],
+
+                        ["panel-console5"]
 
                     ]
 

@@ -5,6 +5,7 @@ import 'ace-builds/src-min-noconflict/mode-yaml';
 import 'ace-builds/src-min-noconflict/mode-java';
 import 'ace-builds/src-min-noconflict/mode-html';
 import 'ace-builds/src-min-noconflict/ext-modelist';
+import {define} from "ace-builds";
 
 import svgPanZoom from 'svg-pan-zoom';
 
@@ -16,9 +17,7 @@ import { OutputPanel } from "./OutputPanel.js";
 
 import { ActivityManager } from './ActivityManager.js';
 
-import { DownloadDialog } from './DownloadDialog.js';
 import { MetamodelPanel } from './MetamodelPanel.js';
-import { SettingsDialog } from './SettingsDialog.js';
 import { Preloader } from './Preloader.js';
 import { Backend } from './Backend.js';
 import { Layout } from './Layout.js';
@@ -37,8 +36,6 @@ var url = window.location + "";
 var questionMark = url.indexOf("?");
 
 export var consolePanel;
-var downloadDialog = new DownloadDialog();
-var settingsDialog = new SettingsDialog();
 var preloader = new Preloader();
 export var backend = new Backend();
 
@@ -57,6 +54,14 @@ if (urlParameters.has("activities")) {
     activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager) );
     toolsManager.setToolsUrls(activityManager.getToolUrls());
 
+    // Import tool grammar higlighting 
+    const  toolImports = toolsManager.getToolsGrammarImports(); 
+
+    for(let ipt of toolImports) {
+        ace.config.setModuleUrl(ipt.module, ipt.url);
+    }
+
+    
     activity = activityManager.getSelectedActivity(); 
 
     setup();
@@ -70,10 +75,6 @@ if (urlParameters.has("activities")) {
     panels[0].setVisible(true);
 
     new Layout().createFromPanels("navview-content", panels);
-   
-    document.getElementById("copyShortened").remove();
-    document.getElementById("showDownloadOptions").remove();
-    document.getElementById("showSettings").remove();
 
     PlaygroundUtility.showMenu();
 
@@ -219,48 +220,6 @@ function generateButtonOnclickHtml(button, panelId){
     return onclickHtml;
 }
 
-
-function copyShortenedLink(event) {
-    event.preventDefault();
-    var content = btoa(editorsToJson());
-    var xhr = new XMLHttpRequest();
-    
-    xhr.open("POST", backend.getShortURLService(), true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                var json = JSON.parse(xhr.responseText);
-
-                if (questionMark > 0) {
-                    var baseUrl = (window.location+"").substring(0, questionMark);
-                }
-                else {
-                    baseUrl = window.location;
-                }
-                Metro.notify.killAll();
-                Metro.dialog.create({
-                    title: "Share link",
-                    content: "<p>The link below contains a snapshot of the contents of all the editors in the playground. Anyone who visits this link should be able to view and run your example.</p><br/> <input style='width:100%' value='" + baseUrl + "?" + json.shortened + "'>",
-                    closeButton: true,
-                    actions: [
-                    {
-                        caption: "Copy to clipboard",
-                        cls: "js-dialog-close success",
-                        onclick: function(){
-                            copyToClipboard(baseUrl + "?" + json.shortened);
-                        }
-                    }]
-                });
-            }
-            Metro.notify.killAll();
-        }
-    };
-    var data = JSON.stringify({"content": content});
-    xhr.send(data);
-    longNotification("Generating short link");
-    return false;
-}
 
 function copyToClipboard(str) {
     var el = document.createElement('textarea');
@@ -508,13 +467,6 @@ function getPreviousVisibleSibling(element) {
     }
 }
 
-function showDownloadOptions(event) {
-    downloadDialog.show(event);
-}
-
-function showSettings(event) {
-    settingsDialog.show(event);
-}
 
     // Some functions and variables are accessed  
     // by onclick - or similer - events
@@ -529,8 +481,4 @@ function showSettings(event) {
     window.toggle = toggle;
     //window.renderDiagram = renderDiagram;
     window.longNotification = longNotification;
-    window.showDownloadOptions = showDownloadOptions;
-    window.showSettings = showSettings;
-    window.copyShortenedLink = copyShortenedLink;
-    window.downloadDialog = downloadDialog;
     window.getPanelTitle = getPanelTitle;
