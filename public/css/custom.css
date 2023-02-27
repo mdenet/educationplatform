@@ -56,6 +56,10 @@
 	margin: 0px;
 }
 
+.mif-ocl::before {
+	content: url("../images/ocl.png");
+}
+
 .mif-eol::before {
 	content: url("../images/eol.gif");
 }

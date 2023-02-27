@@ -1,0 +1,7 @@
+<?nsuri? tut>
+
+<library name="l1">
+    <member name="m1" />
+    <member name="m2" />
+    <member name="m3" />
+</library>

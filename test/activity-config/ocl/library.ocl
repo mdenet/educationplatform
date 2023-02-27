@@ -1,0 +1,32 @@
+import ecore : _'ecore.ecore'
+
+package tutorial
+
+
+
+context Book
+
+	inv SufficientCopies: library.loans->select(book=self)->size() <= copies
+	
+	def: loans : Loan[*] =
+		 library.loans->select(book=self)
+
+	def: isAvailable : Boolean[?] =
+		loans->size() < copies
+	
+		
+context Member
+
+	def: loans : Loan[*] = 
+		library.loans->select(member=self)
+
+	def: books : Book[*] =
+		loans->collect(book)
+		
+
+	inv AtMostTwoLoans: loans->size() <= 2
+	
+	inv UniqueLoans: loans->isUnique(book)
+	
+		
+endpackage
