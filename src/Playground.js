@@ -54,12 +54,25 @@ if (urlParameters.has("activities")) {
     activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager) );
     toolsManager.setToolsUrls(activityManager.getToolUrls());
 
-    // Import tool grammar higlighting 
+    
+    // Import tool grammar highlighting 
     const  toolImports = toolsManager.getToolsGrammarImports(); 
 
     for(let ipt of toolImports) {
         ace.config.setModuleUrl(ipt.module, ipt.url);
     }
+
+
+    // Add Tool styles for icons 
+    for (let toolUrl of activityManager.getToolUrls()){
+        let toolBaseUrl = toolUrl.substring(0, toolUrl.lastIndexOf("/"));
+        var link = document.createElement("link");
+        link.setAttribute("rel", 'stylesheet');
+        link.setAttribute("href", toolBaseUrl + "/icons.css");
+        document.head.appendChild(link);
+    }
+ 
+
 
     
     activity = activityManager.getSelectedActivity(); 
