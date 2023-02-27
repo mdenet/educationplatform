@@ -1,0 +1,35 @@
+.mif-eol::before {
+	content: url("./icons/eol.gif");
+}
+
+.mif-flock::before {
+	content: url("./icons/flock.png");
+}
+
+.mif-egl::before {
+    content: url("./icons/egl.png");
+}
+
+.mif-egx::before {
+    content: url("./icons/egx.png");
+}
+
+.mif-etl::before {
+    content: url("./icons/etl.gif");
+}
+
+.mif-epl::before {
+    content: url("./icons/epl.gif");
+}
+
+.mif-evl::before {
+    content: url("./icons/evl.gif");
+}
+
+.mif-flexmi::before {
+    content: url("./icons/flexmi.png");
+}
+
+.mif-emfatic::before {
+    content: url("./icons/emfatic.png");
+}
