@@ -56,44 +56,9 @@
 	margin: 0px;
 }
 
-.mif-eol::before {
-	content: url("../images/eol.gif");
-}
-
-.mif-flock::before {
-	content: url("../images/flock.png");
-}
-
-.mif-egl::before {
-    content: url("../images/egl.png");
-}
-
-.mif-egx::before {
-    content: url("../images/egx.png");
-}
-
-.mif-etl::before {
-    content: url("../images/etl.gif");
-}
-
-.mif-epl::before {
-    content: url("../images/epl.gif");
-}
-
-.mif-evl::before {
-    content: url("../images/evl.gif");
-}
-
-.mif-flexmi::before {
-    content: url("../images/flexmi.png");
-}
 
 .mif-html::before {
     content: url("../images/html.gif");
-}
-
-.mif-emfatic::before {
-    content: url("../images/emfatic.png");
 }
 
 .mif-clear::before {
