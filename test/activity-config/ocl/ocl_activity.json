@@ -28,12 +28,12 @@
                     "sourceButton": "action-button",
 
                     "parameters": {
-                        "constraints": "panel-ocl",
-                        "emfatic": "",
-                        "flexmi": ""
+                        "oclcomplete": "panel-ocl",
+                        "emfatic": "panel-metamodel",
+                        "xmi": "panel-model"
                     },
 
-                    "output": ""
+                    "output": "panel-console"
 
                 }
             ],
@@ -60,7 +60,7 @@
     
                     "ref": "flexmi",
     
-                    "file": "tutorial.flexmi"
+                    "file": "tutorial.xmi"
     
                 },
 
@@ -71,7 +71,7 @@
     
                     "ref": "emfatic",
     
-                    "file": "tutorial.flexmi"
+                    "file": "tutorial.emf"
     
                 },
 

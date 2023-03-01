@@ -13,9 +13,9 @@
 
                 "name": "completeocl",
 
-                "parameters": ["constraints", "emfatic", "flexmi"],
+                "parameters": [ "emfatic", "oclcomplete", "xmi"],
 
-                "path": "http://localhost:9001/services/RunCompleteOclFunction"
+                "path": "http://localhost:9090"
 
             }
 

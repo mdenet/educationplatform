@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ASCII"?>
+<tut:Library
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:tut="http://www.eclipse.org/mdt/ocl/oclinecore/tutorial"
+    xmi:id="_u-FPsLN-Ee2Voc5l4vy_ww"
+    name="lib">
+  <books xmi:id="_u-FPsbN-Ee2Voc5l4vy_ww"
+      name="b1"
+      copies="1"/>
+  <books xmi:id="_u-FPsrN-Ee2Voc5l4vy_ww"
+      name="b2"
+      copies="2"/>
+  <books xmi:id="_u-FPs7N-Ee2Voc5l4vy_ww"
+      name="b3"
+      copies="3"/>
+  <loans book="_u-FPsbN-Ee2Voc5l4vy_ww"
+      member="_u-FPurN-Ee2Voc5l4vy_ww"/>
+  <loans xmi:id="_u-FPtbN-Ee2Voc5l4vy_ww"
+      book="_u-FPsbN-Ee2Voc5l4vy_ww"
+      member="_u-FPurN-Ee2Voc5l4vy_ww"/>
+  <loans xmi:id="_u-FPtrN-Ee2Voc5l4vy_ww"
+      book="_u-FPsrN-Ee2Voc5l4vy_ww"
+      member="_u-FPubN-Ee2Voc5l4vy_ww"/>
+  <loans xmi:id="_u-FPt7N-Ee2Voc5l4vy_ww"
+      book="_u-FPs7N-Ee2Voc5l4vy_ww"
+      member="_u-FPuLN-Ee2Voc5l4vy_ww"/>
+  <members xmi:id="_u-FPuLN-Ee2Voc5l4vy_ww"
+      name="m1"/>
+  <members xmi:id="_u-FPubN-Ee2Voc5l4vy_ww"
+      name="m2"/>
+  <members xmi:id="_u-FPurN-Ee2Voc5l4vy_ww"
+      name="m3"/>
+</tut:Library>
