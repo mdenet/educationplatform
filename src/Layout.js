@@ -67,7 +67,12 @@ class Layout {
 
         // Get the number of rows and columns
         let numberOfRows = layout.length;
-        let numberOfColumns = layout[0].length;
+        let numberOfColumns = 0;
+        for (let row of layout) {
+            if (row.length > numberOfColumns) {
+                numberOfColumns = row.length;
+            };
+        }
 
         for(let column=0; column < numberOfColumns; column++  ) {
 
@@ -79,20 +84,27 @@ class Layout {
 
                 if (panel!=undefined){
                     panelsToLayout.push(panel);
-;                }
+                }
             }
 
             // Create the splitters for the row
-            verticalSplitters.push ( Layout.createVerticalSplitter( panelsToLayout.map( pn => pn.getElement() ) ) );
+            let splitProportions = ("10, ".repeat(numberOfRows)); // Add a proportion per splitter
+            verticalSplitters.push ( Layout.createVerticalSplitter( panelsToLayout.map( pn => pn.getElement() ), splitProportions) );
         }
         
-        let splitProportions =  ("10, ".repeat(verticalSplitters.length)).slice(0, -2); //
+        if (numberOfColumns > 1) {
+            let splitProportions =  ("10, ".repeat(verticalSplitters.length)); // Add a proportion per splitter
+            splitter = Layout.createHorizontalSplitter( verticalSplitters, splitProportions ); 
 
-        splitter = Layout.createHorizontalSplitter( verticalSplitters, splitProportions); 
+        } else {
+            // No splitter for single columns
+            splitter = Layout.createVerticalSplitter( verticalSplitters) ;
+        } 
 
         splitter.setAttribute("class", "h-100");
         splitter.setAttribute("id", "splitter");
         splitter.setAttribute("style", "min-height:800px");
+        
         root.appendChild(splitter);
     }
 

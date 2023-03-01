@@ -1,0 +1,27 @@
+@namespace(uri="http://www.eclipse.org/mdt/ocl/oclinecore/tutorial", prefix="tut")
+
+package tut;
+
+import "http://www.eclipse.org/emf/2002/Ecore";
+
+class Library {
+	attr String[1] name;
+	val Book[*] books;
+	val Loan[*] loans;
+	val Member[*] members;
+}
+
+class Book {
+	attr String[1] name;
+	attr Integer[1] copies;
+}
+
+class Member {
+	attr String[1] name;
+}
+
+class Loan {
+	ref Book book;
+	ref Member member;
+	attr EDate[?] date;
+}

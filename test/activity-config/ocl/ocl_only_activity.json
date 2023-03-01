@@ -1,0 +1,60 @@
+{
+
+    "activities": [
+
+        {
+
+            "id": "activity-ocl",
+
+            "title": "Model Validation Example",
+
+            "tools": ["http://localhost:8081/ocl/ocl_tool.json"],
+
+            "layout": {
+
+                    "area": [
+
+                        ["panel-ocl"]
+
+                    ]
+
+                },
+
+            "actions": [
+
+                {
+                    "source": "panel-ecl",
+
+                    "sourceButton": "action-button",
+
+                    "parameters": {
+                        "constraints": "panel-ocl",
+                        "emfatic": "",
+                        "flexmi": ""
+                    },
+
+                    "output": ""
+
+                }
+            ],
+
+
+
+            "panels": [
+
+                {
+                    "id": "panel-ocl",
+    
+                    "name": "OCL Constraints",
+    
+                    "ref": "complete-ocl",
+    
+                    "file": "library.ocl"
+    
+                }
+
+            ]
+
+        }
+
+] } 

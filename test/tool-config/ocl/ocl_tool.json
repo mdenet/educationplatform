@@ -1,0 +1,61 @@
+{
+"tool": 
+    {
+        "id": "ocl",
+
+        "name": "OCL",
+
+        "functions": [
+
+            {
+
+                "id": "function-ocl",
+
+                "name": "completeocl",
+
+                "parameters": ["constraints", "emfatic", "flexmi"],
+
+                "path": "http://localhost:9001/services/RunCompleteOclFunction"
+
+            }
+
+        ],
+
+
+
+        "panelDefs": [
+
+            {
+
+                "id": "complete-ocl",
+
+                "name": "ocl",
+
+                "panelclass": "ProgramPanel",
+
+                "icon": "ocl",
+
+                "language": "completeocl",
+
+                "buttons" : [ 
+                    { 
+                        "id": "action-button", 
+                        "icon": "run",
+                        "actionfunction": "function-ocl",
+                        "hint": "Run the program (Ctrl/Cmd+S)" 
+                      },
+                      { 
+                        "id": "help-button", 
+                        "icon": "info",
+                        "url": "https://download.eclipse.org/ocl/doc/6.4.0/ocl.pdf",
+                        "hint": "OCL Language Reference" 
+                      }
+                ]
+
+            }
+
+        ]
+    }
+
+
+} 

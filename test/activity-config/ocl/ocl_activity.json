@@ -1,0 +1,92 @@
+{
+
+    "activities": [
+
+        {
+
+            "id": "activity-ocl",
+
+            "title": "Model Validation Example",
+
+            "tools": ["http://localhost:8081/ocl/ocl_tool.json",
+                       "http://localhost:8081/epsilon/epsilon_tool.json"],
+
+            "layout": {
+
+                    "area": [
+                        ["panel-model", "panel-ocl", "panel-console"  ],
+                        [ "panel-metamodel" , ""  ]
+                    ]
+
+                },
+
+            "actions": [
+
+                {
+                    "source": "panel-ocl",
+
+                    "sourceButton": "action-button",
+
+                    "parameters": {
+                        "constraints": "panel-ocl",
+                        "emfatic": "",
+                        "flexmi": ""
+                    },
+
+                    "output": ""
+
+                }
+            ],
+
+
+
+            "panels": [
+
+                {
+                    "id": "panel-ocl",
+    
+                    "name": "OCL Constraints",
+    
+                    "ref": "complete-ocl",
+    
+                    "file": "library.ocl"
+    
+                },
+
+                {
+                    "id": "panel-model",
+    
+                    "name": "Model",
+    
+                    "ref": "flexmi",
+    
+                    "file": "tutorial.flexmi"
+    
+                },
+
+                {
+                    "id": "panel-metamodel",
+    
+                    "name": "Metamodel",
+    
+                    "ref": "emfatic",
+    
+                    "file": "tutorial.flexmi"
+    
+                },
+
+                {
+    
+                    "id": "panel-console",
+    
+                    "name": "Console",
+    
+                    "ref": "console"
+    
+                }
+
+            ]
+
+        }
+
+] } 
