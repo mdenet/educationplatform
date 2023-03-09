@@ -21,6 +21,18 @@
 
             {
 
+                "id": "function-emfatictoecore",
+
+                "name": "Conversion - Emfatic To Ecore",
+
+                "parameters": [ "input"],
+
+                "path": "http://localhost:9092"
+
+            },
+
+            {
+
                 "id": "function-ecoretodiagram",
 
                 "name": "Conversion - Ecore To Diagram",
@@ -53,7 +65,7 @@
                     { 
                         "id": "action-button", 
                         "icon": "run",
-                        "actionfunction": "function-ecoretoemfatic",
+                        "actionfunction": "function-emfatictoecore",
                         "hint": "Run the program (Ctrl/Cmd+S)" 
                       },
                       { 

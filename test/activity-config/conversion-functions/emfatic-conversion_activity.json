@@ -16,7 +16,9 @@
 
                     "area": [
 
-                        ["panel-ecore",  "panel-emfatic-out"]
+                        ["panel-ecore",  "panel-emfatic-out"],
+
+                        [ "panel-emfatic" , "panel-ecore-out" ] 
 
                     ]
 
@@ -34,6 +36,19 @@
                     },
 
                     "output": "panel-emfatic-out"
+
+                },
+
+                {
+                    "source": "panel-emfatic",
+
+                    "sourceButton": "action-button",
+
+                    "parameters": {
+                        "input": "panel-emfatic"
+                    },
+
+                    "output": "panel-ecore-out"
 
                 }
             ],
@@ -61,6 +76,28 @@
                     "name": "Emfatic Output",
     
                     "ref": "emfatic"
+
+                },
+
+                {
+    
+                    "id": "panel-emfatic",
+    
+                    "name": "Emfatic Input",
+    
+                    "ref": "emfatic",
+    
+                    "file": "Library.emf"
+    
+                },
+    
+                {
+    
+                    "id": "panel-ecore-out",
+    
+                    "name": "Ecore Output",
+    
+                    "ref": "ecore"
 
                 }
     
