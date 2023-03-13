@@ -1,0 +1,91 @@
+{
+"tool": 
+    {
+        "id": "emfatic",
+
+        "name": "Emfatic",
+
+        "functions": [
+
+            {
+
+                "id": "function-ecoretoemfatic",
+
+                "name": "Conversion - Ecore To Emfatic",
+
+                "parameters": [ "input"],
+
+                "path": "http://localhost:9091"
+
+            },
+
+            {
+
+                "id": "function-emfatictoecore",
+
+                "name": "Conversion - Emfatic To Ecore",
+
+                "parameters": [ "input"],
+
+                "path": "http://localhost:9092"
+
+            },
+
+            {
+
+                "id": "function-ecoretodiagram",
+
+                "name": "Conversion - Ecore To Diagram",
+
+                "parameters": [ "ecore"],
+
+                "path": "http://"
+
+            }
+
+        ],
+
+
+
+        "panelDefs": [
+
+            {
+
+                "id": "emfatic",
+
+                "name": "Emfatic",
+
+                "panelclass": "ProgramPanel",
+
+                "icon": "emfatic",
+
+                "language": "emfatic",
+
+                "buttons" : [ 
+                    { 
+                        "id": "action-button", 
+                        "icon": "run",
+                        "actionfunction": "function-emfatictoecore",
+                        "hint": "Run the program (Ctrl/Cmd+S)" 
+                      },
+                      { 
+                        "id": "refresh-button", 
+                        "icon": "refresh",
+                        "renderfunction": "function-ecoretodiagram",
+                        "hint": "Render the metamodel class diagram" 
+                      }, 
+                      { 
+                        "id": "help-button", 
+                        "icon": "info",
+                        "url": "https://www.eclipse.org/emfatic/",
+                        "hint": "Flexmi Language Reference" 
+                      } 
+                ]
+
+            }
+
+        ]
+    }
+
+
+} 

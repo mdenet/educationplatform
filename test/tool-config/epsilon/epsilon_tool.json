@@ -221,35 +221,6 @@
 
             {
 
-                "id": "emfatic",
-
-                "name": "emfatic",
-
-                "panelclass": "ProgramPanel",
-
-                "icon": "emfatic",
-
-                "language": "emfatic",
-
-                "buttons" : [ 
-                    { 
-                      "id": "refresh-button", 
-                      "icon": "refresh",
-                      "renderfunction": "function-emfatic",
-                      "hint": "Render the metamodel class diagram" 
-                    }, 
-                    { 
-                      "id": "help-button", 
-                      "icon": "info",
-                      "url": "https://www.eclipse.org/emfatic/",
-                      "hint": "Flexmi Language Reference" 
-                    }          
-                ]
-
-            },
-
-            {
-
                 "id": "console",
 
                 "name": "console",

@@ -1,0 +1,109 @@
+{
+
+    "activities": [
+
+        {
+
+            "id": "activity-emfatic",
+
+            "title": "Conversion Function - EcoreToEmfatic",
+
+            "tools": [ "http://localhost:8081/emf/emf_tool.json", 
+                       "http://localhost:8081/emfatic/emfatic_tool.json", 
+                       "http://localhost:8081/epsilon/epsilon_tool.json"],
+
+            "layout": {
+
+                    "area": [
+
+                        ["panel-ecore",  "panel-emfatic-out"],
+
+                        [ "panel-emfatic" , "panel-ecore-out" ] 
+
+                    ]
+
+                },
+
+            "actions": [
+
+                {
+                    "source": "panel-ecore",
+
+                    "sourceButton": "action-button",
+
+                    "parameters": {
+                        "input": "panel-ecore"
+                    },
+
+                    "output": "panel-emfatic-out"
+
+                },
+
+                {
+                    "source": "panel-emfatic",
+
+                    "sourceButton": "action-button",
+
+                    "parameters": {
+                        "input": "panel-emfatic"
+                    },
+
+                    "output": "panel-ecore-out"
+
+                }
+            ],
+
+
+
+            "panels": [
+
+                {
+    
+                    "id": "panel-ecore",
+    
+                    "name": "Ecore Input",
+    
+                    "ref": "ecore",
+    
+                    "file": "Library.ecore"
+    
+                },
+    
+                {
+    
+                    "id": "panel-emfatic-out",
+    
+                    "name": "Emfatic Output",
+    
+                    "ref": "emfatic"
+
+                },
+
+                {
+    
+                    "id": "panel-emfatic",
+    
+                    "name": "Emfatic Input",
+    
+                    "ref": "emfatic",
+    
+                    "file": "Library.emf"
+    
+                },
+    
+                {
+    
+                    "id": "panel-ecore-out",
+    
+                    "name": "Ecore Output",
+    
+                    "ref": "ecore"
+
+                }
+    
+
+            ]
+
+        }
+
+] } 

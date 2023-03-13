@@ -336,7 +336,7 @@ function runAction(source, sourceButton) {
 
                     if (response.output != "") {
                         // Text
-                        outputPanel.setOutput(response.output)
+                        outputPanel.setValue(response.output)
   
                     } if (responseDiagram != undefined) {
                         // Diagrams 
