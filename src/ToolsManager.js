@@ -143,7 +143,7 @@ class ToolManager {
     getPanelType(panelDefId) {
         for ( const toolskey of  Object.keys(this.tools)){
 
-            let def = getPanelDefinition(panelDefId);
+            let def = this.getPanelDefinition(panelDefId);
             
             return def.language;
         } 

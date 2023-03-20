@@ -162,9 +162,9 @@ function setup() {
                 
                 // Set from the tool panel definition  
                 newPanel.setIcon(panelDefinition.icon);
-                newPanel.setEditorMode(panelDefinition.language)
+                newPanel.setEditorMode(panelDefinition.language);
 
-                
+                newPanel.setType(panelDefinition.language);
 
                 // Set from the activity 
                 newPanel.setValue(panel.file); 
@@ -250,10 +250,11 @@ function getPanelTitle(panelId) {
 }
 
 /**
- * Creates a request to the backend functions
+ * Creates a request to the required backend converstion functions for type matching of the panels data with 
+ * the action function's inputs. Once all of the inputs are available the action function is requested.
+ * 
  * @param {object} actionClicked  the action of the clicked button
  * @param {ActionFunction} toolActionFunction the corresponding to action details
- * @returns {Promise} promise for the requsted action function response
  */
 function requestAction(actionClicked, toolActionFunction) {
     let actionRequestData = {};
@@ -287,19 +288,22 @@ function requestAction(actionClicked, toolActionFunction) {
             if (panelConfig == undefined){
                 // Set unused parameters in the request to undefined as the epsilon backend function expects them all. 
                 actionRequestData[param.name] = "undefined";
+
             } else {
-                actionRequestData[param.name] = translateTypes( param.name, actionClicked, toolActionFunction );
+                let parameterData = values.find(val => (val.name === param.name) );
+
+                actionRequestData[param.name] =  parameterData.data;
             }
         }
         
-        actionFunctionPromise = requestAndHandleActionFunction( actionRequestData, toolActionFunction );
+        actionFunctionPromise = requestAndHandleActionFunction(actionClicked, actionRequestData, toolActionFunction );
 
      
     }).catch( (err) => {
         console.log("There was an error translating action function parameter types.");
     } );
 
-    return  actionFunctionPromise; 
+    return; 
 }
 
 
@@ -321,7 +325,7 @@ function translateTypes( parameter, action, toolActionFunction ) {
     const panel = panels.find( pn => pn.id ==  parameterPanelId );
 
     let targetType = toolActionFunction.getParameterType(parameter);
-    let sourceType = panel.language;
+    let sourceType = panel.getType();
 
     if(sourceType != targetType){
         let dependencyType; // Assuming there may be one upto one dependency 
@@ -370,7 +374,12 @@ function translateTypes( parameter, action, toolActionFunction ) {
 
     } else {
         parameterPromise =  new Promise( function (resolve, reject) { 
-            resolve(panel.getValue()); 
+            let parameterData = {};
+            
+            parameterData.name = parameter;
+            parameterData.data = panel.getValue();
+
+            resolve(parameterData); 
         });
     }
 
@@ -384,22 +393,24 @@ function translateTypes( parameter, action, toolActionFunction ) {
  * @returns Promise for the translated data
  */
 function requestTranslation(parameters, conversionFunction){
-  
-    return jsonRequest(conversionFunction.path, parameters);
+    
+    let parametersJson = JSON.stringify(parameters);
+
+    return jsonRequest(conversionFunction.path.getPath(), parametersJson);
 }
 
 
 /**
- * Request the 
- * @param {*} parameters 
- * @param {*} actionFunction 
+ * Request the action function from the remote tool service and handle the response
+ * @param {Object} action
+ * @param {Object} parameters 
+ * @param {ActionFunction} actionFunction 
  */
-function requestAndHandleActionFunction(parameters, actionFunction){
+function requestAndHandleActionFunction(action, parameters, actionFunction){
     
-    return jsonRequest(actionFunction.path, parameters);
-    
-    // For now just return the promise to minimise changes
-    /*.then( (responseText) => {
+    let parametersJson = JSON.stringify(parameters);
+
+    let requestPromise = jsonRequest(actionFunction.getPath(), parametersJson).then( (responseText) => {
 
         var response = JSON.parse(responseText);
         var outputPanel = panels.find( pn => pn.id ==  action.output.id);
@@ -486,16 +497,10 @@ function requestAndHandleActionFunction(parameters, actionFunction){
         }
 
     
-    }); */
+    });
+
+    Metro.notify.killAll();
 }
-
-
-
-// function editorsToJson(actionClicked, toolActionFunction) {
-
-//     return JSON.stringify(editorsToJsonObject(actionClicked, toolActionFunction));
-// }
-
 
 
 function fit() {
@@ -509,140 +514,25 @@ function fit() {
 }
 
 
-
 function runAction(source, sourceButton) {
 
     // Get the action
     var action = activityManager.getActionForCurrentActivity(source, sourceButton);
-
-    // Call backend service function
+    
     const buttonConfig =   action.source.ref.buttons.find( btn => btn.id == sourceButton );
-
     const toolActionFunction = toolsManager.getActionFunction( buttonConfig.actionfunction ); // TODO tidy up by resolving tool references
 
-
-    let responsePromise = requestAction(action, toolActionFunction);
-
-    responsePromise.then( (responseText) => {
-        var response = JSON.parse(xhr.responseText);
-                var outputPanel = panels.find( pn => pn.id ==  action.output.id);
-        
-                if (response.hasOwnProperty("error")) {
-                    consolePanel.setError(response.error);
-                } else {
-        
-                    var responseDiagram = Object.keys(response).find( key => key.toLowerCase().includes("diagram") );
-        
-                    if (response.output != "") {
-                        // Text
-                        outputPanel.setValue(response.output)
-        
-                    } if (responseDiagram != undefined) {
-                        // Diagrams 
-                        outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
-                        outputPanel.showDiagram();
-                        
-                        outputPanel.renderDiagram( response[responseDiagram] );
-                        
-                        outputPanel.showDiagram();
-                        
-                    } else if (response.generatedFiles) {
-                        // Multiple text files
-                        outputPanel.setGeneratedFiles(response.generatedFiles);
-        
-                    } else if (response.generatedText) {
-                        // Generated file
-        
-                        switch (action.outputType){
-                            case "code":
-                                // Text
-                                outputPanel.getEditor().setValue(response.generatedText.trim(), 1);
-                                break;
-        
-                            case "html":
-                                // Html
-                                outputPanel.setOutput(response.output);
-                                var iframe = document.getElementById("htmlIframe");
-                                if (iframe == null) {
-                                    iframe = document.createElement("iframe");
-                                    iframe.id = "htmlIframe"
-                                    iframe.style.height = "100%";
-                                    iframe.style.width = "100%";
-                                    document.getElementById(outputPanel.getId() + "Diagram").appendChild(iframe);
-                                }
-                                
-                                iframe.srcdoc = response.generatedText;
-                                break; 
-        
-                            case "puml": 
-                            case "dot":
-                                // UML or Graph
-            
-                                var krokiEndpoint = "";
-                                if (outputType == "puml") krokiEndpoint = "plantuml";
-                                else krokiEndpoint = "graphviz/svg"
-        
-                                var krokiXhr = new XMLHttpRequest();
-                                krokiXhr.open("POST", "https://kroki.io/" + krokiEndpoint, true);
-                                krokiXhr.setRequestHeader("Accept", "image/svg+xml");
-                                krokiXhr.setRequestHeader("Content-Type", "text/plain");
-                                krokiXhr.onreadystatechange = function () {
-                                    if (krokiXhr.readyState === 4) {
-                                        if (krokiXhr.status === 200) {
-                                            outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
-                                            outputPanel.showDiagram();
-        
-                                            outputPanel.renderDiagram(krokiXhr.responseText);
-        
-                                            outputPanel.showDiagram();
-                                        }
-                                    }
-                                };
-                                krokiXhr.send(response.generatedText);
-                                break;
-        
-                                default:
-                                    console.log("Unknown output type: " + cation.outputType);
-                        }
-                    }
-                
-                    Metro.notify.killAll();
-                }
-
-    }).catch( (err) => {
-        console.log("An error occurred excuting the requested action function.");
-    } );
-
-    
-    // var xhr = new XMLHttpRequest();
-    // //var url = backend.getRunEpsilonService();
-    // var url = toolActionFunction.path;
-
-    // xhr.open("POST", url, true);
-    // xhr.setRequestHeader("Content-Type", "application/json");
-    // xhr.onreadystatechange = function () {
-
-    //     if (xhr.readyState === 4) {
-    //         if (xhr.status === 200) {
-                
-        
-    //         }
-            
-    //     }
-    // };
-
-    //var data = editorsToJson(action, toolActionFunction);
-    //xhr.send(data);
-
+    // Call backend conversion and service functions
+    requestAction(action, toolActionFunction);
+ 
     longNotification("Executing program");
 }
-
-
 
 
 function longNotification(title, cls="light") {
     Metro.notify.create("<b>" + title + "...</b><br>This may take a few seconds to complete if the back end is not warmed up.", null, {keepOpen: true, cls: cls, width: 300});
 }
+
 
 function toggle(elementId, onEmpty) {
     var element = document.getElementById(elementId);

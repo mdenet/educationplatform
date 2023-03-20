@@ -29,7 +29,7 @@ export function jsonRequest(url, json){
 
         var xhr = new XMLHttpRequest();
 
-        xhr.open(method, url);
+        xhr.open("POST", url);
         xhr.setRequestHeader("Content-Type", "application/json");
         
         xhr.onload = function () {

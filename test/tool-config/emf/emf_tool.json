@@ -82,6 +82,35 @@
                       } 
                 ]
 
+            },
+
+            {
+
+                "id": "xmi",
+
+                "name": "XMI",
+
+                "panelclass": "ProgramPanel",
+
+                "icon": "xmi",
+
+                "language": "xmi",
+
+                "buttons" : [ 
+                    { 
+                      "id": "refresh-button", 
+                      "icon": "refresh",
+                      "renderfunction": "function-flexmitograph",
+                      "hint": "Render the model object diagram" 
+                    }, 
+                    { 
+                      "id": "help-button", 
+                      "icon": "info",
+                      "url": "https://www.omg.org/spec/XMI/",
+                      "hint": "OMG - XML Metadata Interchange" 
+                    }          
+                ]
+
             }
 
         ]
