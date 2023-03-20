@@ -13,7 +13,11 @@
 
                 "name": "completeocl",
 
-                "parameters": [ "emfatic", "oclcomplete", "xmi"],
+                "parameters": [ {"name":"metamodel", "type":"emfatic"}, 
+                                {"name":"constraints", "type":"oclcomplete"}, 
+                                {"name":"model", "type":"xmi", "instanceOf": "metamodel"}],
+
+                "returnType": "string",
 
                 "path": "http://localhost:9090"
 

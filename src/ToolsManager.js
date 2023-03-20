@@ -1,10 +1,15 @@
+import {FunctionRegistry} from "../src/FunctionRegistry.js"
+import { ActionFunction } from "./ActionFunction.js";
+
 class ToolManager {
 
     toolId;
     toolsUrls;
     tools = {};
+    functionRegister;
 
     constructor(){
+        this.functionRegister= new FunctionRegistry();
     }
 
     setToolsUrls(urls){
@@ -22,9 +27,13 @@ class ToolManager {
             }
 
             this.fetchTools();
+            this.registerToolFunctions();
+            this.createClassesFromConfig();
+            
         }
     }
 
+    
 
     /*
      * Fetches the tools from the tools url and populates tool's
@@ -56,6 +65,31 @@ class ToolManager {
         }
     }
 
+
+    registerToolFunctions(){
+        for ( const toolKey in this.tools){
+
+            for ( const toolFunction of this.tools[toolKey].functions ) {
+               let parameterTypes = toolFunction.parameters.map( param => param.type);
+               this.functionRegister.registerFunction( parameterTypes, toolFunction.returnType, toolFunction.id );
+            }
+        } 
+    }
+
+    /**
+     *  Instantiate classes from the config
+     */
+    createClassesFromConfig() {
+        for ( const toolkey in this.tools){
+           
+           for (let functionIndex in this.tools[toolkey].functions ){
+                
+               this.tools[toolkey].functions[functionIndex] = new ActionFunction(this.tools[toolkey].functions[functionIndex]);
+           }
+        
+        }
+    }
+
     storeTool(newTool){
         // Add the tool
         this.tools[newTool.id] = newTool;
@@ -81,7 +115,7 @@ class ToolManager {
 
 
     /**
-     * Find a panel defintion by id
+     * Find a panel definition by id
      * @param {string} panelDefId 
      * @returns {PanelDefinition|null} the found panel definition  
      */
@@ -102,13 +136,33 @@ class ToolManager {
 
 
     /**
+     * Returns type for a given Panel id
+     * @param {*} panelDefId 
+     * @returns panel type 
+     */
+    getPanelType(panelDefId) {
+        for ( const toolskey of  Object.keys(this.tools)){
+
+            let def = getPanelDefinition(panelDefId);
+            
+            return def.language;
+        } 
+        
+        console.log("Tool with panel definition id '" + panelDefId + "' was not found.");
+        return null;
+    }
+
+
+
+
+    /**
      * Finds the action function for an action function Id
      * @param {*} actionFuntionId 
      */
     getActionFunction(actionFuntionId) {
         for ( const toolskey of  Object.keys(this.tools)){
 
-            const foundFunction = this.tools[toolskey].functions.find( fn => fn.id==actionFuntionId );
+            const foundFunction = this.tools[toolskey].functions.find( fn => fn.getId()==actionFuntionId );
 
             if ( foundFunction != undefined){
                 return foundFunction;
@@ -173,6 +227,17 @@ class ToolManager {
         return imports;
     }
 
+
+    /**
+     * Returns the id of the registered function with matching input and output parameters.
+     * @param {*} inputsParamTypes 
+     * @param {*} outputParamType 
+     * @returns The id of a matching function
+     */
+    getConversionFunction(inputsParamTypes, outputParamType){
+        
+       return this.functionRegister.lookupFunction(inputsParamTypes, outputParamType);
+    }
 
 }
 

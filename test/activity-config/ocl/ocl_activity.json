@@ -29,9 +29,9 @@
                     "sourceButton": "action-button",
 
                     "parameters": {
-                        "oclcomplete": "panel-ocl",
-                        "emfatic": "panel-metamodel",
-                        "xmi": "panel-model"
+                        "constraints": "panel-ocl",
+                        "metamodel": "panel-metamodel",
+                        "model": "panel-model"
                     },
 
                     "output": "panel-console"
