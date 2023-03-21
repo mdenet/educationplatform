@@ -27,6 +27,8 @@ import { TestPanel } from './TestPanel .js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
 import { BlankPanel } from './BlankPanel .js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
+import { jsonRequest, jsonRequestConversion} from './Utility.js';
+import { ActionFunction } from './ActionFunction.js';
 
 
 var outputType = "text";
@@ -160,9 +162,9 @@ function setup() {
                 
                 // Set from the tool panel definition  
                 newPanel.setIcon(panelDefinition.icon);
-                newPanel.setEditorMode(panelDefinition.language)
+                newPanel.setEditorMode(panelDefinition.language);
 
-                
+                newPanel.setType(panelDefinition.language);
 
                 // Set from the activity 
                 newPanel.setValue(panel.file); 
@@ -248,51 +250,267 @@ function getPanelTitle(panelId) {
 }
 
 /**
- * Creates a request to the backend functions
- * @param {*} actionClicked  the action of the clicked button
- * @param {*} toolActionFunction the corresponding to action details
- * @returns {object} request
+ * Creates a request to the required backend converstion functions for type matching of the panels data with 
+ * the action function's inputs. Once all of the inputs are available the action function is requested.
+ * 
+ * @param {object} actionClicked  the action of the clicked button
+ * @param {ActionFunction} toolActionFunction the corresponding to action details
  */
-function editorsToJsonObject(actionClicked, toolActionFunction) {
-    var actionRequestData = {};
+function requestAction(actionClicked, toolActionFunction) {
+    let actionRequestData = {};
+    let parameterPromises = [];
+    
+    let actionFunctionPromise;
        
     const sourcePanelLanguage = actionClicked.source.ref.language;
     
-
-    //Populate the parameters for processing the action request
-    for ( const param  of toolActionFunction.parameters ){
-
-        // Get editor values from their panels
-        const panelConfig = actionClicked.parameters[param]; 
-
-        if (panelConfig == undefined){
-            // Set unused parameters in the request to undefined as the backend function expect them all. 
-            actionRequestData[param] = "undefined";
-
-        } else {
-            
-            const panel = panels.find( pn => pn.id ==  panelConfig.id );
     
-            // There is a panel so add its contents to request
-            actionRequestData[param] = panel.getValue();
+    for ( const param  of toolActionFunction.getParameters() ){
+
+        const panelConfig = actionClicked.parameters[param.name]; 
+
+        // Check types and request conversions from available tool services
+        if (panelConfig != undefined){
+            parameterPromises.push( translateTypes( param.name, actionClicked, toolActionFunction ) );
         }
     }
 
-    actionRequestData.language = sourcePanelLanguage;
     
-    // TODO support output and language 
-    actionRequestData.outputType = outputType;
-    actionRequestData.outputLanguage = outputLanguage;
+    // Request the final action function
+    Promise.all( parameterPromises ).then( (values) => { 
+        
 
-    return  actionRequestData; 
+        //Populate the transformed parameters
+        for ( const param  of toolActionFunction.getParameters() ){
+
+            const panelConfig = actionClicked.parameters[param.name]; 
+
+            if (panelConfig == undefined){
+                // Set unused parameters in the request to undefined as the epsilon backend function expects them all. 
+                actionRequestData[param.name] = "undefined";
+
+            } else {
+                let parameterData = values.find(val => (val.name === param.name) );
+
+                actionRequestData[param.name] =  parameterData.data;
+            }
+        }
+
+        actionRequestData.language = sourcePanelLanguage;
+
+        // TODO support output and language 
+        //actionRequestData.outputType = outputType;
+        //actionRequestData.outputLanguage = outputLanguage;
+        
+        actionFunctionPromise = requestAndHandleActionFunction(actionClicked, actionRequestData, toolActionFunction );
+
+     
+    }).catch( (err) => {
+        console.log("There was an error translating action function parameter types.");
+    } );
+
+    return; 
 }
 
 
 
-function editorsToJson(actionClicked, toolActionFunction) {
+/**
+ * Translates a parameter type as required using remote tool services for any conversions. 
+ * If the given parameter matches the required action function, no translation is performed.
+ * @param {String} parameter the parameter name to translate 
+ * @param {ActionFunction} toolActionFunction 
+ * @returns promise for the parameter's data
+ */
+function translateTypes( parameter, action, toolActionFunction ) {
 
-    return JSON.stringify(editorsToJsonObject(actionClicked, toolActionFunction));
+    let parameterPromise;
+   
+    // Get editor values from their panels
+    const parameterPanelId = action.parameters[parameter].id; 
+     
+    const panel = panels.find( pn => pn.id ==  parameterPanelId );
+
+    let targetType = toolActionFunction.getParameterType(parameter);
+    let sourceType = panel.getType();
+
+    if(sourceType != targetType){
+        let dependencyType; // Assuming there may be one upto one dependency 
+        let dependencyData;
+
+        //get dependency data required for conversion 
+        const hasInstanceOf =  toolActionFunction.getInstanceOfParamName(parameter) != null;
+
+
+        let dependencyPanel 
+
+        if (hasInstanceOf) {
+
+            const dependencyParameterName = toolActionFunction.getInstanceOfParamName(parameter);
+            const dependencyPanelId = action.parameters[dependencyParameterName].id;
+
+            dependencyType= toolActionFunction.getParameterType(dependencyParameterName);
+
+            dependencyPanel = panels.find( pn => pn.id ==  dependencyPanelId );
+        }
+
+
+        //Translate the source data        
+        let typesPanelMap = {}; // Types have to be distinct for mapping to the conversion function's paramters
+        typesPanelMap[sourceType]=  panel;
+
+        if (hasInstanceOf) {
+            typesPanelMap[dependencyType]=  dependencyPanel;
+        }
+
+        
+        const conversionFunctionId = toolsManager.getConversionFunction( Object.keys(typesPanelMap), targetType );
+
+        if (conversionFunctionId != null){
+            let conversionRequestData = {};
+            let conversionFunction = toolsManager.getActionFunction(conversionFunctionId);
+
+            // Populate parameters for the conversion request 
+            for( const param of conversionFunction.getParameters() ){
+                conversionRequestData[param.name] =  typesPanelMap[param.type].getValue();
+            }
+
+            parameterPromise= requestTranslation(conversionRequestData, conversionFunction, parameter);
+
+        } else {
+            console.log("No conversion function available for input types:" + Object.keys(typesPanelMap).toString() )
+        }
+
+    } else {
+        parameterPromise =  new Promise( function (resolve, reject) { 
+            let parameterData = {};
+            
+            parameterData.name = parameter;
+            parameterData.data = panel.getValue();
+
+            resolve(parameterData); 
+        });
+    }
+
+    return parameterPromise;
 }
+
+/**
+ * Requests the conversion function from the remote tool service
+ * @param {Object} parameters 
+ * @param {ActionFunction} converstionFunction
+ * @param {String} name of the parameter
+ * @returns Promise for the translated data
+ */
+function requestTranslation(parameters, conversionFunction, parameterName){
+    
+    let parametersJson = JSON.stringify(parameters);
+
+    return jsonRequestConversion(conversionFunction.getPath(), parametersJson, parameterName);
+}
+
+
+/**
+ * Request the action function from the remote tool service and handle the response
+ * @param {Object} action
+ * @param {Object} parameters 
+ * @param {ActionFunction} actionFunction 
+ */
+function requestAndHandleActionFunction(action, parameters, actionFunction){
+    
+    let parametersJson = JSON.stringify(parameters);
+
+    let requestPromise = jsonRequest(actionFunction.getPath(), parametersJson).then( (responseText) => {
+
+        var response = JSON.parse(responseText);
+        var outputPanel = panels.find( pn => pn.id ==  action.output.id);
+
+        if (response.hasOwnProperty("error")) {
+            consolePanel.setError(response.error);
+        } else {
+
+            var responseDiagram = Object.keys(response).find( key => key.toLowerCase().includes("diagram") );
+
+            if (response.output != "") {
+                // Text
+                outputPanel.setValue(response.output)
+
+            } if (responseDiagram != undefined) {
+                // Diagrams 
+                outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
+                outputPanel.showDiagram();
+                
+                outputPanel.renderDiagram( response[responseDiagram] );
+                
+                outputPanel.showDiagram();
+                
+            } else if (response.generatedFiles) {
+                // Multiple text files
+                outputPanel.setGeneratedFiles(response.generatedFiles);
+
+            } else if (response.generatedText) {
+                // Generated file
+
+                switch (action.outputType){
+                    case "code":
+                        // Text
+                        outputPanel.getEditor().setValue(response.generatedText.trim(), 1);
+                        break;
+
+                    case "html":
+                        // Html
+                        outputPanel.setOutput(response.output);
+                        var iframe = document.getElementById("htmlIframe");
+                        if (iframe == null) {
+                            iframe = document.createElement("iframe");
+                            iframe.id = "htmlIframe"
+                            iframe.style.height = "100%";
+                            iframe.style.width = "100%";
+                            document.getElementById(outputPanel.getId() + "Diagram").appendChild(iframe);
+                        }
+                        
+                        iframe.srcdoc = response.generatedText;
+                        break; 
+
+                    case "puml": 
+                    case "dot":
+                        // UML or Graph
+    
+                        var krokiEndpoint = "";
+                        if (outputType == "puml") krokiEndpoint = "plantuml";
+                        else krokiEndpoint = "graphviz/svg"
+
+                        var krokiXhr = new XMLHttpRequest();
+                        krokiXhr.open("POST", "https://kroki.io/" + krokiEndpoint, true);
+                        krokiXhr.setRequestHeader("Accept", "image/svg+xml");
+                        krokiXhr.setRequestHeader("Content-Type", "text/plain");
+                        krokiXhr.onreadystatechange = function () {
+                            if (krokiXhr.readyState === 4) {
+                                if (krokiXhr.status === 200) {
+                                    outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
+                                    outputPanel.showDiagram();
+
+                                    outputPanel.renderDiagram(krokiXhr.responseText);
+
+                                    outputPanel.showDiagram();
+                                }
+                            }
+                        };
+                        krokiXhr.send(response.generatedText);
+                        break;
+
+                        default:
+                            console.log("Unknown output type: " + cation.outputType);
+                }
+            }
+
+        }
+
+    
+    });
+
+    Metro.notify.killAll();
+}
+
 
 function fit() {
     
@@ -304,126 +522,26 @@ function fit() {
     preloader.hide();
 }
 
+
 function runAction(source, sourceButton) {
 
     // Get the action
     var action = activityManager.getActionForCurrentActivity(source, sourceButton);
-
-    // Call backend service function
+    
     const buttonConfig =   action.source.ref.buttons.find( btn => btn.id == sourceButton );
-
     const toolActionFunction = toolsManager.getActionFunction( buttonConfig.actionfunction ); // TODO tidy up by resolving tool references
 
-
-    var xhr = new XMLHttpRequest();
-    //var url = backend.getRunEpsilonService();
-    var url = toolActionFunction.path;
-
-    xhr.open("POST", url, true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function () {
-
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                var response = JSON.parse(xhr.responseText);
-                var outputPanel = panels.find( pn => pn.id ==  action.output.id);
-
-                if (response.hasOwnProperty("error")) {
-                    consolePanel.setError(response.error);
-                } else {
-
-                    var responseDiagram = Object.keys(response).find( key => key.toLowerCase().includes("diagram") );
-
-                    if (response.output != "") {
-                        // Text
-                        outputPanel.setValue(response.output)
-  
-                    } if (responseDiagram != undefined) {
-                        // Diagrams 
-                        outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
-                        outputPanel.showDiagram();
-                        
-                        outputPanel.renderDiagram( response[responseDiagram] );
-                        
-                        outputPanel.showDiagram();
-                        
-                    } else if (response.generatedFiles) {
-                        // Multiple text files
-                        outputPanel.setGeneratedFiles(response.generatedFiles);
-
-                    } else if (response.generatedText) {
-                        // Generated file
-
-                        switch (action.outputType){
-                            case "code":
-                                // Text
-                                outputPanel.getEditor().setValue(response.generatedText.trim(), 1);
-                                break;
-
-                            case "html":
-                                // Html
-                                outputPanel.setOutput(response.output);
-                                var iframe = document.getElementById("htmlIframe");
-                                if (iframe == null) {
-                                    iframe = document.createElement("iframe");
-                                    iframe.id = "htmlIframe"
-                                    iframe.style.height = "100%";
-                                    iframe.style.width = "100%";
-                                    document.getElementById(outputPanel.getId() + "Diagram").appendChild(iframe);
-                                }
-                                
-                                iframe.srcdoc = response.generatedText;
-                                break; 
-
-                            case "puml": 
-                            case "dot":
-                                // UML or Graph
-            
-                                var krokiEndpoint = "";
-                                if (outputType == "puml") krokiEndpoint = "plantuml";
-                                else krokiEndpoint = "graphviz/svg"
-
-                                var krokiXhr = new XMLHttpRequest();
-                                krokiXhr.open("POST", "https://kroki.io/" + krokiEndpoint, true);
-                                krokiXhr.setRequestHeader("Accept", "image/svg+xml");
-                                krokiXhr.setRequestHeader("Content-Type", "text/plain");
-                                krokiXhr.onreadystatechange = function () {
-                                    if (krokiXhr.readyState === 4) {
-                                        if (krokiXhr.status === 200) {
-                                            outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
-                                            outputPanel.showDiagram();
-
-                                            outputPanel.renderDiagram(krokiXhr.responseText);
-
-                                            outputPanel.showDiagram();
-                                        }
-                                    }
-                                };
-                                krokiXhr.send(response.generatedText);
-                                break;
-
-                                default:
-                                    console.log("Unknown output type: " + cation.outputType);
-                        }
-                    }
-
-                }
-
-            }
-            Metro.notify.killAll();
-        }
-    };
-
-    var data = editorsToJson(action, toolActionFunction);
-    xhr.send(data);
+    // Call backend conversion and service functions
+    requestAction(action, toolActionFunction);
+ 
     longNotification("Executing program");
 }
-
 
 
 function longNotification(title, cls="light") {
     Metro.notify.create("<b>" + title + "...</b><br>This may take a few seconds to complete if the back end is not warmed up.", null, {keepOpen: true, cls: cls, width: 300});
 }
+
 
 function toggle(elementId, onEmpty) {
     var element = document.getElementById(elementId);

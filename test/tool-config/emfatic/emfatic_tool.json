@@ -13,7 +13,9 @@
 
                 "name": "Conversion - Ecore To Emfatic",
 
-                "parameters": [ "input"],
+                "parameters": [ {"name":"input", "type":"ecore"} ],
+
+                "returnType": "emfatic",
 
                 "path": "http://localhost:9091"
 
@@ -25,23 +27,14 @@
 
                 "name": "Conversion - Emfatic To Ecore",
 
-                "parameters": [ "input"],
+                "parameters": [ {"name":"input", "type":"emfatic"} ],
+
+                "returnType": "ecore",
 
                 "path": "http://localhost:9092"
 
-            },
-
-            {
-
-                "id": "function-ecoretodiagram",
-
-                "name": "Conversion - Ecore To Diagram",
-
-                "parameters": [ "ecore"],
-
-                "path": "http://"
-
             }
+
 
         ],
 
@@ -71,7 +64,7 @@
                       { 
                         "id": "refresh-button", 
                         "icon": "refresh",
-                        "renderfunction": "function-ecoretodiagram",
+                        "renderfunction": "",
                         "hint": "Render the metamodel class diagram" 
                       }, 
                       { 

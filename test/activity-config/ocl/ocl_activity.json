@@ -10,7 +10,8 @@
 
             "tools": ["http://localhost:8081/ocl/ocl_tool.json",
                        "http://localhost:8081/epsilon/epsilon_tool.json",
-                       "http://localhost:8081/emfatic/emfatic_tool.json" ],
+                       "http://localhost:8081/emfatic/emfatic_tool.json",
+                       "http://localhost:8081/emf/emf_tool.json" ],
 
             "layout": {
 
@@ -29,9 +30,9 @@
                     "sourceButton": "action-button",
 
                     "parameters": {
-                        "oclcomplete": "panel-ocl",
-                        "emfatic": "panel-metamodel",
-                        "xmi": "panel-model"
+                        "constraints": "panel-ocl",
+                        "metamodel": "panel-metamodel",
+                        "model": "panel-model"
                     },
 
                     "output": "panel-console"
@@ -61,7 +62,7 @@
     
                     "ref": "flexmi",
     
-                    "file": "tutorial.xmi"
+                    "file": "tutorial.flexmi"
     
                 },
 

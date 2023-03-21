@@ -4,6 +4,7 @@ class Panel {
     editor;
     element;
     visible;
+    type;
     
     constructor(id) {
         this.id = id;
@@ -58,6 +59,20 @@ class Panel {
 
     setValue(value) {
         this.editor.setValue((value+""), 1);
+    }
+
+    setType(type){
+
+        if (this.type != null){
+            throw "Panel type has been previously set.";
+            
+        } else {
+            this.type = type;
+        }
+    }
+
+    getType(){
+        return this.type;
     }
 
     buttonHtml(icon, hint) {
