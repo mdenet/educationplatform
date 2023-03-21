@@ -60,9 +60,9 @@
     
                     "name": "Model",
     
-                    "ref": "xmi",
+                    "ref": "flexmi",
     
-                    "file": "tutorial.xmi"
+                    "file": "tutorial.flexmi"
     
                 },
 

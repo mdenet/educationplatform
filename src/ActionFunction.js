@@ -50,10 +50,10 @@ class ActionFunction {
 
             if(param.name === parameterName && param.instanceOf != null){
                 return param.instanceOf;
-            }
-        
+
+            } 
         }
-    return null;
+        return null;
     }
 
     getInstanceOfReturnType(){

@@ -27,7 +27,7 @@ import { TestPanel } from './TestPanel .js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
 import { BlankPanel } from './BlankPanel .js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
-import { jsonRequest} from './Utility.js';
+import { jsonRequest, jsonRequestConversion} from './Utility.js';
 import { ActionFunction } from './ActionFunction.js';
 
 
@@ -332,17 +332,19 @@ function translateTypes( parameter, action, toolActionFunction ) {
         let dependencyData;
 
         //get dependency data required for conversion 
-        const hasInstanceOf = targetType[instanceOf] != null;
+        const hasInstanceOf =  toolActionFunction.getInstanceOfParamName(parameter) != null;
+
+
+        let dependencyPanel 
 
         if (hasInstanceOf) {
 
-            const dependencyParameterName = targetType[instanceOf];
-            const dependencyPanelId = action.parameters[dependencyParameterName];
+            const dependencyParameterName = toolActionFunction.getInstanceOfParamName(parameter);
+            const dependencyPanelId = action.parameters[dependencyParameterName].id;
 
             dependencyType= toolActionFunction.getParameterType(dependencyParameterName);
 
-            let dependencyPanel = panels.find( pn => pn.id ==  dependencyPanelId );
-            dependencyData = dependencyPanel.getValue();
+            dependencyPanel = panels.find( pn => pn.id ==  dependencyPanelId );
         }
 
 
@@ -362,11 +364,11 @@ function translateTypes( parameter, action, toolActionFunction ) {
             let conversionFunction = toolsManager.getActionFunction(conversionFunctionId);
 
             // Populate parameters for the conversion request 
-            for( param of conversionFunction.getParameters() ){
-                conversionRequestData[param.name] =  typesPanelMap[param.type].value;
+            for( const param of conversionFunction.getParameters() ){
+                conversionRequestData[param.name] =  typesPanelMap[param.type].getValue();
             }
 
-            parameterPromise= requestTranslation(JSON.stringify(conversionRequestData), conversionFunction);
+            parameterPromise= requestTranslation(conversionRequestData, conversionFunction, parameter);
 
         } else {
             console.log("No conversion function available for input types:" + Object.keys(typesPanelMap).toString() )
@@ -388,15 +390,16 @@ function translateTypes( parameter, action, toolActionFunction ) {
 
 /**
  * Requests the conversion function from the remote tool service
- * @param {string} parameters 
+ * @param {Object} parameters 
  * @param {ActionFunction} converstionFunction
+ * @param {String} name of the parameter
  * @returns Promise for the translated data
  */
-function requestTranslation(parameters, conversionFunction){
+function requestTranslation(parameters, conversionFunction, parameterName){
     
     let parametersJson = JSON.stringify(parameters);
 
-    return jsonRequest(conversionFunction.path.getPath(), parametersJson);
+    return jsonRequestConversion(conversionFunction.getPath(), parametersJson, parameterName);
 }
 
 

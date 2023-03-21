@@ -29,20 +29,7 @@
 
                 "path": "http://"
 
-            },             
-            
-            {
-
-                "id": "function-ecoretoemfatic",
-
-                "name": "Conversion - Ecore To Emfatic #Move to emfatic tool",
-
-                "parameters": [ "input"],
-
-                "path": "http://localhost:9091"
-
             }
-
         ],
 
 
