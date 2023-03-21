@@ -13,7 +13,20 @@
 
                 "name": "eol",
 
-                "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
+                "parameters": [ {"name":"language", "type":"text"},
+                                {"name":"outputType", "type":"text"},
+                                {"name":"outputLanguage", "type":"text"},
+                                {"name":"program", "type":"eol"},
+                                {"name":"secondProgram", "type":"eol"},
+                                {"name":"emfatic", "type":"emfatic"},
+                                {"name":"flexmi", "type":"flexmi", "instanceOf": "emfatic"},
+                                {"name":"secondEmfatic", "type":"emfatic"},
+                                {"name":"secondFlexmi", "type":"flexmi", "instanceOf": "secondEmfatic"},
+                                {"name":"thirdEmfatic", "type":"emfatic"},
+                                {"name":"thirdFlexmi", "type":"flexmi", "instanceOf": "thirdEmfatic"}
+                    ],
+
+                "returnType": "text",
 
                 "path": "http://localhost:9000/services/RunEpsilonFunction"
 
@@ -25,7 +38,20 @@
 
                 "name": "etl",
 
-                "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
+                "parameters": [ {"name":"language", "type":"text"},
+                                {"name":"outputType", "type":"text"},
+                                {"name":"outputLanguage", "type":"text"},
+                                {"name":"program", "type":"etl"},
+                                {"name":"secondProgram", "type":"etl"},
+                                {"name":"emfatic", "type":"emfatic"},
+                                {"name":"flexmi", "type":"flexmi", "instanceOf": "emfatic"},
+                                {"name":"secondEmfatic", "type":"emfatic"},
+                                {"name":"secondFlexmi", "type":"flexmi", "instanceOf": "secondEmfatic"},
+                                {"name":"thirdEmfatic", "type":"emfatic"},
+                                {"name":"thirdFlexmi", "type":"flexmi", "instanceOf": "thirdEmfatic"}
+                    ],
+
+                "returnType": "text",
 
                 "path": "http://localhost:9000/services/RunEpsilonFunction"
 
@@ -37,7 +63,20 @@
 
                 "name": "egl",
 
-                "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
+                "parameters": [ {"name":"language", "type":"text"},
+                                {"name":"outputType", "type":"text"},
+                                {"name":"outputLanguage", "type":"text"},
+                                {"name":"program", "type":"egl"},
+                                {"name":"secondProgram", "type":"egl"},
+                                {"name":"emfatic", "type":"emfatic"},
+                                {"name":"flexmi", "type":"flexmi", "instanceOf": "emfatic"},
+                                {"name":"secondEmfatic", "type":"emfatic"},
+                                {"name":"secondFlexmi", "type":"flexmi", "instanceOf": "secondEmfatic"},
+                                {"name":"thirdEmfatic", "type":"emfatic"},
+                                {"name":"thirdFlexmi", "type":"flexmi", "instanceOf": "thirdEmfatic"}
+                    ],
+
+                "returnType": "text",
 
                 "path": "http://localhost:9000/services/RunEpsilonFunction"
 
@@ -49,7 +88,20 @@
 
                 "name": "evl",
 
-                "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
+                "parameters": [ {"name":"language", "type":"text"},
+                                {"name":"outputType", "type":"text"},
+                                {"name":"outputLanguage", "type":"text"},
+                                {"name":"program", "type":"evl"},
+                                {"name":"secondProgram", "type":"evl"},
+                                {"name":"emfatic", "type":"emfatic"},
+                                {"name":"flexmi", "type":"flexmi", "instanceOf": "emfatic"},
+                                {"name":"secondEmfatic", "type":"emfatic"},
+                                {"name":"secondFlexmi", "type":"flexmi", "instanceOf": "secondEmfatic"},
+                                {"name":"thirdEmfatic", "type":"emfatic"},
+                                {"name":"thirdFlexmi", "type":"flexmi", "instanceOf": "thirdEmfatic"}
+                    ],
+
+                "returnType": "text",
 
                 "path": "http://localhost:9000/services/RunEpsilonFunction"
 
@@ -61,7 +113,11 @@
 
                 "name": "FlexmiToGraphviz",
 
-                "parameters": ["language", "outputType", "outputLanguage",  "program", "secondProgram", "emfatic", "flexmi", "secondEmfatic", "secondFlexmi", "thirdEmfatic", "thirdFlexmi"],
+                "parameters": [ {"name":"flexmi", "type":"flexmi"},
+                                {"name":"emfatic", "type":"emfatic"}
+                    ],
+
+                "returnType": "diagram",
 
                 "path": "http://localhost:9000/services/FlexmiToPlantUMLFunction"
 

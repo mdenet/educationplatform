@@ -295,6 +295,12 @@ function requestAction(actionClicked, toolActionFunction) {
                 actionRequestData[param.name] =  parameterData.data;
             }
         }
+
+        actionRequestData.language = sourcePanelLanguage;
+
+        // TODO support output and language 
+        //actionRequestData.outputType = outputType;
+        //actionRequestData.outputLanguage = outputLanguage;
         
         actionFunctionPromise = requestAndHandleActionFunction(actionClicked, actionRequestData, toolActionFunction );
 
