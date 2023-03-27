@@ -53,12 +53,6 @@
                 "language": "ecore",
 
                 "buttons" : [ 
-                    { 
-                        "id": "action-button", 
-                        "icon": "run",
-                        "actionfunction": "function-ecoretoemfatic",
-                        "hint": "Run the program (Ctrl/Cmd+S)" 
-                      },
                       { 
                         "id": "refresh-button", 
                         "icon": "refresh",

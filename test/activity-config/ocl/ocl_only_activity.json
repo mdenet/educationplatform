@@ -23,7 +23,7 @@
             "actions": [
 
                 {
-                    "source": "panel-ecl",
+                    "source": "panel-ocl",
 
                     "sourceButton": "action-button",
 

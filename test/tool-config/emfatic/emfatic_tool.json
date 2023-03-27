@@ -55,12 +55,6 @@
                 "language": "emfatic",
 
                 "buttons" : [ 
-                    { 
-                        "id": "action-button", 
-                        "icon": "run",
-                        "actionfunction": "function-emfatictoecore",
-                        "hint": "Run the program (Ctrl/Cmd+S)" 
-                      },
                       { 
                         "id": "refresh-button", 
                         "icon": "refresh",

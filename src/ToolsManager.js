@@ -239,6 +239,11 @@ class ToolManager {
        return this.functionRegister.lookupFunction(inputsParamTypes, outputParamType);
     }
 
+    getPartiallyMatchingConversionFunctions(inputsParamTypes, outputParamType){
+        
+        return this.functionRegister.lookupFunctionsPartialMatch(inputsParamTypes, outputParamType);
+     }
+
 }
 
 export {ToolManager};

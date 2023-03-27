@@ -31,6 +31,26 @@ register = [];
             return null;
         }
     }
+
+    
+    lookupFunctionsPartialMatch(inputParameterTypes, outputParameterType){
+
+        let foundEntries;
+
+        if (this.register.length > 0){
+
+            foundEntries = this.register.filter( entry => arrayEquals(entry.inputParamTypes, inputParameterTypes, true) &&
+                                                            entry.outputParamType === outputParameterType);
+        }
+
+        if (foundEntries != undefined){
+            return  foundEntries.map( entry => entry.id )  ;
+
+        } else {
+            return null;
+        }
+    }
+
 }
 
 export { FunctionRegistry };

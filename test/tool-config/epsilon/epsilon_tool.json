@@ -130,7 +130,7 @@
                 "name": "Conversion - Flexmi To Xmi",
 
                 "parameters": [ {"name":"input", "type":"flexmi"},
-                                {"name":"metamodel", "type":"emfatic", "instanceOf":"input"} ],
+                                {"name":"metamodel", "type":"ecore", "instanceOf":"input"} ],
 
                 "returnType": "xmi",
 
