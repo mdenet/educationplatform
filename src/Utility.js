@@ -1,6 +1,14 @@
 
+export const ARRAY_ANY_ELEMENT = '*';
 
-export function arrayEquals( arrayA, arrayB ) {
+/**
+ * Compares arrays of primitive types for equality 
+ * @param {any[]} arrayA 
+ * @param {any[]} arrayB 
+ * @param {boolean} allowAnyWildcard when true the elements at the same position will always match
+ * @returns true if the arrays are equal
+ */
+export function arrayEquals( arrayA, arrayB, allowAnyWildcard=false ) {
           
     if(arrayA.length != arrayB.length){
         return false;
@@ -8,14 +16,18 @@ export function arrayEquals( arrayA, arrayB ) {
     } else {
         // Check array elements
         for(let i=0; i<arrayA.length; i++){
-           
-            if( arrayA[i] != arrayB[i] ){
+            
+            let noElementsAreAny = arrayA[i]!=ARRAY_ANY_ELEMENT && arrayB[i]!=ARRAY_ANY_ELEMENT;
+
+            if( arrayA[i] != arrayB[i] && (noElementsAreAny || !allowAnyWildcard) ){
                 return false; 
             }
         }
         return true;
     }
 }
+
+
 
 /**
  * Posts a json request to the given url.

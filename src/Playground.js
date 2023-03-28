@@ -27,7 +27,7 @@ import { TestPanel } from './TestPanel .js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
 import { BlankPanel } from './BlankPanel .js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
-import { jsonRequest, jsonRequestConversion} from './Utility.js';
+import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT} from './Utility.js';
 import { ActionFunction } from './ActionFunction.js';
 
 
@@ -321,7 +321,7 @@ function requestAction(actionClicked, toolActionFunction) {
  * @param {ActionFunction} toolActionFunction 
  * @returns promise for the parameter's data
  */
-function translateTypes( parameter, action, toolActionFunction ) {
+async function translateTypes( parameter, action, toolActionFunction ) {
 
     let parameterPromise;
    
@@ -335,15 +335,14 @@ function translateTypes( parameter, action, toolActionFunction ) {
 
     if(sourceType != targetType){
         let dependencyType; // Assuming there may be one upto one dependency 
-        let dependencyData;
 
         //get dependency data required for conversion 
-        const hasInstanceOf =  toolActionFunction.getInstanceOfParamName(parameter) != null;
+        const hasDependency =  toolActionFunction.getInstanceOfParamName(parameter) != null;
 
 
-        let dependencyPanel 
+        let dependencyPanel; 
 
-        if (hasInstanceOf) {
+        if (hasDependency) {
 
             const dependencyParameterName = toolActionFunction.getInstanceOfParamName(parameter);
             const dependencyPanelId = action.parameters[dependencyParameterName].id;
@@ -355,29 +354,84 @@ function translateTypes( parameter, action, toolActionFunction ) {
 
 
         //Translate the source data        
-        let typesPanelMap = {}; // Types have to be distinct for mapping to the conversion function's paramters
-        typesPanelMap[sourceType]=  panel;
+        let typesPanelValuesMap = {}; // Types have to be distinct for mapping to the conversion function's paramters
+        typesPanelValuesMap[sourceType]=  panel.getValue();
 
-        if (hasInstanceOf) {
-            typesPanelMap[dependencyType]=  dependencyPanel;
-        }
+        let conversionFunctionId;
 
-        
-        const conversionFunctionId = toolsManager.getConversionFunction( Object.keys(typesPanelMap), targetType );
+        if (hasDependency) {
+
+            let potentialConversionFunctions = toolsManager.getPartiallyMatchingConversionFunctions( [sourceType, ARRAY_ANY_ELEMENT], targetType);
+
+            //check for a conversion function with the dependency type
+            
+            let functionsToCheck = [...potentialConversionFunctions];
+
+            while ( conversionFunctionId==null && functionsToCheck.length > 0){
+                
+                let functionId = functionsToCheck.pop();
+                let conversionFunction = toolsManager.getActionFunction(functionId);
+                
+                if (conversionFunction.getParameters()[1].type == dependencyType) { // Order of conversion parameters assumed: [input, dependency]
+                    
+                    //Conversion function found so use the panel value
+                    conversionFunctionId = functionId;
+                    typesPanelValuesMap[dependencyType]=  dependencyPanel.getValue();
+                }
+            }
+
+            //no conversion found so check for a conversion function but consider conversions of the dependency
+            functionsToCheck = [...potentialConversionFunctions];
+            
+            while ( conversionFunctionId==null && functionsToCheck.length > 0){
+                let functionId = functionsToCheck.pop();
+                let conversionFunction = toolsManager.getActionFunction(functionId);
+
+                const targetDependancyType = conversionFunction.getParameters()[1].type;  // Order of conversion parameters assumed: [input, dependency]
+
+                let dependencyConversionFunctionId = toolsManager.getConversionFunction( [dependencyType], targetDependancyType );
+                
+                if (dependencyConversionFunctionId != null){
+
+                    conversionFunctionId = functionId;
+                    
+                    const conversionId = parameter + "Dep"; 
+
+                    //convert dependency
+                    let conversionRequestData = {};
+                    let conversionFunction = toolsManager.getActionFunction(dependencyConversionFunctionId);
+
+                    // Populate parameters for the conversion request 
+                    for( const param of conversionFunction.getParameters() ){
+                        conversionRequestData[param.name] =   dependencyPanel.getValue(); // The found conversion function is expected to have one parameter
+                    }
+
+                    let convertedValue = await requestTranslation(conversionRequestData, conversionFunction, conversionId);
+
+                    typesPanelValuesMap[targetDependancyType]= convertedValue.data;
+                }
+            }
+
+        } else {
+
+            conversionFunctionId = toolsManager.getConversionFunction( Object.keys(typesPanelValuesMap), targetType );
+        };
 
         if (conversionFunctionId != null){
+            //There is a matching conversion function
             let conversionRequestData = {};
             let conversionFunction = toolsManager.getActionFunction(conversionFunctionId);
 
             // Populate parameters for the conversion request 
             for( const param of conversionFunction.getParameters() ){
-                conversionRequestData[param.name] =  typesPanelMap[param.type].getValue();
+                conversionRequestData[param.name] =  typesPanelValuesMap[param.type];
             }
 
             parameterPromise= requestTranslation(conversionRequestData, conversionFunction, parameter);
 
+            
         } else {
-            console.log("No conversion function available for input types:" + Object.keys(typesPanelMap).toString() )
+            console.log("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
         }
 
     } else {
