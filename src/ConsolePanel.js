@@ -1,6 +1,4 @@
 import { Panel } from "./Panel.js";
-import { Layout } from "./Layout.js";
-import { language, programPanel, secondProgramPanel } from "./Playground.js";
 import { define } from "ace-builds";
 
 class ConsolePanel extends Panel {
@@ -211,7 +209,7 @@ class ConsolePanel extends Panel {
             if (editor.getValue().indexOf(location) > -1) {
                 var matches = location.match(locationRegexp);
                 var Range = ace.require("ace/range").Range;
-                var panel = programPanel;
+               // var panel = programPanel;
 
                 panel.getEditor().selection.setRange(new Range(
                     parseInt(matches[3]) - 1, parseInt(matches[4]),

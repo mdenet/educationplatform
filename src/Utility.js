@@ -114,3 +114,39 @@ export function jsonRequestConversion(url, json, parameterName){
         xhr.send(json);
     });
 }
+
+
+/**
+ * Http get request to url
+ * 
+ * @param {*} url 
+ * @returns Promise to the response 
+ */
+export function getRequest(url){
+
+    return new Promise(function (resolve, reject) {
+        
+        let xmlHttp = new XMLHttpRequest();
+        
+        xmlHttp.onload = function() { 
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                resolve(xmlHttp.responseText);
+            } else {
+                reject({
+                    status: xmlHttp.status,
+                    statusText: xmlHttp.statusText
+                });
+            }
+        }
+
+        xmlHttp.onerror = function() {
+            reject({
+                status: xmlHttp.status,
+                statusText: xmlHttp.statusText
+            });
+        }
+
+        xmlHttp.open("GET", url , true);  
+        xmlHttp.send(null);
+    });
+}

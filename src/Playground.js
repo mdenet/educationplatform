@@ -27,9 +27,10 @@ import { TestPanel } from './TestPanel .js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
 import { BlankPanel } from './BlankPanel .js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
-import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT} from './Utility.js';
+import { getRequest, jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT} from './Utility.js';
 import { ActionFunction } from './ActionFunction.js';
 
+const TOKEN_HANDLER_URL = "http://localhost:10000";
 
 var outputType = "text";
 var outputLanguage = "text";
@@ -48,6 +49,43 @@ export var activityManager;
 export var toolsManager;
 
 var urlParameters = new URLSearchParams(window.location.search);    
+
+
+document.getElementById("btnnologin").onclick= () => {
+    PlaygroundUtility.hideLogin();
+}
+
+document.getElementById("btnlogin").onclick= async () => {
+
+    // Get github url
+    const urlRequest = { url: window.location.href };
+    let authServerDetails= await jsonRequest(TOKEN_HANDLER_URL + "/mdenet-auth/login/url",
+                                               JSON.stringify(urlRequest) );
+
+    
+
+    authServerDetails = JSON.parse(authServerDetails);
+
+    // Authenticate redirect 
+    window.location.href = authServerDetails.url;
+}
+
+if (urlParameters.has("code") && urlParameters.has("state")  ){
+    // Returning from authentication redirect
+    PlaygroundUtility.hideLogin();
+
+    //Complete authentication
+    const tokenRequest = {};
+    tokenRequest.state = urlParameters.get("state");
+    tokenRequest.code = urlParameters.get("code");
+
+    //TODO loading box
+    let authDetails=  jsonRequest(TOKEN_HANDLER_URL + "/mdenet-auth/login/token",
+                                               JSON.stringify(tokenRequest) );
+    authDetails.then( (details) => {
+        console.log("AUTHENTICATED: " + details.toString());
+    } );
+}
 
 if (urlParameters.has("activities")) {
 
