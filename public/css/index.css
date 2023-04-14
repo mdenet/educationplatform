@@ -1,7 +1,7 @@
 
 #login {
     position: absolute !important;
-    z-index: 9 !important;
+    z-index: 10000 !important;
     width: 60% !important;
     background-color: whitesmoke;
     border-style: solid;

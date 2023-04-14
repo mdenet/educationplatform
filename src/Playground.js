@@ -9,13 +9,15 @@ import {define} from "ace-builds";
 
 import svgPanZoom from 'svg-pan-zoom';
 
+import { FileHandler } from './FileHandler.js';
+import { ActivityManager } from './ActivityManager.js';
+import { ToolManager as ToolsManager } from './ToolsManager.js';
+
 import { ModelPanel } from './ModelPanel.js';
 import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
 import { OutputPanel } from "./OutputPanel.js";
 
-
-import { ActivityManager } from './ActivityManager.js';
 
 import { MetamodelPanel } from './MetamodelPanel.js';
 import { Preloader } from './Preloader.js';
@@ -24,13 +26,13 @@ import { Layout } from './Layout.js';
 import 'metro4';
 import './highlighting/highlighting.js';
 import { TestPanel } from './TestPanel .js';
-import { ToolManager as ToolsManager } from './ToolsManager.js';
+
 import { BlankPanel } from './BlankPanel .js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
-import { getRequest, jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT} from './Utility.js';
+import { getRequest, jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateRepo } from './Utility.js';
 import { ActionFunction } from './ActionFunction.js';
 
-const TOKEN_HANDLER_URL = "http://localhost:10000";
+const TOKEN_HANDLER_URL = "http://127.0.0.1:10000";
 
 var outputType = "text";
 var outputLanguage = "text";
@@ -45,6 +47,7 @@ export var backend = new Backend();
 var panels = [];
 var buttonActionFunctions = [];
 
+export var fileHandler = new FileHandler(TOKEN_HANDLER_URL);
 export var activityManager;
 export var toolsManager;
 
@@ -52,6 +55,13 @@ var urlParameters = new URLSearchParams(window.location.search);
 
 
 document.getElementById("btnnologin").onclick= () => {
+    PlaygroundUtility.hideLogin();
+}
+
+
+if (!urlParamPrivateRepo()){
+    // Public repo so no need to authenticate
+    initialiseActivity();
     PlaygroundUtility.hideLogin();
 }
 
@@ -81,65 +91,72 @@ if (urlParameters.has("code") && urlParameters.has("state")  ){
 
     //TODO loading box
     let authDetails=  jsonRequest(TOKEN_HANDLER_URL + "/mdenet-auth/login/token",
-                                               JSON.stringify(tokenRequest) );
+                                               JSON.stringify(tokenRequest), true );
     authDetails.then( (details) => {
         console.log("AUTHENTICATED: " + details.toString());
+        initialiseActivity();
     } );
 }
 
-if (urlParameters.has("activities")) {
 
-    // An activity configuration has been provided
-    toolsManager = new ToolsManager();
-    activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager) );
-    toolsManager.setToolsUrls(activityManager.getToolUrls());
 
+
+
+function initialiseActivity(){
+    if (urlParameters.has("activities")) {
+
+        // An activity configuration has been provided
+        toolsManager = new ToolsManager();
+        activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager), fileHandler );
+        toolsManager.setToolsUrls(activityManager.getToolUrls());
     
-    // Import tool grammar highlighting 
-    const  toolImports = toolsManager.getToolsGrammarImports(); 
-
-    for(let ipt of toolImports) {
-        ace.config.setModuleUrl(ipt.module, ipt.url);
-    }
-
-
-    // Add Tool styles for icons 
-    for (let toolUrl of activityManager.getToolUrls()){
-        let toolBaseUrl = toolUrl.substring(0, toolUrl.lastIndexOf("/"));
-        var link = document.createElement("link");
-        link.setAttribute("rel", 'stylesheet');
-        link.setAttribute("href", toolBaseUrl + "/icons.css");
-        document.head.appendChild(link);
-    }
- 
-
-
+        
+        // Import tool grammar highlighting 
+        const  toolImports = toolsManager.getToolsGrammarImports(); 
     
-    activity = activityManager.getSelectedActivity(); 
-
-    setup();
-
-} else {
-
-    // No activity configuration has been given
-    const contentPanelName = "content-panel";
- 
-    panels.push(new BlankPanel(contentPanelName));
-    panels[0].setVisible(true);
-
-    new Layout().createFromPanels("navview-content", panels);
-
-    PlaygroundUtility.showMenu();
-
-    Metro.init();
-    fit();
-
-    var contentPanelDiv = document.getElementById(contentPanelName);
-    var content = document.createTextNode("No activity configuration has been specified.");
-    contentPanelDiv.append(content);
+        for(let ipt of toolImports) {
+            ace.config.setModuleUrl(ipt.module, ipt.url);
+        }
+    
+    
+        // Add Tool styles for icons 
+        for (let toolUrl of activityManager.getToolUrls()){
+            let toolBaseUrl = toolUrl.substring(0, toolUrl.lastIndexOf("/"));
+            var link = document.createElement("link");
+            link.setAttribute("rel", 'stylesheet');
+            link.setAttribute("href", toolBaseUrl + "/icons.css");
+            document.head.appendChild(link);
+        }
+     
+    
+    
+        
+        activity = activityManager.getSelectedActivity(); 
+    
+        initialisePanels();
+    
+    } else {
+    
+        // No activity configuration has been given
+        const contentPanelName = "content-panel";
+     
+        panels.push(new BlankPanel(contentPanelName));
+        panels[0].setVisible(true);
+    
+        new Layout().createFromPanels("navview-content", panels);
+    
+        PlaygroundUtility.showMenu();
+    
+        Metro.init();
+        fit();
+    
+        var contentPanelDiv = document.getElementById(contentPanelName);
+        var content = document.createTextNode("No activity configuration has been specified.");
+        contentPanelDiv.append(content);
+    }
 }
 
-function setup() {
+function initialisePanels() {
     
     if (activity.outputLanguage != null) {
         outputLanguage = activity.outputLanguage;

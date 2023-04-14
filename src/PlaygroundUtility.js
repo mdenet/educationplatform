@@ -11,6 +11,10 @@ class PlaygroundUtility {
         document.getElementById("login").style.display = "none";
     }
 
+    static showLogin(){
+        document.getElementById("login").style.display = "block";
+    }
+
 }
 
 export { PlaygroundUtility };

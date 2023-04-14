@@ -33,9 +33,10 @@ export function arrayEquals( arrayA, arrayB, allowAnyWildcard=false ) {
  * Posts a json request to the given url.
  * @param {String} url the destination url
  * @param {String} json the data to send
+ * @param {boolean} useCredentials xhr setting
  * @returns Promise to the response
  */
-export function jsonRequest(url, json){
+export function jsonRequest(url, json, useCredentials=false){
     
     return new Promise(function (resolve, reject) {
 
@@ -43,6 +44,7 @@ export function jsonRequest(url, json){
 
         xhr.open("POST", url);
         xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.withCredentials = useCredentials;
         
         xhr.onload = function () {
         if (xhr.status >= 200 && xhr.status < 300) {
@@ -72,7 +74,7 @@ export function jsonRequest(url, json){
  * of conversion function Promises.
  * @param {String} url the destination url
  * @param {String} json the data to send
- * @param {String} the paramter name
+ * @param {String} parameterName the paramter name
  * @returns Promise to the response
  */
 export function jsonRequestConversion(url, json, parameterName){
@@ -149,4 +151,15 @@ export function getRequest(url){
         xmlHttp.open("GET", url , true);  
         xmlHttp.send(null);
     });
+}
+
+/**
+ * Checks the private url parameter
+ * 
+ * @returns the private url parameter value
+ */
+export function urlParamPrivateRepo(){
+    let urlParams = new URLSearchParams(window.location.search);    
+
+    return urlParams.has("privaterepo") && urlParams.get("privaterepo")==='true';
 }

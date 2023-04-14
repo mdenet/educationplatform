@@ -1,4 +1,5 @@
 import { backend } from "./Playground.js";
+import { urlParamPrivateRepo } from "./Utility.js";
 
 class ActivityManager {
 
@@ -12,10 +13,12 @@ class ActivityManager {
     activeSubMenu;
 
     accessPanelDef;
+    fileHandler;
 
-    constructor( panelDefAccessor ) {
+    constructor( panelDefAccessor, fileHandler ) {
 
         this.accessPanelDef = panelDefAccessor; // Obtain tool panel definitions from thier ID
+        this.fileHandler = fileHandler;
 
         // Retrieve the url of the activities configuration
         var parameters = new URLSearchParams(window.location.search);
@@ -82,14 +85,15 @@ class ActivityManager {
 
     /**
      * Fetches all the activities from activitiesUrl
-     * and pupulates the activities array
+     * and populates the activities array
      */
     fetchActivities() {
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", this.activitiesUrl, false);
-        xhr.send();
-        if (xhr.status === 200) {    
-            var json = JSON.parse(xhr.responseText);
+
+        let fileContent = this.fileHandler.fetchFile( this.activitiesUrl , urlParamPrivateRepo() );
+
+        if (fileContent != null){
+
+            var json = JSON.parse(fileContent);
             
             for (const activity of json.activities) {
 
@@ -113,7 +117,8 @@ class ActivityManager {
                     }
                 }
             }
-        }
+        } 
+
     }
 
     subMenuNumber = 0;
