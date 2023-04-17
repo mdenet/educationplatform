@@ -301,13 +301,10 @@ class ActivityManager {
      * This could be an Epsilon program, a Flexmi model or an Emfatic metamodel
      */
     fetchFile(name) {
-        var xhr = new XMLHttpRequest();
-        var url = new URL(name, this.activitiesUrl).href;
-        xhr.open("GET", url, false);
-        xhr.send();
-        if (xhr.status === 200) {    
-            return xhr.responseText;
-        }
+
+        let fileUrl = new URL(name, this.activitiesUrl).href 
+
+        return this.fileHandler.fetchFile( fileUrl, urlParamPrivateRepo() );
     }
 
 

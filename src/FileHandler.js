@@ -23,7 +23,9 @@ class FileHandler {
             
             if (xhr.status === 200) {  
                 
-                let response = xhr.responseText;
+                let response = JSON.parse(xhr.responseText);
+
+                return window.atob(response.data.content);
             
             } else {
                 return null;
