@@ -163,3 +163,12 @@ export function urlParamPrivateRepo(){
 
     return urlParams.has("privaterepo") && urlParams.get("privaterepo")==='true';
 }
+
+
+/**
+ * 
+ * @returns true if the user is signed in
+ */
+export function isAuthenticated(){
+    return window.sessionStorage.getItem("isAuthenticated") != null;
+}

@@ -89,7 +89,8 @@ class ActivityManager {
      */
     fetchActivities() {
 
-        let fileContent = this.fileHandler.fetchFile( this.activitiesUrl , urlParamPrivateRepo() );
+        let file  = this.fileHandler.fetchFile( this.activitiesUrl , urlParamPrivateRepo() )
+        let fileContent = file.content;
 
         if (fileContent != null){
 
@@ -260,7 +261,7 @@ class ActivityManager {
             xhr.send(data);
             if (xhr.status === 200) {
                 try {
-                    var content = atob(JSON.parse(xhr.responseText).content);
+                    var content = window.atob(JSON.parse(xhr.responseText).content);
                     return JSON.parse(content);
                 }
                 catch (err) {
@@ -273,7 +274,13 @@ class ActivityManager {
             var activity = this.activities[id];
 
             for ( let apanel of activity.panels ){
-                if (apanel.file != null) apanel.file = this.fetchFile(apanel.file);
+                
+                if (apanel.file != null) { 
+                    apanel.url =  new URL( apanel.file, this.activitiesUrl).href; 
+                    let file = this.fetchFile(apanel.file);
+                    apanel.file = file.content;
+                    apanel.sha = file.sha; 
+                };
 
                 // Resolve the panel definition reference  
                 if ( typeof apanel.ref == "string" ){

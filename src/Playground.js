@@ -18,6 +18,7 @@ import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
 import { OutputPanel } from "./OutputPanel.js";
 
+import { StoreDialog } from "./StoreDialog.js"
 
 import { MetamodelPanel } from './MetamodelPanel.js';
 import { Preloader } from './Preloader.js';
@@ -45,6 +46,7 @@ var preloader = new Preloader();
 export var backend = new Backend();
 
 var panels = [];
+var storeDialog;
 var buttonActionFunctions = [];
 
 export var fileHandler = new FileHandler(TOKEN_HANDLER_URL);
@@ -94,6 +96,9 @@ if (urlParameters.has("code") && urlParameters.has("state")  ){
                                                JSON.stringify(tokenRequest), true );
     authDetails.then( (details) => {
         console.log("AUTHENTICATED: " + details.toString());
+        
+        window.sessionStorage.setItem("isAuthenticated", true);
+
         initialiseActivity();
     } );
 }
@@ -133,6 +138,8 @@ function initialiseActivity(){
         
         activity = activityManager.getSelectedActivity(); 
     
+        storeDialog = new StoreDialog();
+
         initialisePanels();
     
     } else {
@@ -222,7 +229,9 @@ function initialisePanels() {
                 newPanel.setType(panelDefinition.language);
 
                 // Set from the activity 
-                newPanel.setValue(panel.file); 
+                newPanel.setValue(panel.file);
+                newPanel.setValueSha(panel.sha); 
+                newPanel.setFileUrl(panel.url)
             break;
         
             case "ConsolePanel":
@@ -707,6 +716,15 @@ function getPreviousVisibleSibling(element) {
     }
 }
 
+function showStoreDialog(event){
+    //storeDialog.show(event);
+    let editablePanels = panels.filter (p => p instanceof ProgramPanel)
+
+    for(const panel of editablePanels){
+            fileHandler.storeFile(panel.getFileUrl(), panel.getValueSha(), panel.getValue());
+    }
+    
+}
 
     // Some functions and variables are accessed  
     // by onclick - or similer - events
@@ -716,7 +734,7 @@ function getPreviousVisibleSibling(element) {
     window.runAction = runAction;
     window.consolePanel = consolePanel;
     window.panels = panels;
-
+    window.showStoreDialog = showStoreDialog;
     window.backend = backend;
     window.toggle = toggle;
     //window.renderDiagram = renderDiagram;

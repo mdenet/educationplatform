@@ -3,6 +3,7 @@
     position: absolute !important;
     z-index: 10000 !important;
     width: 60% !important;
+    min-width: 45em;
     background-color: whitesmoke;
     border-style: solid;
     border-color: slategrey;
