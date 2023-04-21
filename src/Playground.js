@@ -660,6 +660,14 @@ function longNotification(title, cls="light") {
     Metro.notify.create("<b>" + title + "...</b><br>This may take a few seconds to complete if the back end is not warmed up.", null, {keepOpen: true, cls: cls, width: 300});
 }
 
+function successNotification(message, cls="light") {
+    Metro.notify.create("<b>Success:</b> "+ message +"<br>", null, {keepOpen: true, cls: cls, width: 300});
+}
+
+function errorNotification(message) {
+    Metro.notify.create("<b>Error:</b> "+ message +"<br>", null, {keepOpen: true, cls: "bg-red fg-white", width: 300});
+}
+
 
 function toggle(elementId, onEmpty) {
     var element = document.getElementById(elementId);
@@ -720,10 +728,28 @@ function showStoreDialog(event){
     //storeDialog.show(event);
     let editablePanels = panels.filter (p => p instanceof ProgramPanel)
 
+    let fileStorePromises = [];
+
     for(const panel of editablePanels){
-            fileHandler.storeFile(panel.getFileUrl(), panel.getValueSha(), panel.getValue());
+        
+        let storePromise = fileHandler.storeFile(panel.getFileUrl(), panel.getValueSha(), panel.getValue());
+        
+        if (storePromise!=null) {
+            
+            storePromise.then( response => {
+                console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
+            });
+
+            fileStorePromises.push(storePromise);
+        }
     }
     
+    Promise.all(fileStorePromises).then( (response) => {
+        successNotification("The activity panel contents have been saved.");
+    
+    }).catch((error) => {
+        errorNotification("An error occurred while trying to save the panel contents.");
+    });
 }
 
     // Some functions and variables are accessed  

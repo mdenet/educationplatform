@@ -47,8 +47,14 @@ class FileHandler {
         }
     }
 
-    storeFile(url, sha, newFileContent, message=("MDENet Education Platform save on " + new Date().toJSON()), branch=null){
+    storeFile(url, sha, newFileContent, message, branch){
         
+        if (message === undefined) {
+            message=("MDENet Education Platform save.");
+        }
+        
+        let responsePromise;
+
         if(isAuthenticated()){
             let request = this.getPrivateFileUpdateParams(url);
         
@@ -61,15 +67,14 @@ class FileHandler {
                 request.params.branch = branch;
             }
             
-            let responsePromise = jsonRequest( request.url,  JSON.stringify(request.params), true );
-            
-            responsePromise.then( (response) => {
-                console.log("Stored file - success");
-            } );
+            responsePromise = jsonRequest( request.url,  JSON.stringify(request.params), true );
 
         } else {
-            console.log("File could not be stored - not authenticated.")
+            console.log("File could not be stored - not authenticated.");
+            responsePromise = null;
         }
+        
+        return responsePromise;
     }
 
     forkRepository(url, repository, owner, mainOnly){
