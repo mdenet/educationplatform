@@ -33,9 +33,10 @@ export function arrayEquals( arrayA, arrayB, allowAnyWildcard=false ) {
  * Posts a json request to the given url.
  * @param {String} url the destination url
  * @param {String} json the data to send
+ * @param {boolean} useCredentials xhr setting
  * @returns Promise to the response
  */
-export function jsonRequest(url, json){
+export function jsonRequest(url, json, useCredentials=false){
     
     return new Promise(function (resolve, reject) {
 
@@ -43,6 +44,7 @@ export function jsonRequest(url, json){
 
         xhr.open("POST", url);
         xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.withCredentials = useCredentials;
         
         xhr.onload = function () {
         if (xhr.status >= 200 && xhr.status < 300) {
@@ -72,7 +74,7 @@ export function jsonRequest(url, json){
  * of conversion function Promises.
  * @param {String} url the destination url
  * @param {String} json the data to send
- * @param {String} the paramter name
+ * @param {String} parameterName the paramter name
  * @returns Promise to the response
  */
 export function jsonRequestConversion(url, json, parameterName){
@@ -113,4 +115,60 @@ export function jsonRequestConversion(url, json, parameterName){
 
         xhr.send(json);
     });
+}
+
+
+/**
+ * Http get request to url
+ * 
+ * @param {*} url 
+ * @returns Promise to the response 
+ */
+export function getRequest(url){
+
+    return new Promise(function (resolve, reject) {
+        
+        let xmlHttp = new XMLHttpRequest();
+        
+        xmlHttp.onload = function() { 
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                resolve(xmlHttp.responseText);
+            } else {
+                reject({
+                    status: xmlHttp.status,
+                    statusText: xmlHttp.statusText
+                });
+            }
+        }
+
+        xmlHttp.onerror = function() {
+            reject({
+                status: xmlHttp.status,
+                statusText: xmlHttp.statusText
+            });
+        }
+
+        xmlHttp.open("GET", url , true);  
+        xmlHttp.send(null);
+    });
+}
+
+/**
+ * Checks the private url parameter
+ * 
+ * @returns the private url parameter value
+ */
+export function urlParamPrivateRepo(){
+    let urlParams = new URLSearchParams(window.location.search);    
+
+    return urlParams.has("privaterepo") && urlParams.get("privaterepo")==='true';
+}
+
+
+/**
+ * 
+ * @returns true if the user is signed in
+ */
+export function isAuthenticated(){
+    return window.sessionStorage.getItem("isAuthenticated") != null;
 }

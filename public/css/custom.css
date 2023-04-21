@@ -85,6 +85,11 @@
 	content: url("../images/info.png");
 }
 
+.mif-store::before {
+	content: url("../images/save.svg");
+}
+
+
 .mif-link::before {
 	content: url("../images/link.png");
 }

@@ -9,13 +9,16 @@ import {define} from "ace-builds";
 
 import svgPanZoom from 'svg-pan-zoom';
 
+import { FileHandler } from './FileHandler.js';
+import { ActivityManager } from './ActivityManager.js';
+import { ToolManager as ToolsManager } from './ToolsManager.js';
+
 import { ModelPanel } from './ModelPanel.js';
 import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
 import { OutputPanel } from "./OutputPanel.js";
 
-
-import { ActivityManager } from './ActivityManager.js';
+import { StoreDialog } from "./StoreDialog.js"
 
 import { MetamodelPanel } from './MetamodelPanel.js';
 import { Preloader } from './Preloader.js';
@@ -24,12 +27,13 @@ import { Layout } from './Layout.js';
 import 'metro4';
 import './highlighting/highlighting.js';
 import { TestPanel } from './TestPanel .js';
-import { ToolManager as ToolsManager } from './ToolsManager.js';
+
 import { BlankPanel } from './BlankPanel .js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
-import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT} from './Utility.js';
+import { getRequest, jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateRepo } from './Utility.js';
 import { ActionFunction } from './ActionFunction.js';
 
+const TOKEN_HANDLER_URL = "http://127.0.0.1:10000";
 
 var outputType = "text";
 var outputLanguage = "text";
@@ -42,66 +46,124 @@ var preloader = new Preloader();
 export var backend = new Backend();
 
 var panels = [];
+var storeDialog;
 var buttonActionFunctions = [];
 
+export var fileHandler = new FileHandler(TOKEN_HANDLER_URL);
 export var activityManager;
 export var toolsManager;
 
 var urlParameters = new URLSearchParams(window.location.search);    
 
-if (urlParameters.has("activities")) {
 
-    // An activity configuration has been provided
-    toolsManager = new ToolsManager();
-    activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager) );
-    toolsManager.setToolsUrls(activityManager.getToolUrls());
-
-    
-    // Import tool grammar highlighting 
-    const  toolImports = toolsManager.getToolsGrammarImports(); 
-
-    for(let ipt of toolImports) {
-        ace.config.setModuleUrl(ipt.module, ipt.url);
-    }
-
-
-    // Add Tool styles for icons 
-    for (let toolUrl of activityManager.getToolUrls()){
-        let toolBaseUrl = toolUrl.substring(0, toolUrl.lastIndexOf("/"));
-        var link = document.createElement("link");
-        link.setAttribute("rel", 'stylesheet');
-        link.setAttribute("href", toolBaseUrl + "/icons.css");
-        document.head.appendChild(link);
-    }
- 
-
-
-    
-    activity = activityManager.getSelectedActivity(); 
-
-    setup();
-
-} else {
-
-    // No activity configuration has been given
-    const contentPanelName = "content-panel";
- 
-    panels.push(new BlankPanel(contentPanelName));
-    panels[0].setVisible(true);
-
-    new Layout().createFromPanels("navview-content", panels);
-
-    PlaygroundUtility.showMenu();
-
-    Metro.init();
-    fit();
-
-    var contentPanelDiv = document.getElementById(contentPanelName);
-    var content = document.createTextNode("No activity configuration has been specified.");
-    contentPanelDiv.append(content);
+document.getElementById("btnnologin").onclick= () => {
+    PlaygroundUtility.hideLogin();
 }
 
-function setup() {
+
+if (!urlParamPrivateRepo()){
+    // Public repo so no need to authenticate
+    initialiseActivity();
+    PlaygroundUtility.hideLogin();
+}
+
+document.getElementById("btnlogin").onclick= async () => {
+
+    // Get github url
+    const urlRequest = { url: window.location.href };
+    let authServerDetails= await jsonRequest(TOKEN_HANDLER_URL + "/mdenet-auth/login/url",
+                                               JSON.stringify(urlRequest) );
+
+    
+
+    authServerDetails = JSON.parse(authServerDetails);
+
+    // Authenticate redirect 
+    window.location.href = authServerDetails.url;
+}
+
+if (urlParameters.has("code") && urlParameters.has("state")  ){
+    // Returning from authentication redirect
+    PlaygroundUtility.hideLogin();
+
+    //Complete authentication
+    const tokenRequest = {};
+    tokenRequest.state = urlParameters.get("state");
+    tokenRequest.code = urlParameters.get("code");
+
+    //TODO loading box
+    let authDetails=  jsonRequest(TOKEN_HANDLER_URL + "/mdenet-auth/login/token",
+                                               JSON.stringify(tokenRequest), true );
+    authDetails.then( (details) => {
+        console.log("AUTHENTICATED: " + details.toString());
+        
+        window.sessionStorage.setItem("isAuthenticated", true);
+
+        initialiseActivity();
+    } );
+}
+
+
+
+
+
+function initialiseActivity(){
+    if (urlParameters.has("activities")) {
+
+        // An activity configuration has been provided
+        toolsManager = new ToolsManager();
+        activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager), fileHandler );
+        toolsManager.setToolsUrls(activityManager.getToolUrls());
+    
+        
+        // Import tool grammar highlighting 
+        const  toolImports = toolsManager.getToolsGrammarImports(); 
+    
+        for(let ipt of toolImports) {
+            ace.config.setModuleUrl(ipt.module, ipt.url);
+        }
+    
+    
+        // Add Tool styles for icons 
+        for (let toolUrl of activityManager.getToolUrls()){
+            let toolBaseUrl = toolUrl.substring(0, toolUrl.lastIndexOf("/"));
+            var link = document.createElement("link");
+            link.setAttribute("rel", 'stylesheet');
+            link.setAttribute("href", toolBaseUrl + "/icons.css");
+            document.head.appendChild(link);
+        }
+     
+    
+    
+        
+        activity = activityManager.getSelectedActivity(); 
+    
+        storeDialog = new StoreDialog();
+
+        initialisePanels();
+    
+    } else {
+    
+        // No activity configuration has been given
+        const contentPanelName = "content-panel";
+     
+        panels.push(new BlankPanel(contentPanelName));
+        panels[0].setVisible(true);
+    
+        new Layout().createFromPanels("navview-content", panels);
+    
+        PlaygroundUtility.showMenu();
+    
+        Metro.init();
+        fit();
+    
+        var contentPanelDiv = document.getElementById(contentPanelName);
+        var content = document.createTextNode("No activity configuration has been specified.");
+        contentPanelDiv.append(content);
+    }
+}
+
+function initialisePanels() {
     
     if (activity.outputLanguage != null) {
         outputLanguage = activity.outputLanguage;
@@ -167,7 +229,9 @@ function setup() {
                 newPanel.setType(panelDefinition.language);
 
                 // Set from the activity 
-                newPanel.setValue(panel.file); 
+                newPanel.setValue(panel.file);
+                newPanel.setValueSha(panel.sha); 
+                newPanel.setFileUrl(panel.url)
             break;
         
             case "ConsolePanel":
@@ -596,6 +660,14 @@ function longNotification(title, cls="light") {
     Metro.notify.create("<b>" + title + "...</b><br>This may take a few seconds to complete if the back end is not warmed up.", null, {keepOpen: true, cls: cls, width: 300});
 }
 
+function successNotification(message, cls="light") {
+    Metro.notify.create("<b>Success:</b> "+ message +"<br>", null, {keepOpen: true, cls: cls, width: 300});
+}
+
+function errorNotification(message) {
+    Metro.notify.create("<b>Error:</b> "+ message +"<br>", null, {keepOpen: true, cls: "bg-red fg-white", width: 300});
+}
+
 
 function toggle(elementId, onEmpty) {
     var element = document.getElementById(elementId);
@@ -652,6 +724,33 @@ function getPreviousVisibleSibling(element) {
     }
 }
 
+function showStoreDialog(event){
+    //storeDialog.show(event);
+    let editablePanels = panels.filter (p => p instanceof ProgramPanel)
+
+    let fileStorePromises = [];
+
+    for(const panel of editablePanels){
+        
+        let storePromise = fileHandler.storeFile(panel.getFileUrl(), panel.getValueSha(), panel.getValue());
+        
+        if (storePromise!=null) {
+            
+            storePromise.then( response => {
+                console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
+            });
+
+            fileStorePromises.push(storePromise);
+        }
+    }
+    
+    Promise.all(fileStorePromises).then( (response) => {
+        successNotification("The activity panel contents have been saved.");
+    
+    }).catch((error) => {
+        errorNotification("An error occurred while trying to save the panel contents.");
+    });
+}
 
     // Some functions and variables are accessed  
     // by onclick - or similer - events
@@ -661,7 +760,7 @@ function getPreviousVisibleSibling(element) {
     window.runAction = runAction;
     window.consolePanel = consolePanel;
     window.panels = panels;
-
+    window.showStoreDialog = showStoreDialog;
     window.backend = backend;
     window.toggle = toggle;
     //window.renderDiagram = renderDiagram;

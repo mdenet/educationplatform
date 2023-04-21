@@ -7,12 +7,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="css/metro-all.min.css" from="https://cdn.metroui.org.ua/v4.4.3/css/metro-all.min.css">
     <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="css/index.css">
     <title>MDENet Education Platform</title>
     <link rel="shortcut icon" href="../assets/images/favicon.png">
 </head>
 
 <body class="h-100" onresize="fit()" onload="fit();updateGutterVisibility();">
     <div id="preloader"><img src="images/preloader.gif" width="100px"></div>
+
+    <div id="login" style="display:inline">
+        <h2>Login</h2>
+        <p> 
+            <button id="btnlogin" class="loginbutton" type="button" onclick="">Sign in with github</button> <br>
+            <button id="btnnologin" class="loginbutton button-dark" type="button" onclick="">Continue without signing in</button> <br>
+            *sign in is required to save changes you make 
+        </p>
+    </div>
+
     <div id="navview" data-role="navview" style="display:none">
         <div class="navview-pane">
             <button class="pull-button">
@@ -23,6 +34,10 @@
                 <li class="item-separator"></li>
                 <li class="item-separator" id="examplesEnd"></li>
                 <li>
+                    <a href="#" onclick="showStoreDialog(event)" id="store">
+                        <span class="icon"><span class="mif-example-16 mif-store"></span></span>
+                        <span class="caption">Save</span>
+                    </a>
                     <a href="https://mde-network.com/" target=”_blank” id="about">
                         <span class="icon"><span class="mif-example-16 mif-info"></span></span>
                         <span class="caption">About</span>
@@ -30,8 +45,11 @@
                 </li>
             </ul>
         </div>
-        <div class="navview-content" id="navview-content"/>
+        <div class="navview-content" id="navview-content"></div>
     </div>
+    
+
+
 
     <script type="module" src="js/bundle.js"></script>
 

@@ -1,0 +1,24 @@
+
+#login {
+    position: absolute !important;
+    z-index: 10000 !important;
+    width: 60% !important;
+    min-width: 45em;
+    background-color: whitesmoke;
+    border-style: solid;
+    border-color: slategrey;
+    border-width: 3px;
+    padding: 5em;
+    margin-top: 15%;
+    margin-left: 30%;
+    text-align:center;
+}
+
+.loginbutton {
+    width: 30em;
+}
+
+.button-dark {
+    background-color: darkslategrey;
+    color: aliceblue;
+}

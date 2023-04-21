@@ -5,7 +5,9 @@ class Panel {
     element;
     visible;
     type;
-    
+    valueSha;
+    fileUrl;
+
     constructor(id) {
         this.id = id;
         this.getElement();
@@ -59,6 +61,22 @@ class Panel {
 
     setValue(value) {
         this.editor.setValue((value+""), 1);
+    }
+
+    getValueSha() {
+        return this.valueSha;
+    }
+
+    setValueSha(sha) {
+        this.valueSha = sha;
+    }
+
+    getFileUrl() {
+        return this.fileUrl;
+    }
+
+    setFileUrl(url) {
+        this.fileUrl = url;
     }
 
     setType(type){
