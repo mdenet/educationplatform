@@ -1,25 +1,8 @@
+
 {
-  "private": true,
-  "name": "mdenet-educationplatform",
-  "version": "0.0.1",
-  "scripts": {
-    "test": "npx jasmine JASMINE_CONFIG_PATH=test/support/jasmine.json",
-    "build": "webpack --mode=development"
-  },
-  "devDependencies": {
-    "jasmine": "^4.5.0",
-    "karma": "^6.4.1",
-    "karma-chrome-launcher": "^3.1.1",
-    "karma-jasmine": "^5.1.0",
-    "karma-jasmine-html-reporter": "^2.0.0",
-    "karma-webpack": "^5.0.0",
-    "webpack-cli": "^5.0.1"
-  },
-  "dependencies": {
-    "ace-builds": "^1.14.0",
-    "handlebars": "^4.7.7",
-    "jszip": "^3.10.1",
-    "metro4": "^4.5.1",
-    "svg-pan-zoom": "^3.6.1"
-  }
+  "name": "MDENet-Education-Platform",
+  "workspaces": [
+    "platform",
+    "tokenserver"
+  ]
 }
