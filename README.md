@@ -14,26 +14,29 @@ Prerequisites:
 - [Docker Compose](https://docs.docker.com/compose/install) 
 
 
-To start the prototype platform, in the root platform directory run the `launch.sh` script or run the following commands.
+To start the prototype platform, in the root project directory run the `launch.sh` script or run the following commands.
 
 ```
-npm run build
+npm run build --workspaces
 
-docker compose up --build --force-recreate
+npm run start --workspace=tokenserver
+
+npm run start --workspace=platform
 ```
 
-This starts three web servers 
- 1.  the main platform [http://localhost:8080](http://localhost:8080)
- 2.  the tools configuration [http://localhost:8081](http://localhost:8081)
- 3.  the activities configuration [http://localhost:8082](http://localhost:8082)
+This starts four web servers 
+ 1.  the main platform [http://127.0.0.1:8080](http://127.0.0.1:8080)
+ 2.  the tools configuration [http://127.0.0.1:8081](http://127.0.0.1:8081)
+ 3.  the activities configuration [http://127.0.0.1:8082](http://127.0.0.1:8082)
+ 4.  the token server for github authentication [http://127.0.0.1:10000](http://127.0.0.1:10000) 
 
 
 ### Specifying the activities
 The activities configuration file specifies the platform activities to load and must be provided using the `activities` url parameter.
 
-> http://localhost:8081?activities=[url-to-activity-config]
+> http://127.0.0.1:8081?activities=[url-to-activity-config]
 
-An example of an activity file for  Epsilon tasks provided for testing [http://localhost:8080/?activities=http://localhost:8082/epsilon-example/epsilon-example_activity.json](http://localhost:8080/?activities=http://localhost:8082/epsilon-example/epsilon-example_activity.json)
+An example of an activity file for  Epsilon tasks provided for testing [http://127.0.0.1:8080/?activities=http://127.0.0.1:8082/epsilon-example/epsilon-example_activity.json](http://127.0.0.1:8080/?activities=http://127.0.0.1:8082/epsilon-example/epsilon-example_activity.json)
 
 The default test configurations provided by the activities server
 - consoles/consoles_activity.json - Only console panels
@@ -43,6 +46,6 @@ The default test configurations provided by the activities server
 
 ### External tool functions
 
-For activities that use backend tool functions the corresponding tool server must be available to process the requests. For the provided Epsilon examples this is expected to be running [http://localhost:9000](http://localhost:9000).
+For activities that use backend tool functions the corresponding tool server must be available to process the requests. For the provided Epsilon examples this is expected to be running [http://127.0.0.1:9000](http://127.0.0.1:9000).
 
 The Epsilon backend docker services can be found [here](https://github.com/epsilonlabs/playground-docker).
