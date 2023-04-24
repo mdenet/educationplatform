@@ -1,0 +1,27 @@
+{
+  "name": "mdenet-auth",
+  "version": "0.0.1",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node -r dotenv/config ./dist/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@octokit/auth-oauth-app": "^5.0.5",
+    "@octokit/oauth-app": "^4.2.0",
+    "base64url": "^3.0.1",
+    "cookie": "^0.5.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "octokit": "^2.0.14"
+  },
+  "devDependencies": {
+    "@types/cookie": "^0.5.1",
+    "dotenv": "^16.0.3",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.3"
+  }
+}

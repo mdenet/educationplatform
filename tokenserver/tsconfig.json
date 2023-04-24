@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+      "strict": true,
+      "sourceMap": true,
+      "esModuleInterop": true,
+      "outDir": "./dist",
+      "baseUrl": "./src",
+      "allowJs": true,
+      "target": "ES2017",
+      "module": "commonjs",
+      "moduleResolution": "node"
+    },
+    "include": ["./src/**/*"]
+  }
