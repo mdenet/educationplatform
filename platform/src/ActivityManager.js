@@ -5,7 +5,7 @@ class ActivityManager {
 
     activityId;
     visibleActivities = 15;
-    activitiesUrl = new URL("activities/activities.json", document.baseURI).href;
+    activitiesUrl;
     customActivitiesUrl = false;
     toolsUrl;
     customToolsUrl= false;
