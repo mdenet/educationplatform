@@ -18,8 +18,6 @@ import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
 import { OutputPanel } from "./OutputPanel.js";
 
-import { StoreDialog } from "./StoreDialog.js"
-
 import { MetamodelPanel } from './MetamodelPanel.js';
 import { Preloader } from './Preloader.js';
 import { Backend } from './Backend.js';
@@ -46,7 +44,6 @@ var preloader = new Preloader();
 export var backend = new Backend();
 
 var panels = [];
-var storeDialog;
 var buttonActionFunctions = [];
 
 export var fileHandler = new FileHandler(TOKEN_HANDLER_URL);
@@ -138,8 +135,6 @@ function initialiseActivity(){
         
         activity = activityManager.getSelectedActivity(); 
     
-        storeDialog = new StoreDialog();
-
         initialisePanels();
     
     } else {
@@ -724,8 +719,8 @@ function getPreviousVisibleSibling(element) {
     }
 }
 
-function showStoreDialog(event){
-    //storeDialog.show(event);
+function savePanelContents(event){
+    
     let editablePanels = panels.filter (p => p instanceof ProgramPanel)
 
     let fileStorePromises = [];
@@ -760,7 +755,7 @@ function showStoreDialog(event){
     window.runAction = runAction;
     window.consolePanel = consolePanel;
     window.panels = panels;
-    window.showStoreDialog = showStoreDialog;
+    window.savePanelContents = savePanelContents;
     window.backend = backend;
     window.toggle = toggle;
     //window.renderDiagram = renderDiagram;
