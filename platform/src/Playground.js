@@ -15,6 +15,7 @@ import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
 import { OutputPanel } from "./OutputPanel.js";
 import { TestPanel } from './TestPanel .js';
+import { BlankPanel } from './BlankPanel .js';
 
 import { Preloader } from './Preloader.js';
 import { Backend } from './Backend.js';
