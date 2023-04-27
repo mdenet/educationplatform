@@ -1,8 +1,0 @@
-{
-  "services": [
-    {"name": "RunEpsilonFunction", "url": ""},
-    {"name": "FlexmiToPlantUMLFunction", "url": ""},
-    {"name": "EmfaticToPlantUMLFunction", "url": ""},
-    {"name": "ShortURLFunction", "url": ""}
-  ]
-}
