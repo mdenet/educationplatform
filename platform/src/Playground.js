@@ -5,30 +5,23 @@ import 'ace-builds/src-min-noconflict/mode-yaml';
 import 'ace-builds/src-min-noconflict/mode-java';
 import 'ace-builds/src-min-noconflict/mode-html';
 import 'ace-builds/src-min-noconflict/ext-modelist';
-import {define} from "ace-builds";
-
-import svgPanZoom from 'svg-pan-zoom';
+import 'metro4';
 
 import { FileHandler } from './FileHandler.js';
 import { ActivityManager } from './ActivityManager.js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
 
-import { ModelPanel } from './ModelPanel.js';
 import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
 import { OutputPanel } from "./OutputPanel.js";
+import { TestPanel } from './TestPanel .js';
+import { BlankPanel } from './BlankPanel .js';
 
-import { MetamodelPanel } from './MetamodelPanel.js';
 import { Preloader } from './Preloader.js';
 import { Backend } from './Backend.js';
 import { Layout } from './Layout.js';
-import 'metro4';
-import './highlighting/highlighting.js';
-import { TestPanel } from './TestPanel .js';
-
-import { BlankPanel } from './BlankPanel .js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
-import { getRequest, jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateRepo } from './Utility.js';
+import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateRepo } from './Utility.js';
 import { ActionFunction } from './ActionFunction.js';
 
 const TOKEN_HANDLER_URL = "http://127.0.0.1:10000";
