@@ -5,7 +5,6 @@ import 'ace-builds/src-min-noconflict/mode-yaml';
 import 'ace-builds/src-min-noconflict/mode-java';
 import 'ace-builds/src-min-noconflict/mode-html';
 import 'ace-builds/src-min-noconflict/ext-modelist';
-import './highlighting/highlighting.js';
 import 'metro4';
 
 import { FileHandler } from './FileHandler.js';
@@ -20,7 +19,6 @@ import { TestPanel } from './TestPanel .js';
 import { Preloader } from './Preloader.js';
 import { Backend } from './Backend.js';
 import { Layout } from './Layout.js';
-import { StoreDialog } from "./StoreDialog.js"
 import { PlaygroundUtility } from './PlaygroundUtility.js';
 import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateRepo } from './Utility.js';
 import { ActionFunction } from './ActionFunction.js';
