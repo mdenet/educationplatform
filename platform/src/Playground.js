@@ -358,7 +358,7 @@ function requestAction(actionClicked, toolActionFunction) {
 
      
     }).catch( (err) => {
-        console.log("There was an error translating action function parameter types.");
+        errorNotification("There was an error translating action function parameter types.");
     } );
 
     return; 
@@ -386,7 +386,7 @@ async function translateTypes( parameter, action, toolActionFunction ) {
     let sourceType = panel.getType();
 
     if(sourceType != targetType){
-        let dependencyType; // Assuming there may be one upto one dependency 
+        let dependencyType; // Assuming there may be one dependency 
 
         //get dependency data required for conversion 
         const hasDependency =  toolActionFunction.getInstanceOfParamName(parameter) != null;
@@ -416,56 +416,18 @@ async function translateTypes( parameter, action, toolActionFunction ) {
             let potentialConversionFunctions = toolsManager.getPartiallyMatchingConversionFunctions( [sourceType, ARRAY_ANY_ELEMENT], targetType);
 
             //check for a conversion function with the dependency type
-            
-            let functionsToCheck = [...potentialConversionFunctions];
+            conversionFunctionId = await findConversionFunctionMatchingDependencies(dependencyType, dependencyPanel.getValue(), 
+                                                                                    potentialConversionFunctions, false, parameter, typesPanelValuesMap);
 
-            while ( conversionFunctionId==null && functionsToCheck.length > 0){
-                
-                let functionId = functionsToCheck.pop();
-                let conversionFunction = toolsManager.getActionFunction(functionId);
-                
-                if (conversionFunction.getParameters()[1].type == dependencyType) { // Order of conversion parameters assumed: [input, dependency]
-                    
-                    //Conversion function found so use the panel value
-                    conversionFunctionId = functionId;
-                    typesPanelValuesMap[dependencyType]=  dependencyPanel.getValue();
-                }
+
+            if (conversionFunctionId==null){
+                //no conversion found so check for a conversion function but consider conversions of the dependency
+                conversionFunctionId = await findConversionFunctionMatchingDependencies(dependencyType, dependencyPanel.getValue(), 
+                                                                                        potentialConversionFunctions, true, parameter, typesPanelValuesMap);
             }
-
-            //no conversion found so check for a conversion function but consider conversions of the dependency
-            functionsToCheck = [...potentialConversionFunctions];
             
-            while ( conversionFunctionId==null && functionsToCheck.length > 0){
-                let functionId = functionsToCheck.pop();
-                let conversionFunction = toolsManager.getActionFunction(functionId);
-
-                const targetDependancyType = conversionFunction.getParameters()[1].type;  // Order of conversion parameters assumed: [input, dependency]
-
-                let dependencyConversionFunctionId = toolsManager.getConversionFunction( [dependencyType], targetDependancyType );
-                
-                if (dependencyConversionFunctionId != null){
-
-                    conversionFunctionId = functionId;
-                    
-                    const conversionId = parameter + "Dep"; 
-
-                    //convert dependency
-                    let conversionRequestData = {};
-                    let conversionFunction = toolsManager.getActionFunction(dependencyConversionFunctionId);
-
-                    // Populate parameters for the conversion request 
-                    for( const param of conversionFunction.getParameters() ){
-                        conversionRequestData[param.name] =   dependencyPanel.getValue(); // The found conversion function is expected to have one parameter
-                    }
-
-                    let convertedValue = await requestTranslation(conversionRequestData, conversionFunction, conversionId);
-
-                    typesPanelValuesMap[targetDependancyType]= convertedValue.data;
-                }
-            }
-
         } else {
-
+            //no dependency 
             conversionFunctionId = toolsManager.getConversionFunction( Object.keys(typesPanelValuesMap), targetType );
         };
 
@@ -483,7 +445,7 @@ async function translateTypes( parameter, action, toolActionFunction ) {
 
             
         } else {
-            console.log("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
+            errorNotification("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
         }
 
     } else {
@@ -499,6 +461,70 @@ async function translateTypes( parameter, action, toolActionFunction ) {
 
     return parameterPromise;
 }
+
+/**
+ * For the given list of conversion function ids to check, finds the first conversion function with matching dependencies.
+ * Optionally conversions of the dependency are considered from the conversion function available to the tools manager and
+ * the depency type and value translated. 
+ * 
+ * @param {string} dependencyType the required dependency type
+ * @param {string} dependencyValue the dependency value
+ * @param {string[]} conversionFunctions list of conversion function ids to check 
+ * @param {boolean} convertDependency when true try to convert the dependency using a remote tool service conversion functions
+ *                                    available to the ToolsManager.
+ * @param {string} parameterName the name of the parameter to use when convering the dependency. 
+ * @param {string[]} typeValueMap the type values map the depency input value is added to if a conversion function is found
+ * @returns {string} the id of a conversion function to use, null if none found.
+ */
+async function findConversionFunctionMatchingDependencies(dependencyType, dependencyValue, conversionFunctions, convertDependency, parameterName, typeValueMap){
+    let conversionFunctionId;
+    let functionsToCheck = [...conversionFunctions]
+    
+    while ( conversionFunctionId==null && functionsToCheck.length > 0){
+        let functionId = functionsToCheck.pop();
+        let conversionFunction = toolsManager.getActionFunction(functionId);
+
+        const targetDependancyType = conversionFunction.getParameters()[1].type;  // Order of conversion parameters assumed: [input, dependency]
+
+        if (!convertDependency){
+            // Check for conversion functions with matching dependncies
+            
+            if (targetDependancyType==dependencyType) {
+                    //Conversion function found so use the panel value
+                    
+                    conversionFunctionId = functionId;
+                    typeValueMap[dependencyType]=  dependencyValue;
+            }
+
+        } else {
+            // Check for conversion functions transforming dependencies if possible 
+            let dependencyConversionFunctionId = toolsManager.getConversionFunction( [dependencyType], targetDependancyType );
+            
+            if (dependencyConversionFunctionId != null){
+
+                conversionFunctionId = functionId;
+                
+                const conversionId = parameterName + "Dep"; 
+
+                //convert dependency
+                let conversionRequestData = {};
+                let conversionFunction = toolsManager.getActionFunction(dependencyConversionFunctionId);
+
+                // Populate parameters for the conversion request 
+                for( const param of conversionFunction.getParameters() ){
+                    conversionRequestData[param.name] =   dependencyValue; // The found conversion function is expected to have one parameter
+                }
+
+                let convertedValue = await requestTranslation(conversionRequestData, conversionFunction, conversionId);
+
+                typeValueMap[targetDependancyType]= convertedValue.data;
+            }
+        }
+    }
+
+    return conversionFunctionId;
+}
+
 
 /**
  * Requests the conversion function from the remote tool service
@@ -653,6 +679,7 @@ function successNotification(message, cls="light") {
 }
 
 function errorNotification(message) {
+    console.log("ERROR: " + message);
     Metro.notify.create("<b>Error:</b> "+ message +"<br>", null, {keepOpen: true, cls: "bg-red fg-white", width: 300});
 }
 
