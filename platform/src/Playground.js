@@ -195,6 +195,7 @@ function initialisePanels() {
 
    /**
      * Create a panel for a given panel config entry
+     * 
      * @param {string} panel 
      * @return {Panel}
      */
@@ -369,6 +370,7 @@ function requestAction(actionClicked, toolActionFunction) {
 /**
  * Translates a parameter type as required using remote tool services for any conversions. 
  * If the given parameter matches the required action function, no translation is performed.
+ * 
  * @param {String} parameter the parameter name to translate 
  * @param {ActionFunction} toolActionFunction 
  * @returns promise for the parameter's data
@@ -385,7 +387,7 @@ async function translateTypes( parameter, action, toolActionFunction ) {
     let targetType = toolActionFunction.getParameterType(parameter);
     let sourceType = panel.getType();
 
-    if(sourceType != targetType){
+    if (sourceType != targetType){
         let dependencyType; // Assuming there may be one dependency 
 
         //get dependency data required for conversion 
@@ -433,16 +435,7 @@ async function translateTypes( parameter, action, toolActionFunction ) {
 
         if (conversionFunctionId != null){
             //There is a matching conversion function
-            let conversionRequestData = {};
-            let conversionFunction = toolsManager.getActionFunction(conversionFunctionId);
-
-            // Populate parameters for the conversion request 
-            for( const param of conversionFunction.getParameters() ){
-                conversionRequestData[param.name] =  typesPanelValuesMap[param.type];
-            }
-
-            parameterPromise= requestTranslation(conversionRequestData, conversionFunction, parameter);
-
+            parameterPromise = invokeActionFunction(conversionFunctionId, typesPanelValuesMap, parameter);
             
         } else {
             errorNotification("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
@@ -465,7 +458,7 @@ async function translateTypes( parameter, action, toolActionFunction ) {
 /**
  * For the given list of conversion function ids to check, finds the first conversion function with matching dependencies.
  * Optionally conversions of the dependency are considered from the conversion function available to the tools manager and
- * the depency type and value translated. 
+ * the depency type. If available, the dependency value is translated to the given type. 
  * 
  * @param {string} dependencyType the required dependency type
  * @param {string} dependencyValue the dependency value
@@ -507,15 +500,10 @@ async function findConversionFunctionMatchingDependencies(dependencyType, depend
                 const conversionId = parameterName + "Dep"; 
 
                 //convert dependency
-                let conversionRequestData = {};
-                let conversionFunction = toolsManager.getActionFunction(dependencyConversionFunctionId);
+                let dependencyTypeValueMap =  {};  
+                dependencyTypeValueMap[dependencyType]=dependencyValue; // The found conversion function is expected to have one parameter
 
-                // Populate parameters for the conversion request 
-                for( const param of conversionFunction.getParameters() ){
-                    conversionRequestData[param.name] =   dependencyValue; // The found conversion function is expected to have one parameter
-                }
-
-                let convertedValue = await requestTranslation(conversionRequestData, conversionFunction, conversionId);
+                let convertedValue = await invokeActionFunction(dependencyConversionFunctionId, dependencyTypeValueMap, parameterName);
 
                 typeValueMap[targetDependancyType]= convertedValue.data;
             }
@@ -525,12 +513,33 @@ async function findConversionFunctionMatchingDependencies(dependencyType, depend
     return conversionFunctionId;
 }
 
+/**
+ * Prepares the input parameters and requests the type translation for the given function id  
+ * 
+ * @param {string} functionId the id of the action function
+ * @param {Object} typeValuesMap an object mapping action functions paramter types as keys to input values
+ * @param {string} parameterName name of the parameter
+ * @returns Promise for the translated data
+ */
+function invokeActionFunction( functionId, typeValuesMap, parameterName ){
+    let conversionRequestData = {};
+    let conversionFunction = toolsManager.getActionFunction(functionId);
+
+    // Populate parameters for the conversion request 
+    for( const param of conversionFunction.getParameters() ){
+        conversionRequestData[param.name] =  typeValuesMap[param.type];
+    }
+
+    return requestTranslation(conversionRequestData, conversionFunction, parameterName);
+}
+
 
 /**
  * Requests the conversion function from the remote tool service
+ * 
  * @param {Object} parameters 
  * @param {ActionFunction} converstionFunction
- * @param {String} name of the parameter
+ * @param {String} parameterName name of the parameter
  * @returns Promise for the translated data
  */
 function requestTranslation(parameters, conversionFunction, parameterName){
@@ -543,6 +552,7 @@ function requestTranslation(parameters, conversionFunction, parameterName){
 
 /**
  * Request the action function from the remote tool service and handle the response
+ * 
  * @param {Object} action
  * @param {Object} parameters 
  * @param {ActionFunction} actionFunction 
