@@ -379,6 +379,7 @@ function invokeActionFunction(functionId, parameterMap){
  * @param {string} sourceType 
  * @param {string} targetType
  * @param {string} parameterName name of the parameter for request
+ * @returns {Promise} promise for the converted paramter value
  */
 function convert(sourceValue, sourceType, targetType, parameterName){
     
@@ -413,6 +414,7 @@ function convert(sourceValue, sourceType, targetType, parameterName){
  * @param {string} metamodelType
  * @param {string} targetType
  * @param {string} parameterName name of the parameter for request
+ * @returns {Promise} promise for the converted paramter value
  */
 async function convertIncludingMetamodel(sourceValue, sourceType, metamodelValue, metamodelType, targetType, parameterName){
     let parameterPromise;
@@ -423,12 +425,12 @@ async function convertIncludingMetamodel(sourceValue, sourceType, metamodelValue
 
     let potentialConversionFunctions = functionRegistry_findPartial( [sourceType, ARRAY_ANY_ELEMENT], targetType);
 
-    //check for a conversion function with the dependency type
+    //check for a conversion function with the metamodel type
     conversionFunctionId = await selectConversionFunctionConvertMetamodel( metamodelType, metamodelValue, potentialConversionFunctions, 
                                                                              false, parameterName, typesPanelValuesMap)
 
     if (conversionFunctionId==null){
-        //no conversion found so check for a conversion function but consider conversions of the dependency
+        //no conversion found so check for a conversion function but consider conversions of the metamodel
         conversionFunctionId = await selectConversionFunctionConvertMetamodel(metamodelType, metamodelValue, potentialConversionFunctions, 
                                                                                 true, parameterName, typesPanelValuesMap);
     }
@@ -451,16 +453,16 @@ async function convertIncludingMetamodel(sourceValue, sourceType, metamodelValue
  * Optionally conversions of the metamodel are considered from the conversion functions available to the tools manager and
  * the metamodel type. If available, the metamodel value is converted to the required type. 
  * 
- * @param {string} dependencyType the required dependency type
- * @param {string} dependencyValue the dependency value
+ * @param {string} metamodelType the metamodel type
+ * @param {string} metamodelValue the metamodel value
  * @param {string[]} conversionFunctions list of conversion function ids to check 
- * @param {boolean} convertMetamodel when true try to convert the dependency using a remote tool service conversion functions
+ * @param {boolean} convertMetamodel when true try to convert the metamodel using a remote tool service conversion function
  *                                    available to the ToolsManager.
- * @param {string} parameterName the name of the parameter to use when convering the dependency. 
- * @param {string[]} typeValueMap the type values map the depency input value is added to if a conversion function is found
+ * @param {string} parameterName the name of the parameter to use when convering the metamodel. 
+ * @param {string[]} typeValueMap the type values map the metamodel input value is added to if a conversion function is found
  * @returns {string} the id of a conversion function to use, null if none found.
  */
-async function selectConversionFunctionConvertMetamodel(dependencyType, dependencyValue, conversionFunctions, convertMetamodel, parameterName, typeValueMap){
+async function selectConversionFunctionConvertMetamodel(metamodelType, metamodelValue, conversionFunctions, convertMetamodel, parameterName, typeValueMap){
     let conversionFunctionId;
     let functionsToCheck = [...conversionFunctions]
     
@@ -468,35 +470,35 @@ async function selectConversionFunctionConvertMetamodel(dependencyType, dependen
         let functionId = functionsToCheck.pop();
         let conversionFunction = toolsManager.getActionFunction(functionId);
 
-        const targetDependancyType = conversionFunction.getParameters()[1].type;  // Order of conversion parameters assumed: [input, dependency]
+        const targetMetamodelType = conversionFunction.getParameters()[1].type;  // Order of conversion parameters assumed: [input, metamodel]
 
         if (!convertMetamodel){
-            // Check for conversion functions with matching dependncies
+            // Check for conversion functions with matching metamodels only
             
-            if (targetDependancyType==dependencyType) {
+            if (targetMetamodelType==metamodelType) {
                     //Conversion function found so use the panel value
                     
                     conversionFunctionId = functionId;
-                    typeValueMap[dependencyType]=  dependencyValue;
+                    typeValueMap[metamodelType]=  metamodelValue;
             }
 
         } else {
-            // Check for conversion functions transforming dependencies if possible 
-            let dependencyConversionFunctionId = toolsManager.getConversionFunction( [dependencyType], targetDependancyType );
+            // Check for conversion functions converting metamodel if possible 
+            let metamodelConversionFunctionId = toolsManager.getConversionFunction( [metamodelType], targetMetamodelType );
             
-            if (dependencyConversionFunctionId != null){
+            if (metamodelConversionFunctionId != null){
 
                 conversionFunctionId = functionId;
                 
                 const conversionId = parameterName + "Metamodel"; 
 
-                //convert dependency
-                let dependencyTypeValueMap =  {};  
-                dependencyTypeValueMap[dependencyType]=dependencyValue; // The found conversion function is expected to have one parameter
+                //convert metamodel
+                let metamodelTypeValueMap =  {};  
+                metamodelTypeValueMap[metamodelType]=metamodelValue; // The found conversion function is expected to have one parameter
 
-                let convertedValue = await functionRegistry_callConversion(dependencyConversionFunctionId, dependencyTypeValueMap, parameterName);
+                let convertedValue = await functionRegistry_callConversion(metamodelConversionFunctionId, metamodelTypeValueMap, parameterName);
 
-                typeValueMap[targetDependancyType]= convertedValue.data;
+                typeValueMap[targetMetamodelType]= convertedValue.data;
             }
         }
     }
