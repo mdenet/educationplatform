@@ -8,6 +8,8 @@
 
             "title": "Conversion Function - EcoreToEmfatic",
 
+            "icon": "refresh",
+
             "tools": [ "http://localhost:8081/emf/emf_tool.json", 
                        "http://localhost:8081/emfatic/emfatic_tool.json", 
                        "http://localhost:8081/epsilon/epsilon_tool.json"],

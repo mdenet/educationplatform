@@ -185,7 +185,7 @@ class ActivityManager {
 
         var mif = document.createElement("span");
         mif.classList.add("mif-activity-16");
-        mif.classList.add("mif-" + activity.language);
+        mif.classList.add("mif-" + activity.icon);
         icon.appendChild(mif);
 
         var caption = document.createElement("caption");

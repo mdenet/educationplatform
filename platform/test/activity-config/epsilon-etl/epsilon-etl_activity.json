@@ -8,6 +8,8 @@
 
             "title": "Model-to-Model Example",
 
+            "icon": "etl",
+
             "tools": [ "http://localhost:8081/epsilon/epsilon_tool.json",
                        "http://localhost:8081/emfatic/emfatic_tool.json" ],
 

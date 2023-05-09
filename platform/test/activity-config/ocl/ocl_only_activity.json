@@ -8,6 +8,8 @@
 
             "title": "Model Validation Example",
 
+            "icon": "ocl",
+
             "tools": ["http://localhost:8081/ocl/ocl_tool.json"],
 
             "layout": {

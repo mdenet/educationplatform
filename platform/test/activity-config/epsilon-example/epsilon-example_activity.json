@@ -8,6 +8,8 @@
 
             "title": "Query Project Plan",
 
+            "icon": "evl",
+
             "tools": [ "http://localhost:8081/epsilon/epsilon_tool.json",
                        "http://localhost:8081/emfatic/emfatic_tool.json"],
 
@@ -103,6 +105,8 @@
             "id": "evl",
 
             "title": "Validate Project Plan",
+
+            "icon": "evl",
 
             "tools": [ "http://localhost:8081/epsilon/epsilon_tool.json"],
 
@@ -201,6 +205,8 @@
         "id": "etl",
 
         "title": "Transform to Deliverables",
+
+        "icon": "etl",
 
         "tools": [ "http://localhost:8081/epsilon/epsilon_tool.json"],
 
