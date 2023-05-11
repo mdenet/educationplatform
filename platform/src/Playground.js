@@ -501,7 +501,14 @@ async function selectConversionFunctionConvertMetamodel(metamodelType, metamodel
         let functionId = functionsToCheck.pop();
         let conversionFunction = toolsManager.getActionFunction(functionId);
 
-        const targetMetamodelType = conversionFunction.getParameters()[1].type;  // Order of conversion parameters assumed: [input, metamodel]
+        // Lookup the conversion function's metamodel type
+        let metamodelName = conversionFunction.getInstanceOfParamName( conversionFunction.getParameters()[0].name );
+
+        if(metamodelName==null){
+            metamodelName = conversionFunction.getInstanceOfParamName( conversionFunction.getParameters()[1].name );
+        }
+
+        const targetMetamodelType = conversionFunction.getParameterType(metamodelName);
 
         if (!convertMetamodel){
             // Check for conversion functions with matching metamodels only
