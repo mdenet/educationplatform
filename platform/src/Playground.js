@@ -335,7 +335,7 @@ function invokeActionFunction(functionId, parameterMap){
             if(metamodelId==null){
                 // Convert with no metamodel to consider
                 convertedValue = convert( givenParameter.val, givenParameter.type, 
-                                          actionFunctionParam.type, paramName );
+                                          actionFunctionParam.type, paramName ); // TODO issue #58 remove paramName
 
             } else {
                 // Convert considering metamodel
@@ -343,7 +343,7 @@ function invokeActionFunction(functionId, parameterMap){
 
                 convertedValue = convertIncludingMetamodel( givenParameter.value , givenParameter.type, 
                                                             givenMetamodel.value, givenMetamodel.type, 
-                                                            actionFunctionParam.type, paramName );
+                                                            actionFunctionParam.type, paramName ); // TODO issue #58 remove paramName
             }
 
             parameterPromises.push(convertedValue);
