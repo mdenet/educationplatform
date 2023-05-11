@@ -527,8 +527,6 @@ async function selectConversionFunctionConvertMetamodel(metamodelType, metamodel
             if (metamodelConversionFunctionId != null){
 
                 conversionFunctionId = functionId;
-                
-                const conversionId = parameterName + "Metamodel"; 
 
                 //convert metamodel
                 let metamodelTypeValueMap =  {};  
