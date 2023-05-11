@@ -317,27 +317,25 @@ function invokeActionFunction(functionId, parameterMap){
 
     let parameterPromises = [];
 
-    for ( const paramName  of parameterMap.keys() ){ /* TODO not all parameters are used by unmodified  epsilon tool 
-                                                             functions so iterate over given parameters 
-                                                             provided rather than all actionFunction.getParameters() */
+    for ( const paramName  of parameterMap.keys() ){ /* TODO add defensive checks that every required value
+                                                             is provided issue #57 */
 
         let actionFunctionParam = actionFunction.getParameters().find( p => p.name === paramName);                                                             
                                                                     
         /* Check the given parameter types against the those of the requested action function. 
            If required, request conversion from available tool functions */
-           let parameterName = actionFunctionParam.name;
-           let givenParameter = parameterMap.get(parameterName);
+           let givenParameter = parameterMap.get(paramName);
 
         if (givenParameter.type != actionFunctionParam.type){
             //Types don't match  so try  and convert 
             let convertedValue;
 
-            const metamodelId = actionFunction.getInstanceOfParamName(parameterName);
+            const metamodelId = actionFunction.getInstanceOfParamName(paramName);
             
             if(metamodelId==null){
                 // Convert with no metamodel to consider
                 convertedValue = convert( givenParameter.val, givenParameter.type, 
-                                          actionFunctionParam.type, parameterName );
+                                          actionFunctionParam.type, paramName );
 
             } else {
                 // Convert considering metamodel
@@ -345,7 +343,7 @@ function invokeActionFunction(functionId, parameterMap){
 
                 convertedValue = convertIncludingMetamodel( givenParameter.value , givenParameter.type, 
                                                             givenMetamodel.value, givenMetamodel.type, 
-                                                            actionFunctionParam.type, parameterName );
+                                                            actionFunctionParam.type, paramName );
             }
 
             parameterPromises.push(convertedValue);
@@ -355,7 +353,7 @@ function invokeActionFunction(functionId, parameterMap){
             let value =  new Promise( function (resolve, reject) { 
                 let parameterData = {};
                 
-                parameterData.name = parameterName;
+                parameterData.name = paramName;
                 parameterData.data = givenParameter.value;
     
                 resolve(parameterData); 
