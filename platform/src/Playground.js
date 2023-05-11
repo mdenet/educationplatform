@@ -363,7 +363,40 @@ function invokeActionFunction(functionId, parameterMap){
         }
     }
 
-    return Promise.all( parameterPromises );
+    // Invoke the actionFunction on compeletion of any conversions
+    let actionFunctionPromise = new Promise(function (resolve, reject) {
+
+        Promise.all( parameterPromises ).then( (values) => { 
+            let actionRequestData = {};
+
+            //Populate the transformed parameters
+            for ( const param  of actionFunction.getParameters() ){
+
+                const panelConfig = parameterMap.get(param.name); 
+
+                if (panelConfig == undefined){
+                    // Set unused parameters in the request to undefined as the epsilon backend function expects them all. 
+                    actionRequestData[param.name] = "undefined";
+
+                } else {
+                    let parameterData = values.find(val => (val.name === param.name) );
+
+                    actionRequestData[param.name] =  parameterData.data;
+                }
+            }
+
+            let resultPromise = functionRegistry_call(functionId, actionRequestData);
+
+            resolve(resultPromise);
+        
+        }).catch( (err) => {
+
+            reject(err);
+        });
+
+    });
+
+    return actionFunctionPromise;
 }
 
 
@@ -669,10 +702,9 @@ function handleResponseActionFunction(action, requestPromise){
 
         }
 
-    
+        Metro.notify.killAll();
     });
 
-    Metro.notify.killAll();
 }
 
 
@@ -710,43 +742,24 @@ function runAction(source, sourceButton) {
         parameterMap.set(paramName, param);
     }
 
-    // Call backend conversion and service functions
-    const sourcePanelLanguage = action.source.ref.language;
-
-    invokeActionFunction(buttonConfig.actionfunction, parameterMap, sourcePanelLanguage, ).then( (values) => { 
-        let actionRequestData = {};
-
-        //Populate the transformed parameters
-        for ( const param  of toolActionFunction.getParameters() ){
-
-            const panelConfig = parameterMap.get(param.name); 
-
-            if (panelConfig == undefined){
-                // Set unused parameters in the request to undefined as the epsilon backend function expects them all. 
-                actionRequestData[param.name] = "undefined";
-
-            } else {
-                let parameterData = values.find(val => (val.name === param.name) );
-
-                actionRequestData[param.name] =  parameterData.data;
-            }
-        }
-
-        actionRequestData.language = sourcePanelLanguage;
+    // Add the platform language parameter
+    let languageParam = {};
+    languageParam.type = toolActionFunction.getParameterType("language");
+    languageParam.value = action.source.ref.language; // Source panel language
+    parameterMap.set("language", languageParam);
 
         // TODO support output and language 
         //actionRequestData.outputType = outputType;
         //actionRequestData.outputLanguage = outputLanguage;
-        
-        let actionFunctionPromise =  functionRegistry_call(buttonConfig.actionfunction, actionRequestData);
 
-        handleResponseActionFunction(action , actionFunctionPromise);
+    // Call backend conversion and service functions
+    let actionResultPromise = invokeActionFunction(buttonConfig.actionfunction, parameterMap)
 
-     
-    }).catch( (err) => {
-        errorNotification("There was an error translating action function parameter types.");
+    actionResultPromise.catch( (err) => {
+         errorNotification("There was an error translating action function parameter types.");
     } );
 
+    handleResponseActionFunction(action , actionResultPromise);
  
     longNotification("Executing program");
 }
