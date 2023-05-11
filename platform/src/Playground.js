@@ -195,6 +195,7 @@ function initialisePanels() {
 
    /**
      * Create a panel for a given panel config entry
+     * 
      * @param {string} panel 
      * @return {Panel}
      */
@@ -302,209 +303,291 @@ function getPanelTitle(panelId) {
 }
 
 /**
- * Creates a request to the required backend converstion functions for type matching of the panels data with 
- * the action function's inputs. Once all of the inputs are available the action function is requested.
+ * Invokes an action function by placing requests to all the required external tool functions  
  * 
- * @param {object} actionClicked  the action of the clicked button
- * @param {ActionFunction} toolActionFunction the corresponding to action details
+ *  TODO: To be moved to the ToolManager issue #40
+ * 
+ * @param {string} functionId the id of tool function
+ * @param {Map} parameterMap map from parameter name to its value and type
+ * @returns {Promise}  promise to result of the action function 
  */
-function requestAction(actionClicked, toolActionFunction) {
-    let actionRequestData = {};
+function invokeActionFunction(functionId, parameterMap){
+
+    let actionFunction = toolsManager.functionRegistry_resolve(functionId);
+
     let parameterPromises = [];
-    
-    let actionFunctionPromise;
-       
-    const sourcePanelLanguage = actionClicked.source.ref.language;
-    
-    
-    for ( const param  of toolActionFunction.getParameters() ){
 
-        const panelConfig = actionClicked.parameters[param.name]; 
+    for ( const paramName  of parameterMap.keys() ){ /* TODO add defensive checks that every required value
+                                                             is provided issue #57 */
 
-        // Check types and request conversions from available tool services
-        if (panelConfig != undefined){
-            parameterPromises.push( translateTypes( param.name, actionClicked, toolActionFunction ) );
+        let actionFunctionParam = actionFunction.getParameters().find( p => p.name === paramName);                                                             
+                                                                    
+        /* Check the given parameter types against the those of the requested action function. 
+           If required, request conversion from available tool functions */
+           let givenParameter = parameterMap.get(paramName);
+
+        if (givenParameter.type != actionFunctionParam.type){
+            //Types don't match  so try  and convert 
+            let convertedValue;
+
+            const metamodelId = actionFunction.getInstanceOfParamName(paramName);
+            
+            if(metamodelId==null){
+                // Convert with no metamodel to consider
+                convertedValue = convert( givenParameter.val, givenParameter.type, 
+                                          actionFunctionParam.type, paramName ); // TODO issue #58 remove paramName
+
+            } else {
+                // Convert considering metamodel
+                const givenMetamodel = parameterMap.get(metamodelId);
+
+                convertedValue = convertIncludingMetamodel( givenParameter.value , givenParameter.type, 
+                                                            givenMetamodel.value, givenMetamodel.type, 
+                                                            actionFunctionParam.type, paramName ); // TODO issue #58 remove paramName
+            }
+
+            parameterPromises.push(convertedValue);
+        
+        } else {
+            // Matching types add values to promise for synchronisation 
+            let value =  new Promise( function (resolve, reject) { 
+                let parameterData = {};
+                
+                parameterData.name = paramName;
+                parameterData.data = givenParameter.value;
+    
+                resolve(parameterData); 
+            });
+
+            parameterPromises.push(value);
         }
     }
 
-    
-    // Request the final action function
-    Promise.all( parameterPromises ).then( (values) => { 
-        
+    // Invoke the actionFunction on compeletion of any conversions
+    let actionFunctionPromise = new Promise(function (resolve, reject) {
 
-        //Populate the transformed parameters
-        for ( const param  of toolActionFunction.getParameters() ){
+        Promise.all( parameterPromises ).then( (values) => { 
+            let actionRequestData = {};
 
-            const panelConfig = actionClicked.parameters[param.name]; 
+            //Populate the transformed parameters
+            for ( const param  of actionFunction.getParameters() ){
 
-            if (panelConfig == undefined){
-                // Set unused parameters in the request to undefined as the epsilon backend function expects them all. 
-                actionRequestData[param.name] = "undefined";
+                const panelConfig = parameterMap.get(param.name); 
 
-            } else {
-                let parameterData = values.find(val => (val.name === param.name) );
+                if (panelConfig == undefined){
+                    // Set unused parameters in the request to undefined as the epsilon backend function expects them all. 
+                    actionRequestData[param.name] = "undefined";
 
-                actionRequestData[param.name] =  parameterData.data;
+                } else {
+                    let parameterData = values.find(val => (val.name === param.name) );
+
+                    actionRequestData[param.name] =  parameterData.data;
+                }
             }
-        }
 
-        actionRequestData.language = sourcePanelLanguage;
+            let resultPromise = functionRegistry_call(functionId, actionRequestData);
 
-        // TODO support output and language 
-        //actionRequestData.outputType = outputType;
-        //actionRequestData.outputLanguage = outputLanguage;
+            resolve(resultPromise);
         
-        actionFunctionPromise = requestAndHandleActionFunction(actionClicked, actionRequestData, toolActionFunction );
+        }).catch( (err) => {
 
-     
-    }).catch( (err) => {
-        console.log("There was an error translating action function parameter types.");
-    } );
+            reject(err);
+        });
 
-    return; 
+    });
+
+    return actionFunctionPromise;
 }
 
 
 
 /**
- * Translates a parameter type as required using remote tool services for any conversions. 
- * If the given parameter matches the required action function, no translation is performed.
- * @param {String} parameter the parameter name to translate 
- * @param {ActionFunction} toolActionFunction 
- * @returns promise for the parameter's data
+ * Converts a source value to a target type using the available conversion functions
+ * 
+ *   TODO: To be moved to the ToolManager issue #40
+ * 
+ * @param {string} sourceValue 
+ * @param {string} sourceType 
+ * @param {string} targetType
+ * @param {string} parameterName name of the parameter for request
+ * @returns {Promise} promise for the converted paramter value
  */
-async function translateTypes( parameter, action, toolActionFunction ) {
-
+function convert(sourceValue, sourceType, targetType, parameterName){
+    
     let parameterPromise;
-   
-    // Get editor values from their panels
-    const parameterPanelId = action.parameters[parameter].id; 
-     
-    const panel = panels.find( pn => pn.id ==  parameterPanelId );
+    let typesPanelValuesMap = {}; // Types have to be distinct for mapping to the conversion function's paramters
+    typesPanelValuesMap[sourceType]=  sourceValue;
 
-    let targetType = toolActionFunction.getParameterType(parameter);
-    let sourceType = panel.getType();
+    let conversionFunctionId = functionRegistry_find( Object.keys(typesPanelValuesMap), targetType );
 
-    if(sourceType != targetType){
-        let dependencyType; // Assuming there may be one upto one dependency 
-
-        //get dependency data required for conversion 
-        const hasDependency =  toolActionFunction.getInstanceOfParamName(parameter) != null;
-
-
-        let dependencyPanel; 
-
-        if (hasDependency) {
-
-            const dependencyParameterName = toolActionFunction.getInstanceOfParamName(parameter);
-            const dependencyPanelId = action.parameters[dependencyParameterName].id;
-
-            dependencyType= toolActionFunction.getParameterType(dependencyParameterName);
-
-            dependencyPanel = panels.find( pn => pn.id ==  dependencyPanelId );
-        }
-
-
-        //Translate the source data        
-        let typesPanelValuesMap = {}; // Types have to be distinct for mapping to the conversion function's paramters
-        typesPanelValuesMap[sourceType]=  panel.getValue();
-
-        let conversionFunctionId;
-
-        if (hasDependency) {
-
-            let potentialConversionFunctions = toolsManager.getPartiallyMatchingConversionFunctions( [sourceType, ARRAY_ANY_ELEMENT], targetType);
-
-            //check for a conversion function with the dependency type
-            
-            let functionsToCheck = [...potentialConversionFunctions];
-
-            while ( conversionFunctionId==null && functionsToCheck.length > 0){
-                
-                let functionId = functionsToCheck.pop();
-                let conversionFunction = toolsManager.getActionFunction(functionId);
-                
-                if (conversionFunction.getParameters()[1].type == dependencyType) { // Order of conversion parameters assumed: [input, dependency]
-                    
-                    //Conversion function found so use the panel value
-                    conversionFunctionId = functionId;
-                    typesPanelValuesMap[dependencyType]=  dependencyPanel.getValue();
-                }
-            }
-
-            //no conversion found so check for a conversion function but consider conversions of the dependency
-            functionsToCheck = [...potentialConversionFunctions];
-            
-            while ( conversionFunctionId==null && functionsToCheck.length > 0){
-                let functionId = functionsToCheck.pop();
-                let conversionFunction = toolsManager.getActionFunction(functionId);
-
-                const targetDependancyType = conversionFunction.getParameters()[1].type;  // Order of conversion parameters assumed: [input, dependency]
-
-                let dependencyConversionFunctionId = toolsManager.getConversionFunction( [dependencyType], targetDependancyType );
-                
-                if (dependencyConversionFunctionId != null){
-
-                    conversionFunctionId = functionId;
-                    
-                    const conversionId = parameter + "Dep"; 
-
-                    //convert dependency
-                    let conversionRequestData = {};
-                    let conversionFunction = toolsManager.getActionFunction(dependencyConversionFunctionId);
-
-                    // Populate parameters for the conversion request 
-                    for( const param of conversionFunction.getParameters() ){
-                        conversionRequestData[param.name] =   dependencyPanel.getValue(); // The found conversion function is expected to have one parameter
-                    }
-
-                    let convertedValue = await requestTranslation(conversionRequestData, conversionFunction, conversionId);
-
-                    typesPanelValuesMap[targetDependancyType]= convertedValue.data;
-                }
-            }
-
-        } else {
-
-            conversionFunctionId = toolsManager.getConversionFunction( Object.keys(typesPanelValuesMap), targetType );
-        };
-
-        if (conversionFunctionId != null){
-            //There is a matching conversion function
-            let conversionRequestData = {};
-            let conversionFunction = toolsManager.getActionFunction(conversionFunctionId);
-
-            // Populate parameters for the conversion request 
-            for( const param of conversionFunction.getParameters() ){
-                conversionRequestData[param.name] =  typesPanelValuesMap[param.type];
-            }
-
-            parameterPromise= requestTranslation(conversionRequestData, conversionFunction, parameter);
-
-            
-        } else {
-            console.log("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
-        }
-
+    if (conversionFunctionId != null){
+        //There is a matching conversion function
+        parameterPromise = functionRegistry_callConversion(conversionFunctionId, typesPanelValuesMap, parameterName);
+        
     } else {
-        parameterPromise =  new Promise( function (resolve, reject) { 
-            let parameterData = {};
-            
-            parameterData.name = parameter;
-            parameterData.data = panel.getValue();
-
-            resolve(parameterData); 
-        });
+        parameterPromise = null;
+        errorNotification("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
     }
 
     return parameterPromise;
 }
 
+
+/**
+ * Converts a source value to a target type using the available conversion functions taking
+ * into consideration the related metamodel.
+ * 
+ *   TODO: To be moved to the ToolManager issue #40
+ * 
+ * @param {string} sourceValue 
+ * @param {string} sourceType
+ * @param {string} metamodelValue 
+ * @param {string} metamodelType
+ * @param {string} targetType
+ * @param {string} parameterName name of the parameter for request
+ * @returns {Promise} promise for the converted paramter value
+ */
+async function convertIncludingMetamodel(sourceValue, sourceType, metamodelValue, metamodelType, targetType, parameterName){
+    let parameterPromise;
+    let typesPanelValuesMap = {}; // Types have to be distinct for mapping to the conversion function's paramters
+    typesPanelValuesMap[sourceType]=  sourceValue;
+
+    let conversionFunctionId;
+
+    let potentialConversionFunctions = functionRegistry_findPartial( [sourceType, ARRAY_ANY_ELEMENT], targetType);
+
+    //check for a conversion function with the metamodel type
+    conversionFunctionId = await selectConversionFunctionConvertMetamodel( metamodelType, metamodelValue, potentialConversionFunctions, 
+                                                                             false, parameterName, typesPanelValuesMap)
+
+    if (conversionFunctionId==null){
+        //no conversion found so check for a conversion function but consider conversions of the metamodel
+        conversionFunctionId = await selectConversionFunctionConvertMetamodel(metamodelType, metamodelValue, potentialConversionFunctions, 
+                                                                                true, parameterName, typesPanelValuesMap);
+    }
+
+    if (conversionFunctionId != null){
+        //There is a matching conversion function
+        parameterPromise = functionRegistry_callConversion(conversionFunctionId, typesPanelValuesMap, parameterName);
+        
+    } else {
+        parameterPromise = null;
+        errorNotification("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
+    }
+
+    return parameterPromise;
+}
+
+
+/**
+ * For the given list of conversion function ids to check, finds the first conversion function with matching metamodel dependency.
+ * Optionally conversions of the metamodel are considered from the conversion functions available to the tools manager and
+ * the metamodel type. If available, the metamodel value is converted to the required type. 
+ * 
+ * @param {string} metamodelType the metamodel type
+ * @param {string} metamodelValue the metamodel value
+ * @param {string[]} conversionFunctions list of conversion function ids to check 
+ * @param {boolean} convertMetamodel when true try to convert the metamodel using a remote tool service conversion function
+ *                                    available to the ToolsManager.
+ * @param {string} parameterName the name of the parameter to use when convering the metamodel. 
+ * @param {string[]} typeValueMap the type values map the metamodel input value is added to if a conversion function is found
+ * @returns {string} the id of a conversion function to use, null if none found.
+ */
+async function selectConversionFunctionConvertMetamodel(metamodelType, metamodelValue, conversionFunctions, convertMetamodel, parameterName, typeValueMap){
+    let conversionFunctionId;
+    let functionsToCheck = [...conversionFunctions]
+    
+    while ( conversionFunctionId==null && functionsToCheck.length > 0){
+        let functionId = functionsToCheck.pop();
+        let conversionFunction = toolsManager.getActionFunction(functionId);
+
+        // Lookup the conversion function's metamodel type
+        let metamodelName = conversionFunction.getInstanceOfParamName( conversionFunction.getParameters()[0].name );
+
+        if(metamodelName==null){
+            metamodelName = conversionFunction.getInstanceOfParamName( conversionFunction.getParameters()[1].name );
+        }
+
+        const targetMetamodelType = conversionFunction.getParameterType(metamodelName);
+
+        if (!convertMetamodel){
+            // Check for conversion functions with matching metamodels only
+            
+            if (targetMetamodelType==metamodelType) {
+                    //Conversion function found so use the panel value
+                    
+                    conversionFunctionId = functionId;
+                    typeValueMap[metamodelType]=  metamodelValue;
+            }
+
+        } else {
+            // Check for conversion functions converting metamodel if possible 
+            let metamodelConversionFunctionId = toolsManager.getConversionFunction( [metamodelType], targetMetamodelType );
+            
+            if (metamodelConversionFunctionId != null){
+
+                conversionFunctionId = functionId;
+
+                //convert metamodel
+                let metamodelTypeValueMap =  {};  
+                metamodelTypeValueMap[metamodelType]=metamodelValue; // The found conversion function is expected to have one parameter
+
+                let convertedValue = await functionRegistry_callConversion(metamodelConversionFunctionId, metamodelTypeValueMap, parameterName);
+
+                typeValueMap[targetMetamodelType]= convertedValue.data;
+            }
+        }
+    }
+
+    return conversionFunctionId;
+}
+
+/**
+ * Prepares the input parameters and requests the type translation for the given function id  
+ * 
+ *   TODO: To be moved to the FunctionRegistry issue #40
+ * 
+ * @param {string} functionId the id of the action function
+ * @param {Object} typeValuesMap an object mapping action functions paramter types as keys to input values
+ * @param {string} parameterName name of the parameter
+ * @returns Promise for the translated data
+ * 
+ */
+function functionRegistry_callConversion( functionId, typeValuesMap, parameterName ){
+    let conversionRequestData = {};
+    let conversionFunction = toolsManager.getActionFunction(functionId);
+
+    // Populate parameters for the conversion request 
+    for( const param of conversionFunction.getParameters() ){
+        conversionRequestData[param.name] =  typeValuesMap[param.type];
+    }
+
+    return requestTranslation(conversionRequestData, conversionFunction, parameterName);
+}
+
+/**
+ * 
+ * @param {string} functionId url of the function to call
+ * @param {Object} parameters object containing the parameters request data
+ * @returns 
+ */
+function functionRegistry_call(functionId, parameters ){
+
+    let actionFunction = toolsManager.getActionFunction(functionId);
+    let parametersJson = JSON.stringify(parameters);
+
+    let requestPromise = jsonRequest(actionFunction.getPath(), parametersJson)
+
+    return requestPromise;
+}
+
+
 /**
  * Requests the conversion function from the remote tool service
+ * 
  * @param {Object} parameters 
  * @param {ActionFunction} converstionFunction
- * @param {String} name of the parameter
+ * @param {String} parameterName name of the parameter
  * @returns Promise for the translated data
  */
 function requestTranslation(parameters, conversionFunction, parameterName){
@@ -514,18 +597,31 @@ function requestTranslation(parameters, conversionFunction, parameterName){
     return jsonRequestConversion(conversionFunction.getPath(), parametersJson, parameterName);
 }
 
+/**
+ *   TODO: Temporary wrapper called function to be renamed and to be moved to the FunctionRegistry issue #40 
+ */
+function functionRegistry_find(inputsParamTypes, outputParamType){
+    return toolsManager.getConversionFunction( inputsParamTypes, outputParamType );
+}
 
 /**
- * Request the action function from the remote tool service and handle the response
- * @param {Object} action
- * @param {Object} parameters 
- * @param {ActionFunction} actionFunction 
+ *   TODO: Temporary wrapper called function to be renamed and to be moved to the FunctionRegistry issue #40 
  */
-function requestAndHandleActionFunction(action, parameters, actionFunction){
-    
-    let parametersJson = JSON.stringify(parameters);
+function functionRegistry_findPartial(inputsParamTypes, outputParamType){
+    return toolsManager.getPartiallyMatchingConversionFunctions( inputsParamTypes, outputParamType );
+}
 
-    let requestPromise = jsonRequest(actionFunction.getPath(), parametersJson).then( (responseText) => {
+
+
+/**
+ * Handle the response from the remote tool service
+ * 
+ * @param {Object} action 
+ * @param {Promise} requestPromise
+ */
+function handleResponseActionFunction(action, requestPromise){
+    
+    requestPromise.then( (responseText) => {
 
         var response = JSON.parse(responseText);
         var outputPanel = panels.find( pn => pn.id ==  action.output.id);
@@ -611,10 +707,9 @@ function requestAndHandleActionFunction(action, parameters, actionFunction){
 
         }
 
-    
+        Metro.notify.killAll();
     });
 
-    Metro.notify.killAll();
 }
 
 
@@ -637,8 +732,39 @@ function runAction(source, sourceButton) {
     const buttonConfig =   action.source.ref.buttons.find( btn => btn.id == sourceButton );
     const toolActionFunction = toolsManager.getActionFunction( buttonConfig.actionfunction ); // TODO tidy up by resolving tool references
 
+    // Create map containing panel values
+    let parameterMap = new Map();
+
+    for (let paramName of Object.keys(action.parameters)){
+
+        let param = {};
+        const panelId = action.parameters[paramName].id;
+        const panel = panels.find( pn => pn.id ==  panelId );
+        
+        param.type = panel.getType();
+        param.value = panel.getValue();
+        
+        parameterMap.set(paramName, param);
+    }
+
+    // Add the platform language parameter
+    let languageParam = {};
+    languageParam.type = toolActionFunction.getParameterType("language");
+    languageParam.value = action.source.ref.language; // Source panel language
+    parameterMap.set("language", languageParam);
+
+        // TODO support output and language 
+        //actionRequestData.outputType = outputType;
+        //actionRequestData.outputLanguage = outputLanguage;
+
     // Call backend conversion and service functions
-    requestAction(action, toolActionFunction);
+    let actionResultPromise = invokeActionFunction(buttonConfig.actionfunction, parameterMap)
+
+    actionResultPromise.catch( (err) => {
+         errorNotification("There was an error translating action function parameter types.");
+    } );
+
+    handleResponseActionFunction(action , actionResultPromise);
  
     longNotification("Executing program");
 }
@@ -653,6 +779,7 @@ function successNotification(message, cls="light") {
 }
 
 function errorNotification(message) {
+    console.log("ERROR: " + message);
     Metro.notify.create("<b>Error:</b> "+ message +"<br>", null, {keepOpen: true, cls: "bg-red fg-white", width: 300});
 }
 

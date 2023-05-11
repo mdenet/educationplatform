@@ -158,6 +158,8 @@ class ToolManager {
     /**
      * Finds the action function for an action function Id
      * @param {*} actionFuntionId 
+     * 
+     * @deprecated issue #40
      */
     getActionFunction(actionFuntionId) {
         for ( const toolskey of  Object.keys(this.tools)){
@@ -173,6 +175,19 @@ class ToolManager {
         return null;
 
     }
+
+
+    /**
+     * Resolves the id of an action function to the function itself
+     * 
+     * TODO: To be moved to the FunctionRegistry issue #40
+     * 
+     * @param {string} functionId 
+     */
+    functionRegistry_resolve(functionId){
+        return this.getActionFunction(functionId)
+    }
+
     
     hasPanelDefinition(panelDefId){
         
