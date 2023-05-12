@@ -1,23 +1,7 @@
 services:
     mdenet-ep:
+        image: mdenet-education-platform:latest
         build: .
         ports:
             - "8080:80"
 
-    mdenet-test-tools:
-        image: "nginx:1.23"
-        ports:
-            - "8081:80"
-        volumes:
-            - ./test/config/nginx.conf:/etc/nginx/nginx.conf
-            - ./test/config/default.conf:/etc/nginx/conf.d/default.conf
-            - ./test/tool-config:/usr/share/nginx/html
-
-    mdenet-test-activities:
-        image: "nginx:1.23"
-        ports:
-            - "8082:80"
-        volumes:
-            - ./test/config/nginx.conf:/etc/nginx/nginx.conf
-            - ./test/config/default.conf:/etc/nginx/conf.d/default.conf
-            - ./test/activity-config:/usr/share/nginx/html
