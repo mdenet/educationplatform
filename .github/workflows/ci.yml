@@ -16,8 +16,11 @@ jobs:
         uses: actions/setup-node@v3
         with: 
           node-version: 18
-      - run: npm ci
-        run: npm install -g karma-cli
+          
+      - name: Install node dependencies
+        run: |
+            npm ci
+            npm install -g karma-cli
       
       - name: Build the education platform
         run: npm run build --workspaces
