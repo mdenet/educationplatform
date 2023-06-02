@@ -3,7 +3,7 @@
   "name": "mdenet-educationplatform",
   "version": "0.0.1",
   "scripts": {
-    "test": "npx jasmine JASMINE_CONFIG_PATH=test/support/jasmine.json",
+    "test": "karma start",
     "build": "webpack --mode=development",
     "start": "docker compose up --build --force-recreate"
   },
