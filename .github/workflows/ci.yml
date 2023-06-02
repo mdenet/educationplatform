@@ -1,0 +1,23 @@
+name: run-unit-tests
+
+on: 
+  push:
+    branches: 
+      - 5-software-build-infrastructure-cicd
+
+jobs: 
+  build: 
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup node 18
+        uses: actions/setup-node@v3
+        with: 
+          node-version: 18
+      - run: npm ci
+      
+      - name: Build the education platform
+        run: npm run build --workspaces
+
