@@ -12,6 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
+      - name: Install Chrome
+        run: |
+            sudo apt-get update
+            wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            sudo apt install ./google-chrome-stable_current_amd64.deb
+                  
       - name: Setup node 18
         uses: actions/setup-node@v3
         with: 
