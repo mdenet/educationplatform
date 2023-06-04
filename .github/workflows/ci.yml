@@ -1,10 +1,7 @@
 name: run-unit-tests
 
-on: 
-  push:
-    branches: 
-      - 5-software-build-infrastructure-cicd
-
+on: push 
+ 
 jobs: 
   build: 
     runs-on: ubuntu-latest
