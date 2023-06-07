@@ -15,6 +15,14 @@ Prerequisites:
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/install) 
 
+When using Windows, the following dependencies must be installed globally so they are available on the command line.
+```
+npm install -g typescript
+npm install -g tsc
+npm install -g webpack
+npm install -g karma-cli
+```
+
 
 To start the platform and token server components, in the root project directory run the `launch.sh` script or run the following commands.
 
