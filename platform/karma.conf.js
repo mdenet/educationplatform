@@ -4,6 +4,14 @@
 module.exports = function(config) {
   config.set({
 
+    plugins: [
+        require('karma-webpack'),
+        require('karma-jasmine'),
+        require('karma-chrome-launcher'),
+        require('karma-jasmine-html-reporter'),
+        require('karma-junit-reporter')
+    ],
+
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
@@ -46,7 +54,7 @@ module.exports = function(config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://www.npmjs.com/search?q=keywords:karma-reporter
-    reporters: ['kjhtml','progress'],
+    reporters: ['kjhtml','progress','junit'],
 
 
     // web server port
@@ -67,15 +75,27 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://www.npmjs.com/search?q=keywords:karma-launcher
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadless'],
 
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false,
+    singleRun: true,
 
     // Concurrency level
     // how many browser instances should be started simultaneously
-    concurrency: Infinity
+    concurrency: 25,
+    
+    junitReporter: {
+      outputDir: 'reports', // results will be saved as $outputDir/$browserName.xml
+      outputFile: undefined, // if included, results will be saved as $outputDir/$browserName/$outputFile
+      suite: '', // suite will become the package name attribute in xml testsuite element
+      useBrowserName: true, // add browser name to report and classes names
+      nameFormatter: undefined, // function (browser, result) to customize the name attribute in xml testcase element
+      classNameFormatter: undefined, // function (browser, result) to customize the classname attribute in xml testcase element
+      properties: {}, // key value pair of properties to add to the <properties> section of the report
+      xmlVersion: null // use '1' if reporting to be per SonarQube 6.2 XML format
+    }
+    
   })
 }

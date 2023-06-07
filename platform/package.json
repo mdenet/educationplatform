@@ -3,7 +3,7 @@
   "name": "mdenet-educationplatform",
   "version": "0.0.1",
   "scripts": {
-    "test": "npx jasmine JASMINE_CONFIG_PATH=test/support/jasmine.json",
+    "test": "karma start",
     "build": "webpack --mode=development",
     "start": "docker compose up --build --force-recreate"
   },
@@ -13,8 +13,9 @@
     "karma-chrome-launcher": "^3.1.1",
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-html-reporter": "^2.0.0",
+    "karma-junit-reporter":"^2.0.1",
     "karma-webpack": "^5.0.0",
-    "webpack-cli": "^5.0.1"
+    "webpack-cli": "^5.1.1"
   },
   "dependencies": {
     "ace-builds": "^1.14.0",
