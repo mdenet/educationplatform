@@ -14,8 +14,9 @@ import { ToolManager as ToolsManager } from './ToolsManager.js';
 import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
 import { OutputPanel } from "./OutputPanel.js";
-import { TestPanel } from './TestPanel .js';
+import { TestPanel } from './TestPanel.js';
 import { BlankPanel } from './BlankPanel .js';
+import { XtextEditorPanel } from './XtextEditorPanel.js';
 
 import { Preloader } from './Preloader.js';
 import { Backend } from './Backend.js';
@@ -44,6 +45,16 @@ export var activityManager;
 export var toolsManager;
 
 var urlParameters = new URLSearchParams(window.location.search);    
+
+
+// Language Worbench Test 
+// Add editor to local storage
+
+let editorInstaceUrls = ["http://localhost:9000/"];
+
+sessionStorage.setItem( "editorInstaceUrls", JSON.stringify(editorInstaceUrls) );
+
+//---
 
 
 document.getElementById("btnnologin").onclick= () => {
@@ -240,6 +251,16 @@ function initialisePanels() {
                 
                 newPanel.hideEditor();
                 newPanel.showDiagram();
+            break;
+
+            case "XtextEditorPanel":
+
+                newPanel = new XtextEditorPanel(newPanelId);
+
+                newPanel.setIcon(panelDefinition.icon);
+                newPanel.setType(panelDefinition.language);
+
+            
 
             break;
 
@@ -631,6 +652,10 @@ function handleResponseActionFunction(action, requestPromise){
         } else {
 
             var responseDiagram = Object.keys(response).find( key => key.toLowerCase().includes("diagram") );
+
+            //
+            //   TODO Need to handle response from language workbench, and store editor URL
+            // 
 
             if (response.output != "") {
                 // Text
