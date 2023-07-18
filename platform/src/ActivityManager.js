@@ -1,4 +1,3 @@
-import { backend } from "./Playground.js";
 import { urlParamPrivateRepo } from "./Utility.js";
 
 class ActivityManager {
@@ -252,25 +251,9 @@ class ActivityManager {
      * Fetches the contents of the activity with the provided ID
      */ 
     fetchActivity(id) {
-        if (!this.hasActivity(id)) {
-            var xhr = new XMLHttpRequest();
-            
-            xhr.open("POST", backend.getShortURLService(), false);
-            xhr.setRequestHeader("Content-Type", "application/json");
-            var data = JSON.stringify({"shortened": id});
-            xhr.send(data);
-            if (xhr.status === 200) {
-                try {
-                    var content = window.atob(JSON.parse(xhr.responseText).content);
-                    return JSON.parse(content);
-                }
-                catch (err) {
-                    console.log("Fetching activity " + id + " failed");
-                    // Ignore the error and return a default activity later on
-                }
-            }
-        }
-        else {
+        
+        if (this.hasActivity(id)) {
+    
             var activity = this.activities[id];
 
             for ( let apanel of activity.panels ){
