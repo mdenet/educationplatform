@@ -1,4 +1,6 @@
 
+import { parse as yamlParse} from 'yaml' 
+
 export const ARRAY_ANY_ELEMENT = '*';
 
 /**
@@ -171,4 +173,32 @@ export function urlParamPrivateRepo(){
  */
 export function isAuthenticated(){
     return window.sessionStorage.getItem("isAuthenticated") != null;
+}
+
+/**
+ * Parses the platform configuration files, YAML and JSON types are supported. 
+ * @param {String} contents the configuration file contents
+ * @param {String} extenstion the configuration file extenstion
+ * @returns the parsed configuration object
+ */
+export function parseConfigFile(contents, extenstion="yml"){
+
+    let configObject;
+    
+    switch(extenstion){
+        case "json":
+            configObject= JSON.parse(contents);
+            break;
+
+
+        case "yml":
+            configObject= yamlParse(contents);
+            break;
+
+        default:
+            console.log("Cannont parse unsupported configuration file type '" + extenstion + "'.");
+            configObject = null;
+    }
+
+    return configObject;
 }
