@@ -1,4 +1,5 @@
-import {FunctionRegistry} from "../src/FunctionRegistry.js"
+import { parseConfigFile } from "./Utility.js";
+import { FunctionRegistry } from "../src/FunctionRegistry.js"
 import { ActionFunction } from "./ActionFunction.js";
 
 class ToolManager {
@@ -43,19 +44,19 @@ class ToolManager {
 
         for (let toolUrl of this.toolsUrls) {
 
-            var xhr = new XMLHttpRequest();
+            let xhr = new XMLHttpRequest();
             xhr.open("GET", toolUrl.url, false);
             xhr.send();
     
             if (xhr.status === 200) {    
-                var json = JSON.parse(xhr.responseText);
+                let config = parseConfigFile(xhr.responseText);
     
                 // Store the tool found in the given json
     
-                    if (json.tool.id){
-                        this.storeTool(json.tool);
+                    if (config.tool.id){
+                        this.storeTool(config.tool);
                         
-                        toolUrl.id = json.tool.id;
+                        toolUrl.id = config.tool.id;
 
                         //TODO update any tool mangement menu. 
                     }
