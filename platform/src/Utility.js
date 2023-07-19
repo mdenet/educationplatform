@@ -178,14 +178,14 @@ export function isAuthenticated(){
 /**
  * Parses the platform configuration files, YAML and JSON types are supported. 
  * @param {String} contents the configuration file contents
- * @param {String} extenstion the configuration file extenstion
+ * @param {String} extension the configuration file extenstion
  * @returns the parsed configuration object
  */
-export function parseConfigFile(contents, extenstion="yml"){
+export function parseConfigFile(contents, extension="yml"){
 
     let configObject;
     
-    switch(extenstion){
+    switch(extension){
         case "json":
             configObject= JSON.parse(contents);
             break;
@@ -196,7 +196,7 @@ export function parseConfigFile(contents, extenstion="yml"){
             break;
 
         default:
-            console.log("Cannont parse unsupported configuration file type '" + extenstion + "'.");
+            console.log("Cannont parse unsupported configuration file type '" + extension + "'.");
             configObject = null;
     }
 
