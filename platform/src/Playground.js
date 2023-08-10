@@ -5,6 +5,8 @@ import 'ace-builds/src-min-noconflict/mode-yaml';
 import 'ace-builds/src-min-noconflict/mode-java';
 import 'ace-builds/src-min-noconflict/mode-html';
 import 'ace-builds/src-min-noconflict/ext-modelist';
+import 'ace-builds/src-min-noconflict/ext-language_tools';
+
 import 'metro4';
 
 import { FileHandler } from './FileHandler.js';
@@ -124,6 +126,10 @@ function initialiseActivity(){
             ace.config.setModuleUrl(ipt.module, ipt.url);
         }
     
+
+        // Debug - test Xtext generated mode
+        // TODO support loading the editor instance mode specified by a language workbench panel
+        ace.config.setModuleUrl("ace/mode/xtext-turtles", "http://127.0.0.1:9001/xtext-resources/bundle/mode-turtles.js");
     
         // Add Tool styles for icons 
         for (let toolUrl of activityManager.getToolUrls()){
@@ -259,7 +265,7 @@ function initialisePanels() {
 
                 newPanel.setIcon(panelDefinition.icon);
                 newPanel.setType(panelDefinition.language);
-
+                newPanel.setEditorMode("xtext-turtles");
             
 
             break;

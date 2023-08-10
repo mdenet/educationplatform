@@ -1,23 +1,29 @@
 import { Panel } from "./Panel.js";
 
-//import $ from "ace/ext/language_tools";  : "webjars/ace/1.3.3/src/ext-language_tools",
-//import $ from "xtext";   /// xtext/xtext-ace  
 
 class XtextEditorPanel extends Panel {
 
     constructor(id = "program") {
-        super(id);
-
-        //Load grammar
         
+        let aceEditor;
 
-        // let editorInstaceUrls = JSON.parse(sessionStorage.getItem("editorInstaceUrls"));
+        super(id, aceEditor);
 
-        // let xtextace = document.createElement('script');
-        // xtextace.setAttribute('src', editorInstaceUrls[0]+ "xtext/2.31.0/xtext-ace.js" );
-        // document.head.appendChild(xtextace);
+        let editorContainer = this.element.querySelector('.editor');
+        
+        //Create Xtext editor
+        require(["xtext/xtext-ace"], function(xtext) {
+            aceEditor = xtext.createEditor({
+                serviceUrl: "http://127.0.0.1:9001/xtext-service",
+                enableCors: true,
+                syntaxDefinition: "xtext-resources/generated/mode-turtles",
+                parent: editorContainer,
+                xtextLang: "turtles"
+            });
+        });
 
-        // import("xtext").then(foo => console.log(foo.default));
+        this.editor.renderer.setShowGutter(true);
+
 
     }
 
