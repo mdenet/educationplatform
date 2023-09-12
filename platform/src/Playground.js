@@ -770,11 +770,20 @@ function runAction(source, sourceButton) {
 
         let param = {};
         const panelId = action.parameters[paramName].id;
-        const panel = panels.find( pn => pn.id ==  panelId );
         
-        param.type = panel.getType();
-        param.value = panel.getValue();
-        
+        if (panelId) { 
+            const panel = panels.find( pn => pn.id ==  panelId );
+            param.type = panel.getType();
+            param.value = panel.getValue();
+
+        } else {
+            // No panel with ID so it use as the parameter value
+            const parameterValue = action.parameters[paramName];
+            console.log(`The panel ID starting with ${parameterValue.substring(0,10)}... not found. Using it as a the parameter value for ${paramName}.`);
+            param.type = 'text';
+            param.value = parameterValue;
+        }
+
         parameterMap.set(paramName, param);
     }
 
