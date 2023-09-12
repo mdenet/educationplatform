@@ -117,7 +117,7 @@ function initialiseActivity(){
         toolsManager = new ToolsManager();
         activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager), fileHandler );
         toolsManager.setToolsUrls(activityManager.getToolUrls());
-    
+        activityManager.showActivitiesNavEntries();
         
         // Import tool grammar highlighting 
         const  toolImports = toolsManager.getToolsGrammarImports(); 

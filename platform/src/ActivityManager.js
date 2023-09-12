@@ -1,4 +1,7 @@
+import { pan } from "svg-pan-zoom";
 import { urlParamPrivateRepo, parseConfigFile } from "./Utility.js";
+
+const NAV_ID_PREFIX = "nav-entry-";
 
 class ActivityManager {
 
@@ -13,6 +16,8 @@ class ActivityManager {
 
     accessPanelDef;
     fileHandler;
+
+    
 
     constructor( panelDefAccessor, fileHandler ) {
 
@@ -169,7 +174,9 @@ class ActivityManager {
 
         // Add a link for the activity to the left hand side menu
         var li = document.createElement("li");
-        
+        li.setAttribute("id", NAV_ID_PREFIX + activity.id);
+        li.setAttribute("class", "no-visible"); // Start off hidden
+
         var a = document.createElement("a");
         a.href = "?" + activity.id;
         if (this.customActivitiesUrl) {
@@ -354,6 +361,42 @@ class ActivityManager {
          }
 
          return ( new Set(toolUrls) );
+    }
+
+
+    setActivityVisibility(activityid, visible){
+
+        if (visible){
+            $("#"+ NAV_ID_PREFIX + activityid).removeClass("no-visible");
+        } else {
+            $("#"+ NAV_ID_PREFIX + activityid).addClass("no-visible");
+        }
+    }
+
+    hasGeneratedPanel(activityId){
+        
+        let generatedPanelFound = false;
+
+        for (const panel of  this.activities[activityId].panels) {
+            
+            if (this.accessPanelDef(panel.ref).generated){
+                generatedPanelFound = this.accessPanelDef(panel.ref).generated;
+                break;
+            }
+        }
+
+        return generatedPanelFound;
+    }
+
+
+    showActivitiesNavEntries(){
+        for(var activityKey of Object.keys(this.activities)) {
+
+            // Show activities that have no generated panels
+            if (!this.hasGeneratedPanel(activityKey)){
+                this.setActivityVisibility(activityKey, true);
+            }
+        }
     }
 
 
