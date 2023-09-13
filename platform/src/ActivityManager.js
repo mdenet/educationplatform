@@ -379,7 +379,7 @@ class ActivityManager {
 
         for (const panel of  this.activities[activityId].panels) {
             
-            if (this.accessPanelDef(panel.ref).generated){
+            if (this.accessPanelDef(panel.ref).generated  && !this.isPanelGenerated(panel.id) ){
                 generatedPanelFound = this.accessPanelDef(panel.ref).generated;
                 break;
             }
@@ -388,6 +388,9 @@ class ActivityManager {
         return generatedPanelFound;
     }
 
+    isPanelGenerated(panelId){
+        return ( sessionStorage.getItem(panelId) != null );
+    }
 
     showActivitiesNavEntries(){
         for(var activityKey of Object.keys(this.activities)) {

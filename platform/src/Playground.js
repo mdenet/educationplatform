@@ -49,15 +49,6 @@ export var toolsManager;
 var urlParameters = new URLSearchParams(window.location.search);    
 
 
-// Language Worbench Test 
-// Add editor to local storage
-
-let editorInstaceUrls = ["http://localhost:9000/"];
-
-sessionStorage.setItem( "editorInstaceUrls", JSON.stringify(editorInstaceUrls) );
-
-//---
-
 
 document.getElementById("btnnologin").onclick= () => {
     PlaygroundUtility.hideLogin();
@@ -666,8 +657,16 @@ function handleResponseActionFunction(action, requestPromise){
             if (response.output != "") {
                 // Text
                 outputPanel.setValue(response.output)
+            }
+            
+            if (response.editorUrl) {
+                // Language workbench
+                Metro.notify.killAll();
+                longNotification("Building editor...");
+                checkEditorReady(response.editorUrl, action.source.editorPanel, action.source.editorActivity);
+                
 
-            } if (responseDiagram != undefined) {
+            } else if (responseDiagram != undefined) {
                 // Diagrams 
                 outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
                 outputPanel.showDiagram();
@@ -738,7 +737,7 @@ function handleResponseActionFunction(action, requestPromise){
 
         }
 
-        Metro.notify.killAll();
+        //Metro.notify.killAll();
     });
 
 }
@@ -905,6 +904,36 @@ function savePanelContents(event){
     }).catch((error) => {
         errorNotification("An error occurred while trying to save the panel contents.");
     });
+}
+
+/**
+ * Poll for editor to become available. 
+ * 
+ * @param {*} url 
+ * @param {*} editorPanel 
+ * @param {*} editorActivity TODO remove as this can be found to save having to specify in config.
+ */
+async function checkEditorReady(url, editorPanel, editorActivity){
+
+    let response  = await fetch(url);
+    
+    if (response.status == 502){
+        await checkEditorReady(url, editorPanel, editorActivity);
+
+    } else if (response.status != 200) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await checkEditorReady(url, editorPanel, editorActivity);
+    
+    } else {
+        // Successful 
+        console.log("Editor ready.");
+        sessionStorage.setItem( editorPanel , JSON.stringify(url) );
+        activityManager.setActivityVisibility(editorActivity, true);
+        Metro.notify.killAll();
+        successNotification("Building complete.");
+
+    }
+
 }
 
     // Some functions and variables are accessed  
