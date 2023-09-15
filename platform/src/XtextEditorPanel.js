@@ -3,22 +3,26 @@ import { Panel } from "./Panel.js";
 
 class XtextEditorPanel extends Panel {
 
-    constructor(id = "program") {
+    constructor(id = "program", url, extension) {
         
         let aceEditor;
 
         super(id, aceEditor);
 
         let editorContainer = this.element.querySelector('.editor');
+
+        let modeName = "ace/mode/xtext-" + extension;
+
+        ace.config.setModuleUrl( modeName, url + "/xtext-resources/generated/mode.js" );
         
         //Create Xtext editor
         require(["xtext/xtext-ace"], function(xtext) {
             aceEditor = xtext.createEditor({
-                serviceUrl: "http://127.0.0.1:9001/xtext-service",
+                serviceUrl: url + "/xtext-service",
                 enableCors: true,
-                syntaxDefinition: "xtext-resources/generated/mode-turtles",
+                syntaxDefinition: modeName,
                 parent: editorContainer,
-                xtextLang: "turtles"
+                xtextLang: extension
             });
         });
 

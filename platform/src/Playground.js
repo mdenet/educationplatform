@@ -99,8 +99,6 @@ if (urlParameters.has("code") && urlParameters.has("state")  ){
 
 
 
-
-
 function initialiseActivity(){
     if (urlParameters.has("activities")) {
 
@@ -117,10 +115,7 @@ function initialiseActivity(){
             ace.config.setModuleUrl(ipt.module, ipt.url);
         }
     
-
-        // Debug - test Xtext generated mode
-        // TODO support loading the editor instance mode specified by a language workbench panel
-        ace.config.setModuleUrl("ace/mode/xtext-turtles", "http://127.0.0.1:9001/xtext-resources/bundle/mode-turtles.js");
+    
     
         // Add Tool styles for icons 
         for (let toolUrl of activityManager.getToolUrls()){
@@ -131,8 +126,7 @@ function initialiseActivity(){
             document.head.appendChild(link);
         }
      
-    
-    
+        
         
         activity = activityManager.getSelectedActivity(); 
     
@@ -252,12 +246,12 @@ function initialisePanels() {
 
             case "XtextEditorPanel":
 
-                newPanel = new XtextEditorPanel(newPanelId);
+                let editorUrl = sessionStorage.getItem(newPanelId);
+                
+                newPanel = new XtextEditorPanel(newPanelId, editorUrl, panel.extension);
 
                 newPanel.setIcon(panelDefinition.icon);
                 newPanel.setType(panelDefinition.language);
-                newPanel.setEditorMode("xtext-turtles");
-            
 
             break;
 
@@ -915,8 +909,7 @@ function savePanelContents(event){
  */
 async function checkEditorReady(url, editorPanel, editorActivity){
 
-    let response  = await fetch(url);
-    
+   let response  = await fetch(url);
     if (response.status == 502){
         await checkEditorReady(url, editorPanel, editorActivity);
 
@@ -927,13 +920,12 @@ async function checkEditorReady(url, editorPanel, editorActivity){
     } else {
         // Successful 
         console.log("Editor ready.");
-        sessionStorage.setItem( editorPanel , JSON.stringify(url) );
+        sessionStorage.setItem( editorPanel , url );
         activityManager.setActivityVisibility(editorActivity, true);
         Metro.notify.killAll();
         successNotification("Building complete.");
 
     }
-
 }
 
     // Some functions and variables are accessed  

@@ -1529,11 +1529,8 @@ define('xtext/xtext-ace',[
 			if (!syntaxDefinition)
 				syntaxDefinition = 'xtext-resources/mode-' + options.xtextLang;
 			if (typeof(syntaxDefinition) === 'string') {
-				//TODO modify to support loading by any mode and remove hardcoded turtles
-				//require([syntaxDefinition], function(mode) {
-					let theMode ="ace/mode/xtext-turtles"; // Mode loaded using ace.setModuleUrl prior to calling
-					session.setMode(theMode);
-				//});
+					// Set ace mode that has been loaded by the platform
+					session.setMode(syntaxDefinition);
 			} else if (syntaxDefinition.Mode) {
 				session.setMode(new syntaxDefinition.Mode);
 			}
