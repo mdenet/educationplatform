@@ -657,7 +657,7 @@ function handleResponseActionFunction(action, requestPromise){
                 // Language workbench
                 Metro.notify.killAll();
                 longNotification("Building editor...");
-                checkEditorReady(response.editorUrl, action.source.editorPanel, action.source.editorActivity);
+                checkEditorReady( response.editorStatusUrl, response.editorUrl, action.source.editorPanel, action.source.editorActivity);
                 
 
             } else if (responseDiagram != undefined) {
@@ -902,30 +902,35 @@ function savePanelContents(event){
 
 /**
  * Poll for editor to become available. 
- * 
+ * @param {*} statusUrl
  * @param {*} url 
  * @param {*} editorPanel 
  * @param {*} editorActivity TODO remove as this can be found to save having to specify in config.
  */
-async function checkEditorReady(url, editorPanel, editorActivity){
+async function checkEditorReady(statusUrl, url, editorPanel, editorActivity){
 
-   let response  = await fetch(url);
-    if (response.status == 502){
-        await checkEditorReady(url, editorPanel, editorActivity);
+   let response  = await fetch(statusUrl);
 
-    } else if (response.status != 200) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        await checkEditorReady(url, editorPanel, editorActivity);
-    
-    } else {
-        // Successful 
-        console.log("Editor ready.");
-        sessionStorage.setItem( editorPanel , url );
-        activityManager.setActivityVisibility(editorActivity, true);
-        Metro.notify.killAll();
-        successNotification("Building complete.");
+   if (response.status == 200){ 
+        const result = await response.json();
 
-    }
+        if (!result.editorReady){
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            await checkEditorReady(statusUrl, url, editorPanel, editorActivity);
+
+        } else {
+            // Successful 
+            console.log("Editor ready.");
+            sessionStorage.setItem( editorPanel , url );
+            activityManager.setActivityVisibility(editorActivity, true);
+            Metro.notify.killAll();
+            successNotification("Building complete.");
+        }
+
+   } else {
+        console.log("ERROR: The editor response could not be checked: " + statusUrl);
+        errorNotification("Failed to start the editor.");
+   }
 }
 
     // Some functions and variables are accessed  
