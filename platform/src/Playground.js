@@ -902,12 +902,12 @@ function savePanelContents(event){
 
 /**
  * Poll for editor to become available. 
- * @param {*} statusUrl
- * @param {*} url 
- * @param {*} editorPanel 
- * @param {*} editorActivity TODO remove as this can be found to save having to specify in config.
+ * @param {String} statusUrl the url for cheking the status of the editor panel.
+ * @param {String} editorInstanceUrl the editor instance's url. 
+ * @param {String} editorPanelId the id of the editor panel.
+ * @param {String} editorActivityId TODO remove as this can be found using editorPanelId to save having to specify in config.
  */
-async function checkEditorReady(statusUrl, url, editorPanel, editorActivity){
+async function checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId){
 
    let response  = await fetch(statusUrl);
 
@@ -916,13 +916,13 @@ async function checkEditorReady(statusUrl, url, editorPanel, editorActivity){
 
         if (!result.editorReady){
             await new Promise(resolve => setTimeout(resolve, 2000));
-            await checkEditorReady(statusUrl, url, editorPanel, editorActivity);
+            await checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId);
 
         } else {
             // Successful 
             console.log("Editor ready.");
-            sessionStorage.setItem( editorPanel , url );
-            activityManager.setActivityVisibility(editorActivity, true);
+            sessionStorage.setItem( editorPanelId , editorInstanceUrl );
+            activityManager.setActivityVisibility(editorActivityId, true);
             Metro.notify.killAll();
             successNotification("Building complete.");
         }
