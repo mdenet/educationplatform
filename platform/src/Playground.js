@@ -5,6 +5,8 @@ import 'ace-builds/src-min-noconflict/mode-yaml';
 import 'ace-builds/src-min-noconflict/mode-java';
 import 'ace-builds/src-min-noconflict/mode-html';
 import 'ace-builds/src-min-noconflict/ext-modelist';
+import 'ace-builds/src-min-noconflict/ext-language_tools';
+
 import 'metro4';
 
 import { FileHandler } from './FileHandler.js';
@@ -14,8 +16,9 @@ import { ToolManager as ToolsManager } from './ToolsManager.js';
 import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
 import { OutputPanel } from "./OutputPanel.js";
-import { TestPanel } from './TestPanel .js';
+import { TestPanel } from './TestPanel.js';
 import { BlankPanel } from './BlankPanel .js';
+import { XtextEditorPanel } from './XtextEditorPanel.js';
 
 import { Preloader } from './Preloader.js';
 import { Backend } from './Backend.js';
@@ -44,6 +47,7 @@ export var activityManager;
 export var toolsManager;
 
 var urlParameters = new URLSearchParams(window.location.search);    
+
 
 
 document.getElementById("btnnologin").onclick= () => {
@@ -95,8 +99,6 @@ if (urlParameters.has("code") && urlParameters.has("state")  ){
 
 
 
-
-
 function initialiseActivity(){
     if (urlParameters.has("activities")) {
 
@@ -104,7 +106,7 @@ function initialiseActivity(){
         toolsManager = new ToolsManager();
         activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager), fileHandler );
         toolsManager.setToolsUrls(activityManager.getToolUrls());
-    
+        activityManager.showActivitiesNavEntries();
         
         // Import tool grammar highlighting 
         const  toolImports = toolsManager.getToolsGrammarImports(); 
@@ -112,6 +114,7 @@ function initialiseActivity(){
         for(let ipt of toolImports) {
             ace.config.setModuleUrl(ipt.module, ipt.url);
         }
+    
     
     
         // Add Tool styles for icons 
@@ -123,8 +126,7 @@ function initialiseActivity(){
             document.head.appendChild(link);
         }
      
-    
-    
+        
         
         activity = activityManager.getSelectedActivity(); 
     
@@ -240,6 +242,16 @@ function initialisePanels() {
                 
                 newPanel.hideEditor();
                 newPanel.showDiagram();
+            break;
+
+            case "XtextEditorPanel":
+
+                let editorUrl = sessionStorage.getItem(newPanelId);
+                
+                newPanel = new XtextEditorPanel(newPanelId, editorUrl, panel.extension);
+
+                newPanel.setIcon(panelDefinition.icon);
+                newPanel.setType(panelDefinition.language);
 
             break;
 
@@ -632,11 +644,23 @@ function handleResponseActionFunction(action, requestPromise){
 
             var responseDiagram = Object.keys(response).find( key => key.toLowerCase().includes("diagram") );
 
+            //
+            //   TODO Need to handle response from language workbench, and store editor URL
+            // 
+
             if (response.output != "") {
                 // Text
                 outputPanel.setValue(response.output)
+            }
+            
+            if (response.editorUrl) {
+                // Language workbench
+                Metro.notify.killAll();
+                longNotification("Building editor...");
+                checkEditorReady( response.editorStatusUrl, response.editorUrl, action.source.editorPanel, action.source.editorActivity);
+                
 
-            } if (responseDiagram != undefined) {
+            } else if (responseDiagram != undefined) {
                 // Diagrams 
                 outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
                 outputPanel.showDiagram();
@@ -707,7 +731,7 @@ function handleResponseActionFunction(action, requestPromise){
 
         }
 
-        Metro.notify.killAll();
+        //Metro.notify.killAll();
     });
 
 }
@@ -739,11 +763,20 @@ function runAction(source, sourceButton) {
 
         let param = {};
         const panelId = action.parameters[paramName].id;
-        const panel = panels.find( pn => pn.id ==  panelId );
         
-        param.type = panel.getType();
-        param.value = panel.getValue();
-        
+        if (panelId) { 
+            const panel = panels.find( pn => pn.id ==  panelId );
+            param.type = panel.getType();
+            param.value = panel.getValue();
+
+        } else {
+            // No panel with ID so it use as the parameter value
+            const parameterValue = action.parameters[paramName];
+            console.log(`The panel ID starting with ${parameterValue.substring(0,10)}... not found. Using it as a the parameter value for ${paramName}.`);
+            param.type = 'text';
+            param.value = parameterValue;
+        }
+
         parameterMap.set(paramName, param);
     }
 
@@ -865,6 +898,39 @@ function savePanelContents(event){
     }).catch((error) => {
         errorNotification("An error occurred while trying to save the panel contents.");
     });
+}
+
+/**
+ * Poll for editor to become available. 
+ * @param {String} statusUrl the url for cheking the status of the editor panel.
+ * @param {String} editorInstanceUrl the editor instance's url. 
+ * @param {String} editorPanelId the id of the editor panel.
+ * @param {String} editorActivityId TODO remove as this can be found using editorPanelId to save having to specify in config.
+ */
+async function checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId){
+
+   let response  = await fetch(statusUrl);
+
+   if (response.status == 200){ 
+        const result = await response.json();
+
+        if (!result.editorReady){
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            await checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId);
+
+        } else {
+            // Successful 
+            console.log("Editor ready.");
+            sessionStorage.setItem( editorPanelId , editorInstanceUrl );
+            activityManager.setActivityVisibility(editorActivityId, true);
+            Metro.notify.killAll();
+            successNotification("Building complete.");
+        }
+
+   } else {
+        console.log("ERROR: The editor response could not be checked: " + statusUrl);
+        errorNotification("Failed to start the editor.");
+   }
 }
 
     // Some functions and variables are accessed  

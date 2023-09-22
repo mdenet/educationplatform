@@ -8,20 +8,24 @@ class Panel {
     valueSha;
     fileUrl;
 
-    constructor(id) {
+    constructor(id, editor) {
         this.id = id;
         this.getElement();
 
         // Set up the panel's editor
-        this.editor = ace.edit(this.element.querySelector('.editor'));
-        this.editor.setShowPrintMargin(false);
-        this.editor.setTheme("ace/theme/eclipse");
-        this.editor.renderer.setShowGutter(false);
-        this.editor.setFontSize("1rem");
-        this.editor.setOptions({
-            fontSize: "11pt",
-            useSoftTabs: true
-        });
+        if (editor === undefined) { 
+            this.editor = ace.edit(this.element.querySelector('.editor'));
+            this.editor.setShowPrintMargin(false);
+            this.editor.setTheme("ace/theme/eclipse");
+            this.editor.renderer.setShowGutter(false);
+            this.editor.setFontSize("1rem");
+            this.editor.setOptions({
+                fontSize: "11pt",
+                useSoftTabs: true
+            });
+        } else {
+            this.editor = editor;
+        }
         
         this.visible = true;
     }
