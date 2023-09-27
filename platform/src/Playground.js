@@ -28,6 +28,7 @@ import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateR
 import { ActionFunction } from './ActionFunction.js';
 
 const TOKEN_HANDLER_URL = "http://127.0.0.1:10000";
+const COMMON_UTILITY_URL = window.location.href.replace(window.location.search,"") + "common/utility.json";
 
 var outputType = "text";
 var outputLanguage = "text";
@@ -105,7 +106,7 @@ function initialiseActivity(){
         // An activity configuration has been provided
         toolsManager = new ToolsManager();
         activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager), fileHandler );
-        toolsManager.setToolsUrls(activityManager.getToolUrls());
+        toolsManager.setToolsUrls( activityManager.getToolUrls().add(COMMON_UTILITY_URL) );
         activityManager.showActivitiesNavEntries();
         
         // Import tool grammar highlighting 
