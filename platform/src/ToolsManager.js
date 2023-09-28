@@ -83,11 +83,14 @@ class ToolManager {
     createClassesFromConfig() {
         for ( const toolkey in this.tools){
            
-           for (let functionIndex in this.tools[toolkey].functions ){
-                
-               this.tools[toolkey].functions[functionIndex] = new ActionFunction(this.tools[toolkey].functions[functionIndex]);
+           let tool = this.tools[toolkey];
+           
+           if (Array.isArray(tool.functions) && tool.functions.length > 0){ 
+               for (let functionIndex in tool.functions ){
+                        
+                    tool.functions[functionIndex] = new ActionFunction(tool.functions[functionIndex]);
+               }
            }
-        
         }
     }
 

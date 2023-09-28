@@ -14,8 +14,6 @@ COPY . .
 
 RUN npm install; npm run build
 
-RUN cp -a public/. dist/
-
 
 
 

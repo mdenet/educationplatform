@@ -1,0 +1,47 @@
+{
+    "tool": 
+        {
+            "id": "utility",
+    
+            "name": "Common Utilities",
+    
+            "version": "0.0.1",
+            
+            "author": "MDENet",
+            
+            "homepage": "",
+    
+            "functions": [    
+            ],
+    
+    
+    
+            "panelDefs": [
+    
+                {
+    
+                    "id": "console",
+    
+                    "name": "console",
+    
+                    "panelclass": "ConsolePanel",
+    
+                    "icon": "images/console.gif"
+    
+                },
+    
+                {
+    
+                    "id": "problem",
+    
+                    "name": "problem",
+                    
+                    "panelclass": "OutputPanel",
+    
+                    "icon": "problems"
+    
+                }
+            ]
+        }
+    } 
+    
