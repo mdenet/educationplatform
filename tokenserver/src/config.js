@@ -2,7 +2,7 @@
 
 export const config = {
 
-    port: process.env.PORT || "10000",
+    port: process.env.TS_PORT || "10000",
 
     endpointsPrefix: process.env.TS_ENDPOINT_PREFIX || "/mdenet-auth",
 
