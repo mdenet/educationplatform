@@ -13,7 +13,7 @@ COPY package*.json ./
 RUN npm install
 COPY  . .
 
-EXPOSE 10000
+EXPOSE ${TS_PORT}
 
 CMD ["node", "-r", "dotenv/config", "dist/server.js"]
 
