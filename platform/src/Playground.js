@@ -98,6 +98,10 @@ if (urlParameters.has("code") && urlParameters.has("state")  ){
     } );
 }
 
+// Clean authentication parameters from url
+urlParameters.delete("code");
+urlParameters.delete("state");
+window.history.replaceState({}, document.title, "/?" + urlParameters.toString());
 
 
 function initialiseActivity(){
