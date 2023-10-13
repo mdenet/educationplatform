@@ -183,6 +183,10 @@ class ActivityManager {
             a.href += "&activities=" + this.activitiesUrl;
         }
 
+        if (urlParamPrivateRepo()){
+            a.href += "&privaterepo=true"
+        }
+
         li.appendChild(a);
 
         var icon = document.createElement("span");
