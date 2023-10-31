@@ -60,6 +60,8 @@ if (!urlParamPrivateRepo()){
     // Public repo so no need to authenticate
     initialiseActivity();
     PlaygroundUtility.hideLogin();
+} else {
+    PlaygroundUtility.showLogin();
 }
 
 document.getElementById("btnlogin").onclick= async () => {
