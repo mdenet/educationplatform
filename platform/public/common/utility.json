@@ -40,7 +40,20 @@
     
                     "icon": "problems"
     
+                },
+
+                {
+    
+                    "id": "code",
+    
+                    "name": "code",
+                    
+                    "panelclass": "OutputPanel",
+    
+                    "icon": "editor"
+    
                 }
+
             ]
         }
     } 
