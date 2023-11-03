@@ -1,5 +1,5 @@
 
-import { parse as yamlParse} from 'yaml' 
+import { parse as yamlParse, YAMLParseError} from 'yaml' 
 
 export const ARRAY_ANY_ELEMENT = '*';
 
@@ -179,25 +179,31 @@ export function isAuthenticated(){
  * Parses the platform configuration files, YAML and JSON types are supported. 
  * @param {String} contents the configuration file contents
  * @param {String} extension the configuration file extenstion
- * @returns the parsed configuration object
+ * @returns the parsed configuration object or an error
  */
 export function parseConfigFile(contents, extension="yml"){
 
     let configObject;
     
-    switch(extension){
-        case "json":
-            configObject= JSON.parse(contents);
-            break;
+    try {
+        switch(extension){
+            case "json":
+                configObject= JSON.parse(contents);
+                break;
 
 
-        case "yml":
-            configObject= yamlParse(contents);
-            break;
+            case "yml":
+                configObject= yamlParse(contents);
+                break;
 
-        default:
-            console.log("Cannont parse unsupported configuration file type '" + extension + "'.");
-            configObject = null;
+            default:
+                console.log("Cannont parse unsupported configuration file type '" + extension + "'.");
+                configObject = null;
+        }
+    } catch(e){
+        if (e instanceof YAMLParseError || e instanceof SyntaxError){
+            configObject = e;
+        }
     }
 
     return configObject;

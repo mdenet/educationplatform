@@ -12,6 +12,7 @@ import 'metro4';
 import { FileHandler } from './FileHandler.js';
 import { ActivityManager } from './ActivityManager.js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
+import { EducationPlatformError } from './EducationPlatformError.js'
 
 import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
@@ -140,8 +141,16 @@ function initialiseActivity(){
         initialisePanels();
     
     } else {
-    
         // No activity configuration has been given
+        displayErrors([new EducationPlatformError("No activity configuration has been specified.")]);
+    }
+}
+
+function displayErrors(errors){
+
+        let errorText = "";
+        errors.forEach((err) => errorText += err.message + " \n\n");
+
         const contentPanelName = "content-panel";
      
         panels.push(new BlankPanel(contentPanelName));
@@ -155,9 +164,8 @@ function initialiseActivity(){
         fit();
     
         var contentPanelDiv = document.getElementById(contentPanelName);
-        var content = document.createTextNode("No activity configuration has been specified.");
+        var content = document.createTextNode(errorText);
         contentPanelDiv.append(content);
-    }
 }
 
 function initialisePanels() {
@@ -198,8 +206,6 @@ function initialisePanels() {
     
     fit();
 }
-
-
 
 
    /**

@@ -102,6 +102,19 @@ describe("Utility", () => {
         expect(result).toEqual(expectedObject);
     })
 
+    it("parseConfigFile - an invald yaml file returns an error", ()=> {
+
+        let result = parseConfigFile(INVALID_FILE, "yml");
+
+        expect(result).toBeInstanceOf(Error);
+    })
+
+    it("parseConfigFile - an invald json file returns an error", ()=> {
+
+        let result = parseConfigFile(INVALID_FILE, "json");
+
+        expect(result).toBeInstanceOf(Error);
+    })
 })
 
 const JSON_ACTIVITY_CONFIG= "{\n"
@@ -542,3 +555,7 @@ const YML_ACTIVITY_CONFIG= "activities:\n"
 + "  tools:\n"
 + "  - http://127.0.0.1:8070/epsilon_tool.json\n"
 + "";
+
+const INVALID_FILE = "{ \n"
++ "----------------- \n"
++ "]";

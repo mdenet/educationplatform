@@ -11,6 +11,7 @@ class ActivityManager {
     customActivitiesUrl = false;
     toolsUrl;
     customToolsUrl= false;
+    configErrors = [];
     activities = {};
     activeSubMenu;
 
@@ -42,7 +43,7 @@ class ActivityManager {
             }
         }
 
-        this.fetchActivities();
+        this.configErrors = this.configErrors.concat(this.fetchActivities());
 
         for(var activityKey of Object.keys(this.activities)) {
             this.resolveActionReferences( this.activities[activityKey].id );
@@ -90,41 +91,87 @@ class ActivityManager {
     /**
      * Fetches all the activities from activitiesUrl
      * and populates the activities array
+     * @returns errors from parsing and validation
      */
     fetchActivities() {
 
         let file  = this.fileHandler.fetchFile( this.activitiesUrl , urlParamPrivateRepo() )
         let fileContent = file.content;
 
+        let errors = [];
+
         if (fileContent != null){
 
-            let config = parseConfigFile(fileContent);
-            
-            for (const activity of config.activities) {
+            let validatedConfig = this.parseAndValidateActivityConfig(fileContent);
 
-                if (activity.id) {
-                    this.storeActivity(activity);
-                    this.createActivityMenuEntry(null, activity);
-                }
-                else {
-                    var active = false;
-                    for (const nestedActivity of activity.activities) {
-                        this.storeActivity(nestedActivity);
-                        if (nestedActivity.id == this.activityId) {
-                            active = true;
-                        }
-                    }
+            if ( validatedConfig.errors.length == 0 ){
 
-                    var subMenu = this.createActivitiesSubMenu(activity.title, active);
+                this.createActivitiesMenu(validatedConfig.config);
 
-                    for (const nestedActivity of activity.activities) {
-                        this.createActivityMenuEntry(subMenu, nestedActivity);
-                    }
-                }
+            } else {
+                // Error config file parsing error
+                errors = errors.concat(validatedConfig.errors);
             }
         } 
 
+        return errors;
     }
+
+    /**
+     * Parses and validates an activity file
+     * @param {*} activityFile 
+     * @returns object containing the validated config file object and an array of errors
+     */
+    parseAndValidateActivityConfig(activityFile){
+        let validationResult = {};
+
+        validationResult.errors = [];
+
+        let config = parseConfigFile(activityFile);
+
+        if ( !(config instanceof Error) ){
+            
+            validationResult.config = config;
+            // TODO - validate activity configuration
+
+        } else {
+            validationResult.errors.push(config);
+            validationResult.config = null;
+        }
+        
+        return validationResult;
+    }
+
+    /**
+     * Create the activities menu
+     * @param {*} config valid activities configuration object
+     */
+    createActivitiesMenu(config){
+
+        for (const activity of config.activities) {
+
+            if (activity.id) {
+                this.storeActivity(activity);
+                this.createActivityMenuEntry(null, activity);
+            }
+            else {
+                var active = false;
+                for (const nestedActivity of activity.activities) {
+                    this.storeActivity(nestedActivity);
+                    if (nestedActivity.id == this.activityId) {
+                        active = true;
+                    }
+                }
+
+                var subMenu = this.createActivitiesSubMenu(activity.title, active);
+
+                for (const nestedActivity of activity.activities) {
+                    this.createActivityMenuEntry(subMenu, nestedActivity);
+                }
+            }
+        }
+    }
+
 
     subMenuNumber = 0;
 
@@ -406,6 +453,13 @@ class ActivityManager {
         }
     }
 
+    /**
+     * Returns the errors found parsing and validating the activty configuration file 
+     * @returns array of errors
+     */
+    getConfigErrors(){
+        return this.configErrors;
+    }
 
 }
 
