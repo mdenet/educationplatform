@@ -1,0 +1,23 @@
+{
+    "$id": "https://mde-network.com/ep/parameter.schema.json",
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "title": "EP Parameter",
+    "description": "The MDENet education platform parameter",
+
+    "type": "object",
+    "properties": {
+        "name": {
+            "description": "Name of the parameter.",
+            "type": "string"
+        },
+        "type": {
+            "description": "The parameter's type.",
+            "type": "string"
+        },
+        "instanceof": {
+            "description": "Reference to the parameter's metamodel by parameter name.",
+            "type": "string"
+        }
+    },
+    "required": ["name", "type"]
+}

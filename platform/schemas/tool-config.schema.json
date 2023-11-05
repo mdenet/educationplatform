@@ -1,0 +1,44 @@
+{
+    "$id": "https://mde-network.com/ep/tool-config.schema.json",
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "title": "MDENet Tool Configuration",
+    "description": "The MDENet education platform tool configuration file. See https://github.com/mdenet/educationplatform/wiki/Adding-a-Tool#configuration-file for further documentation.",
+    
+    "type": "object", 
+    "maxProperties": 1,
+    "properties": {
+        "tool" : {
+            "id": "Top-level configuration file object",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "A unique string used for identification.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "The text used for display.",
+                    "type": "string"
+                },
+                "functions": {
+                    "description": "The function object describes a tool service's function, including its file type information. The platform uses the function object to validate requests when invoking a tool function and determine if any type conversions are required prior to to its invocation.",
+                    "type": "array",
+                    "items": {
+                        "type":"object",
+                        "$ref": "function.schema.json"
+                    }
+                },
+                "paneldefs": {
+                    "description": "The panel definition object specifies a panel defining each of the customisable areas. There are three classes of panel that determine a panel's primary behaviour: program, console, or output.",
+                    "type": "array",
+                    "items": {
+                        "type":"object",
+                        "$ref": "paneldef.schema.json"
+                    }
+                }
+            },
+            "required": ["id", "name", "functions", "paneldefs"]
+            }
+        },
+
+    "required": ["tool"]
+}

@@ -1,0 +1,59 @@
+{
+    "$id": "https://mde-network.com/ep/activity-config.schema.json",
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "title": "MDENet Activity Configuration",
+    "description": "The MDENet education platform activity configuration file. See https://github.com/mdenet/educationplatform/wiki/Creating-an-Activity for further documentation.",
+    
+    "type": "object", 
+    "properties": {
+        "activities" : {
+            "description": "Top-level configuration file object",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type":"object",
+                "properties": {
+                    "id": {
+                        "description": "A unique string used for identification.",
+                        "type": "string"
+                    },
+                    "title": {
+                        "description": "The text used for display.",
+                        "type": "string"
+                    },
+                    "icon": {
+                        "description": "Reference to the name of the icon to use. See Icons for details of where icon files should be located.",
+                        "type": "string"
+                    },
+                    "tools": {
+                        "description": "Tool configuration file urls of the tools the activity uses.",
+                        "type": "array"
+                    },
+                    "layout": {
+                        "description": "The layout object specifies how the panels are displayed.",
+                        "type": "object",
+                        "$ref": "layout.schema.json"
+                    },
+                    "actions":{
+                        "description": "An Action object describes the mapping of panel contents to the input parameters of tool functions when a given button is clicked. Additionally, it specifies the panel where the return of the tool function is displayed.",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "$ref": "action.schema.json"
+                        }
+                    },
+                    "panels":{
+                        "description": "A panel object describes the contents that should be displayed in a panel.",
+                        "type": "array",
+                        "items": {
+                            "type":"object",
+                            "$ref": "panel.schema.json"
+                        }
+                    }
+                },
+                "required": ["id", "title", "tools", "layout", "actions", "panels"]
+            }
+        }
+    },
+    "required": ["activities"]
+}

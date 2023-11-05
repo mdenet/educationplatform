@@ -1,0 +1,35 @@
+{
+    "$id": "https://mde-network.com/ep/panel.schema.json",
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "title": "EP Panel",
+    "description": "The MDENet education platform panel",
+
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "A unique string used for identification.",
+            "type": "string"
+        },
+        "name": {
+            "description": "The text used for display.",
+            "type": "string"
+        },
+        "ref": {
+            "description": "Reference to a panel definition's id from a tool configuration.",
+            "type": "string"
+        },
+        "file": {
+            "description": "The relative path to the file that is displayed by the panel.",
+            "type": "string"
+        },
+        "editorActivity": {
+            "description": "For tools that create editor instances e.g. language workbenches, reference to the id of the activity that contains the editor.",
+            "type": "string"
+        },
+        "editorPanel": {
+            "description": "For tools that create editor instances e.g. language workbenches, reference to the id of a panel of editorActivity that is the editor instance.",
+            "type": "string"
+        }
+    },
+    "required": ["id", "name", "ref", "file"]
+}

@@ -1,0 +1,33 @@
+{
+    "$id": "https://mde-network.com/ep/function.schema.json",
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "title": "EP Panel",
+    "description": "The MDENet education platform function",
+
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "A unique string used for identification.",
+            "type": "string"
+        },
+        "name": {
+            "description": "The text used for display.",
+            "type": "string"
+        },
+        "parameters": {
+            "description": "The parameters of a tool service's function.",
+            "type": "array",
+            "$ref": "parameter.schema.json"
+        },
+        "returntype": {
+            "description": "The type of the function's return value.",
+            "type": "string"
+        },
+        "path": {
+            "description": "The function's endpoint url.",
+            "type": "string"
+        }
+
+    },
+    "required": ["id", "name", "parameters", "returntype","path"]
+}
