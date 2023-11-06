@@ -1,6 +1,6 @@
 {
     "$id": "https://mde-network.com/ep/activity-config.schema.json",
-    "$schema": "https://json-schema.org/draft-07/schema",
+    "$schema": "http://json-schema.org/draft-07/schema",
     "title": "MDENet Activity Configuration",
     "description": "The MDENet education platform activity configuration file. See https://github.com/mdenet/educationplatform/wiki/Creating-an-Activity for further documentation.",
     

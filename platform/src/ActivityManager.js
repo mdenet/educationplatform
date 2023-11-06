@@ -1,5 +1,6 @@
 import { pan } from "svg-pan-zoom";
 import { urlParamPrivateRepo, parseConfigFile } from "./Utility.js";
+import { ActivityConfigValidator } from "./ActivityConfigValidator.js";
 
 const NAV_ID_PREFIX = "nav-entry-";
 
@@ -12,6 +13,7 @@ class ActivityManager {
     toolsUrl;
     customToolsUrl= false;
     configErrors = [];
+    configValidator;
     activities = {};
     activeSubMenu;
 
@@ -21,6 +23,8 @@ class ActivityManager {
     
 
     constructor( panelDefAccessor, fileHandler ) {
+
+        this.configValidator = new ActivityConfigValidator();
 
         this.accessPanelDef = panelDefAccessor; // Obtain tool panel definitions from thier ID
         this.fileHandler = fileHandler;
@@ -129,13 +133,21 @@ class ActivityManager {
 
         let config = parseConfigFile(activityFile);
 
-        if ( !(config instanceof Error) ){
-            
-            validationResult.config = config;
-            // TODO - validate activity configuration
-
-        } else {
+        if (config instanceof Error) {
+            // Parsing failed
             validationResult.errors.push(config);
+        }
+
+        if (validationResult.errors == 0){
+            // Parsed correctly so validate activity configuration
+            validationResult.errors =  validationResult.errors.concat( 
+                this.configValidator.validateConfigFile(config) 
+            );
+        }
+
+        if (validationResult.errors == 0){
+            validationResult.config = config;
+        } else {
             validationResult.config = null;
         }
         

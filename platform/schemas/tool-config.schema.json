@@ -1,6 +1,6 @@
 {
     "$id": "https://mde-network.com/ep/tool-config.schema.json",
-    "$schema": "https://json-schema.org/draft-07/schema",
+    "$schema": "http://json-schema.org/draft-07/schema",
     "title": "MDENet Tool Configuration",
     "description": "The MDENet education platform tool configuration file. See https://github.com/mdenet/educationplatform/wiki/Adding-a-Tool#configuration-file for further documentation.",
     

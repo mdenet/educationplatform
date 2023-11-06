@@ -197,7 +197,7 @@ export function parseConfigFile(contents, extension="yml"){
                 break;
 
             default:
-                console.log("Cannont parse unsupported configuration file type '" + extension + "'.");
+                console.log("Cannot parse unsupported configuration file type '" + extension + "'.");
                 configObject = null;
         }
     } catch(e){

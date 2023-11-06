@@ -1,6 +1,6 @@
 {
     "$id": "https://mde-network.com/ep/function.schema.json",
-    "$schema": "https://json-schema.org/draft-07/schema",
+    "$schema": "http://json-schema.org/draft-07/schema",
     "title": "EP Panel",
     "description": "The MDENet education platform function",
 

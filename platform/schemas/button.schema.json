@@ -1,6 +1,6 @@
 {
     "$id": "https://mde-network.com/ep/button.schema.json",
-    "$schema": "https://json-schema.org/draft-07/schema",
+    "$schema": "http://json-schema.org/draft-07/schema",
     "title": "EP Button",
     "description": "The MDENet education platform button",
 

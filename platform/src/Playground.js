@@ -13,6 +13,7 @@ import { FileHandler } from './FileHandler.js';
 import { ActivityManager } from './ActivityManager.js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
 import { EducationPlatformError } from './EducationPlatformError.js'
+import { ConfigValidationError } from './ConfigValidationError.js';
 
 import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
@@ -108,23 +109,32 @@ window.history.replaceState({}, document.title, "/?" + urlParameters.toString())
 
 
 function initialiseActivity(){
-    if (urlParameters.has("activities")) {
 
+    let errors = [];
+
+    if (!urlParameters.has("activities")) {
+        // No activity configuration has been given
+        errors.push(new EducationPlatformError("No activity configuration has been specified."));
+    }
+
+    if (errors.length==0){
         // An activity configuration has been provided
         toolsManager = new ToolsManager();
         activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager), fileHandler );
+        errors = errors.concat(activityManager.getConfigErrors());
+    } 
+
+    if (errors.length==0){
         toolsManager.setToolsUrls( activityManager.getToolUrls().add(COMMON_UTILITY_URL) );
         activityManager.showActivitiesNavEntries();
-        
+
         // Import tool grammar highlighting 
         const  toolImports = toolsManager.getToolsGrammarImports(); 
-    
+
         for(let ipt of toolImports) {
             ace.config.setModuleUrl(ipt.module, ipt.url);
         }
-    
-    
-    
+
         // Add Tool styles for icons 
         for (let toolUrl of activityManager.getToolUrls()){
             let toolBaseUrl = toolUrl.substring(0, toolUrl.lastIndexOf("/"));
@@ -133,23 +143,21 @@ function initialiseActivity(){
             link.setAttribute("href", toolBaseUrl + "/icons.css");
             document.head.appendChild(link);
         }
-     
-        
         
         activity = activityManager.getSelectedActivity(); 
-    
+
         initialisePanels();
-    
-    } else {
-        // No activity configuration has been given
-        displayErrors([new EducationPlatformError("No activity configuration has been specified.")]);
+    }
+
+    if (errors.length > 0) {
+        displayErrors(errors);
     }
 }
 
 function displayErrors(errors){
 
         let errorText = "";
-        errors.forEach((err) => errorText += err.message + " \n\n");
+
 
         const contentPanelName = "content-panel";
      
@@ -164,8 +172,45 @@ function displayErrors(errors){
         fit();
     
         var contentPanelDiv = document.getElementById(contentPanelName);
-        var content = document.createTextNode(errorText);
-        contentPanelDiv.append(content);
+
+        // EP Errors
+        const platformErrors= errors.filter((e)=> e.constructor.name === EducationPlatformError.name);
+
+        if (platformErrors.length > 0){
+            let contentTitle = document.createElement("h2");
+            contentTitle.innerText = "Education Platform Errors:";
+            contentPanelDiv.append(contentTitle);
+
+            platformErrors.forEach( (err) => {
+                let content = document.createElement("p");
+                content.append(document.createTextNode(err.message));
+
+                contentPanelDiv.append(content);
+            });
+
+            contentPanelDiv.append(document.createElement("p"));
+        }
+
+        // Config File Errors
+        const configErrors= errors.filter((e)=> e.constructor.name === ConfigValidationError.name);
+
+        if(configErrors.length > 0){
+            let contentTitle = document.createElement("h2");
+            contentTitle.innerText = "Config File Errors:";
+            contentPanelDiv.append(contentTitle);
+
+            let contentLabels = document.createElement("b");
+            contentLabels.innerText = "File | Category | Details | Location";
+            contentPanelDiv.append(contentLabels);
+
+            configErrors.forEach( (err) => {
+                let content = document.createElement("p");
+                let contentText= `${err.fileType} | ${err.category} | ${err.message} | ${err.location}` ;
+                content.append(document.createTextNode(contentText));
+
+                contentPanelDiv.append(content);
+            });
+        }
 }
 
 function initialisePanels() {
