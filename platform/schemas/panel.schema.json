@@ -31,5 +31,5 @@
             "type": "string"
         }
     },
-    "required": ["id", "name", "ref", "file"]
+    "required": ["id", "name", "ref"]
 }

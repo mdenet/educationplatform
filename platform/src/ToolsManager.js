@@ -1,15 +1,19 @@
 import { parseConfigFile } from "./Utility.js";
 import { FunctionRegistry } from "../src/FunctionRegistry.js"
 import { ActionFunction } from "./ActionFunction.js";
+import { ToolConfigValidator } from "./ToolConfigValidator.js";
 
 class ToolManager {
 
     toolId;
     toolsUrls;
+    configErrors = [];
+    configValidator;
     tools = {};
     functionRegister;
 
     constructor(){
+        this.configValidator= new ToolConfigValidator();
         this.functionRegister= new FunctionRegistry();
     }
 
@@ -27,7 +31,7 @@ class ToolManager {
                 this.toolsUrls.push(toolUrl);
             }
 
-            this.fetchTools();
+            this.configErrors = this.configErrors.concat( this.fetchTools() );
             this.registerToolFunctions();
             this.createClassesFromConfig();
             
@@ -36,11 +40,13 @@ class ToolManager {
 
     
 
-    /*
+    /** 
      * Fetches the tools from the tools url and populates tool's
      * functions and panel definitions.
+     * @returns errors from parsing and validation
      */
     fetchTools(){
+        let errors = [];
 
         for (let toolUrl of this.toolsUrls) {
 
@@ -49,10 +55,14 @@ class ToolManager {
             xhr.send();
     
             if (xhr.status === 200) {    
-                let config = parseConfigFile(xhr.responseText);
-    
-                // Store the tool found in the given json
-    
+
+                let validatedConfig = this.parseAndValidateToolConfig(xhr.responseText);
+
+                if ( validatedConfig.errors.length == 0 ){
+                    
+                    const config = validatedConfig.config;
+
+                    // Store the tool found in the given json
                     if (config.tool.id){
                         this.storeTool(config.tool);
                         
@@ -61,9 +71,47 @@ class ToolManager {
                         //TODO update any tool mangement menu. 
                     }
                 
+                } else {
+                    // Error tool file parsing error
+                    errors = errors.concat(validatedConfig.errors);
+                }                
             }
-
         }
+
+        return errors;
+    }
+
+    /**
+     * Parses and validates a tool config file
+     * @param {*} toolFile 
+     * @returns object containing the validated tool file object and an array of errors
+     */
+    parseAndValidateToolConfig(toolFile){
+        let validationResult = {};
+
+        validationResult.errors = [];
+
+        let config = parseConfigFile(toolFile);
+
+        if (config instanceof Error) {
+            // Parsing failed
+            validationResult.errors.push(config);
+        }
+
+        if (validationResult.errors == 0){
+            // Parsed correctly so validate activity configuration
+            validationResult.errors =  validationResult.errors.concat( 
+                this.configValidator.validateConfigFile(config) 
+            );
+        }
+
+        if (validationResult.errors == 0){
+            validationResult.config = config;
+        } else {
+            validationResult.config = null;
+        }
+
+        return validationResult;
     }
 
 
@@ -263,6 +311,13 @@ class ToolManager {
         return this.functionRegister.lookupFunctionsPartialMatch(inputsParamTypes, outputParamType);
      }
 
+   /**
+     * Returns the errors found parsing and validating the tool configuration files 
+     * @returns array of errors
+     */
+    getConfigErrors(){
+        return this.configErrors;
+    }
 }
 
 export {ToolManager};

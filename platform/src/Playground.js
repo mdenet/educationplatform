@@ -125,7 +125,13 @@ function initialiseActivity(){
     } 
 
     if (errors.length==0){
+        // The activities have been validated
         toolsManager.setToolsUrls( activityManager.getToolUrls().add(COMMON_UTILITY_URL) );
+        errors = errors.concat(toolsManager.getConfigErrors());
+    }
+
+    if (errors.length==0){
+        // The tools have been validated 
         activityManager.showActivitiesNavEntries();
 
         // Import tool grammar highlighting 

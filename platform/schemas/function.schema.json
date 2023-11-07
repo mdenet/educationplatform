@@ -17,9 +17,12 @@
         "parameters": {
             "description": "The parameters of a tool service's function.",
             "type": "array",
-            "$ref": "parameter.schema.json"
+            "items": { 
+                "type": "object",
+                "$ref": "parameter.schema.json"
+            }
         },
-        "returntype": {
+        "returnType": {
             "description": "The type of the function's return value.",
             "type": "string"
         },
@@ -29,5 +32,5 @@
         }
 
     },
-    "required": ["id", "name", "parameters", "returntype","path"]
+    "required": ["id", "name", "parameters", "returnType","path"]
 }

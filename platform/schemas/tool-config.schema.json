@@ -8,7 +8,7 @@
     "maxProperties": 1,
     "properties": {
         "tool" : {
-            "id": "Top-level configuration file object",
+            "description": "Top-level configuration file object",
             "type": "object",
             "properties": {
                 "id": {
@@ -36,7 +36,7 @@
                     }
                 }
             },
-            "required": ["id", "name", "functions", "paneldefs"]
+            "required": ["id", "name", "functions"]
             }
         },
 
