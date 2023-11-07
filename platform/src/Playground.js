@@ -645,6 +645,8 @@ function handleResponseActionFunction(action, requestPromise){
         var response = JSON.parse(responseText);
         var outputPanel = panels.find( pn => pn.id ==  action.output.id);
 
+        Metro.notify.killAll();
+
         if (response.hasOwnProperty("error")) {
             consolePanel.setError(response.error);
         } else {
@@ -662,7 +664,6 @@ function handleResponseActionFunction(action, requestPromise){
             
             if (response.editorUrl) {
                 // Language workbench
-                Metro.notify.killAll();
                 longNotification("Building editor...");
                 checkEditorReady( response.editorStatusUrl, response.editorUrl, action.source.editorPanel, action.source.editorActivity);
                 
@@ -737,8 +738,6 @@ function handleResponseActionFunction(action, requestPromise){
             }
 
         }
-
-        //Metro.notify.killAll();
     });
 
 }
@@ -811,16 +810,16 @@ function runAction(source, sourceButton) {
 
 
 function longNotification(title, cls="light") {
-    Metro.notify.create("<b>" + title + "...</b><br>This may take a few seconds to complete if the back end is not warmed up.", null, {keepOpen: true, cls: cls, width: 300});
+    Metro.notify.create( "<div class=\"default-icon-cross\" style=\"float:right\"></div>" + "<b>" + title + "...</b>" + "<br>This may take a few seconds to complete if the back end is not warmed up.", null, {keepOpen: true, cls: cls, width: 300});
 }
 
 function successNotification(message, cls="light") {
-    Metro.notify.create("<b>Success:</b> "+ message +"<br>", null, {keepOpen: true, cls: cls, width: 300});
+    Metro.notify.create("<div class=\"default-icon-cross\" style=\"float:right\"></div>" + "<b>Success:</b> "+ message + "<br>", null, {keepOpen: true, cls: cls, width: 300});
 }
 
 function errorNotification(message) {
     console.log("ERROR: " + message);
-    Metro.notify.create("<b>Error:</b> "+ message +"<br>", null, {keepOpen: true, cls: "bg-red fg-white", width: 300});
+    Metro.notify.create( "<div class=\"default-icon-cross\" style=\"float:right\"></div>" + "<b>Error:</b> "+ message + "<br>", null, {keepOpen: true, cls: "bg-red fg-white", width: 300});
 }
 
 
