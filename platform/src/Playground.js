@@ -7,7 +7,11 @@ import 'ace-builds/src-min-noconflict/mode-html';
 import 'ace-builds/src-min-noconflict/ext-modelist';
 import 'ace-builds/src-min-noconflict/ext-language_tools';
 
-import 'metro4';
+// BEGIN YAMTL Playground
+// FIXME: this is ad-hoc code
+// import 'metro4' // this import does not work for local debugging
+import '../../node_modules/metro4/build/metro.js' // this import does not work for docker
+// END YAMTL Playground
 
 import { FileHandler } from './FileHandler.js';
 import { ActivityManager } from './ActivityManager.js';
@@ -103,7 +107,29 @@ if (urlParameters.has("code") && urlParameters.has("state")  ){
 // Clean authentication parameters from url
 urlParameters.delete("code");
 urlParameters.delete("state");
-window.history.replaceState({}, document.title, "/?" + urlParameters.toString());
+
+
+// BEGIN YAMTL Playground
+// This code encodes ':' and '/' with toString
+// window.history.replaceState({}, document.title, "/?" + urlParameters.toString());
+
+// We'll skip this encoding to be able to reuse the URL
+let params = [];
+for (const [key, value] of urlParameters) {
+  // For a specific key ('activities' in this case), you add it to the array without encoding
+  if (key === 'activities') {
+    params.push(`${key}=${value}`);
+  } else {
+    // For all other parameters, you still want to encode them
+    params.push(`${key}=${encodeURIComponent(value)}`);
+  }
+}
+// Now join all the parameters with '&' to form the query string
+let queryString = params.join('&');
+
+// Use replaceState to update the URL without encoding the parameter
+window.history.replaceState({}, document.title, "?" + queryString);
+// END YAMTL Playground
 
 
 function initialiseActivity(){
@@ -241,7 +267,8 @@ function initialisePanels() {
 
             case "OutputPanel":
             
-                const panelDef =  toolsManager.getPanelDefinition(newPanelId);
+                // Artur: This does not seem correct: the panelId is not a reference to a panelDef
+                // const panelDef =  toolsManager.getPanelDefinition(newPanelId);
 
                 newPanel =  new OutputPanel(newPanelId, panelDefinition.language, outputType, outputLanguage);
             
@@ -709,7 +736,7 @@ function handleResponseActionFunction(action, requestPromise){
                         // UML or Graph
     
                         var krokiEndpoint = "";
-                        if (outputType == "puml") krokiEndpoint = "plantuml";
+                        if (action.outputType == "puml") krokiEndpoint = "plantuml";
                         else krokiEndpoint = "graphviz/svg"
 
                         var krokiXhr = new XMLHttpRequest();
