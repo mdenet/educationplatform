@@ -205,8 +205,8 @@ function initialisePanels() {
    /**
      * Create a panel for a given panel config entry
      * 
-     * @param {string} panel 
-     * @return {Panel}
+     * @param {Object} activity config panel definition 
+     * @return {Panel} platform Panel
      */
     function createPanelForDefinitionId(panel){
         const panelDefinition = panel.ref;
@@ -221,7 +221,6 @@ function initialisePanels() {
                 newPanel =  new ProgramPanel(newPanelId);
                 
                 // Set from the tool panel definition  
-                newPanel.setIcon(panelDefinition.icon);
                 newPanel.setEditorMode(panelDefinition.language);
 
                 newPanel.setType(panelDefinition.language);
@@ -244,8 +243,6 @@ function initialisePanels() {
                 const panelDef =  toolsManager.getPanelDefinition(newPanelId);
 
                 newPanel =  new OutputPanel(newPanelId, panelDefinition.language, outputType, outputLanguage);
-            
-                newPanel.setIcon(panelDefinition.icon);
                 
                 newPanel.hideEditor();
                 newPanel.showDiagram();
@@ -257,7 +254,6 @@ function initialisePanels() {
                 
                 newPanel = new XtextEditorPanel(newPanelId, editorUrl, panel.extension);
 
-                newPanel.setIcon(panelDefinition.icon);
                 newPanel.setType(panelDefinition.language);
 
             break;
@@ -270,6 +266,12 @@ function initialisePanels() {
         // Add elements common to all panels
         newPanel.setTitle(panel.name);
 
+        if(panel.icon){
+            newPanel.setIcon(panel.icon);
+        } else {
+            newPanel.setIcon(panelDefinition.icon);
+        }
+        
         if (panelDefinition.buttons != null){
             
             var buttons = panel.ref.buttons.map( (btn) => {
