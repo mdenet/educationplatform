@@ -1,0 +1,18 @@
+{
+    "$id": "https://mde-network.com/ep/layout.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "EP Layout",
+    "description": "The MDENet education platform Layout",
+
+    "type": "object",
+    "properties": {
+        "area": {
+            "description": "Two-dimensional array of rows of panel ids that corresponds to the position of the displayed panels.",
+            "type": "array",
+            "items": {
+                "type":"array"
+            }
+        }
+    },
+    "required": ["area"]
+}
