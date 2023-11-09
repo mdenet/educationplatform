@@ -664,7 +664,7 @@ function handleResponseActionFunction(action, requestPromise){
             
             if (response.editorUrl) {
                 // Language workbench
-                longNotification("Building editor...");
+                longNotification("Building editor");
                 checkEditorReady( response.editorStatusUrl, response.editorUrl, action.source.editorPanel, action.source.editorActivity);
                 
 
@@ -808,18 +808,22 @@ function runAction(source, sourceButton) {
     longNotification("Executing program");
 }
 
+function notification(title, message, cls="light"){
+    const crossIcon = "<div class=\"default-icon-cross\" style=\"float:right\"></div>"
+    Metro.notify.create(crossIcon + "<b>"  + title + "</b>" + "<br>" + message + "<br>", null, {keepOpen: true, cls: cls, width: 300});
+}
 
 function longNotification(title, cls="light") {
-    Metro.notify.create( "<div class=\"default-icon-cross\" style=\"float:right\"></div>" + "<b>" + title + "...</b>" + "<br>This may take a few seconds to complete if the back end is not warmed up.", null, {keepOpen: true, cls: cls, width: 300});
+    notification(title + "...", "This may take a few seconds to complete if the back end is not warmed up.", cls);
 }
 
 function successNotification(message, cls="light") {
-    Metro.notify.create("<div class=\"default-icon-cross\" style=\"float:right\"></div>" + "<b>Success:</b> "+ message + "<br>", null, {keepOpen: true, cls: cls, width: 300});
+    notification("Success:", message, cls);
 }
 
 function errorNotification(message) {
     console.log("ERROR: " + message);
-    Metro.notify.create( "<div class=\"default-icon-cross\" style=\"float:right\"></div>" + "<b>Error:</b> "+ message + "<br>", null, {keepOpen: true, cls: "bg-red fg-white", width: 300});
+    notification("Error:", message, "bg-red fg-white");
 }
 
 
