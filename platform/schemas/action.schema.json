@@ -1,0 +1,33 @@
+{
+    "$id": "https://mde-network.com/ep/action.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "EP Action",
+    "description": "The MDENet education platform action",
+
+    "type": "object",
+    "properties": {
+        "source": {
+            "description": "The panel id of the panel contains the source button.",
+            "type": "string"
+        },
+        "sourceButton": {
+            "description": "The button id of the source button.",
+            "type": "string"
+        },
+        "parameters": {
+            "description": "The parameter object declares the mapping of input parameters of a tool function to panel contents or a string.",
+            "type": "object",
+            "patternProperties": {
+                "^$": {
+                    "type": "string",
+                    "description": "The parameter object's keys must match the target action funtion. The value should be id of a panel that the contents will be used or a string."
+                }
+            }
+        },
+        "output": {
+            "description": "Panel id where the tool function return will be displayed.",
+            "type": "string"
+        }
+    },
+    "required": ["source", "sourceButton", "parameters", "output"]
+}
