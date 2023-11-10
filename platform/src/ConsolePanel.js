@@ -8,21 +8,20 @@ class ConsolePanel extends Panel {
         super(id);
         this.editor.setReadOnly(true);
         this.editor.setValue("", 1);
-        this.element.dataset.customButtons = JSON.stringify(this.getButtons());
+
+        let buttons = [];
+        let clearButton = new Button(
+            { id:"clear", 
+              hint:"Clear the console", 
+              internal: `panels.find((p) => p.id==="${this.id}").editor.setValue('')`,
+              icon: "clear" }, 
+            this.id
+        );
+        buttons.push(clearButton); 
+        this.addButtons(buttons);
+
         this.detectHyperlinks(this.editor);
         this.setTitleAndIcon("Console", "console");   
-    }
-
-    getButtons() {
-        let clearButton = new Button({
-                id:"clear", 
-                hint:"Clear the console", 
-                internal: `panels.find((p) => p.id==="${this.id}").editor.setValue('')`,
-                icon: "clear" 
-            }, this.id
-        );
-    
-        return [clearButton.getView()];
     }
 
     setOutput(str) {

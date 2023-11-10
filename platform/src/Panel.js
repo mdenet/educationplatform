@@ -99,17 +99,18 @@ class Panel {
 
     /**
      * Add the buttons to the page
-     * @param {Button[]} buttons  the Button objects to add
+     * @param {Button[]} buttons - The Button objects to add.
      */
     addButtons(buttons){
+        if (buttons.length > 0){
+            var buttonViewData= buttons.map( (btn) => {
+                return btn.getView();
+            }); 
 
-        var buttonViewData= buttons.map( (btn) => {
-            return btn.getView();
-        }); 
+            buttonViewData.reverse(); // So they are displayed in the order they are defined
 
-        buttonViewData.reverse(); // So they are displayed in the order they are defined
-
-        this.element.dataset.customButtons = JSON.stringify(buttonViewData);
+            this.element.dataset.customButtons = JSON.stringify(buttonViewData);
+        }
     }
 
 

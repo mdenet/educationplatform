@@ -263,8 +263,8 @@ function initialisePanels() {
    /**
      * Create a panel for a given panel config entry
      * 
-     * @param {Object} activity config panel definition 
-     * @return {Panel} platform Panel
+     * @param {Object} panel - The activity config panel definition.
+     * @return {Panel} the platform Panel
      */
     function createPanelForDefinitionId(panel){
         const panelDefinition = panel.ref;
