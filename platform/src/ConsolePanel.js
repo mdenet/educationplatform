@@ -1,5 +1,6 @@
 import { Panel } from "./Panel.js";
 import { define } from "ace-builds";
+import { Button } from "./Button.js";
 
 class ConsolePanel extends Panel {
 
@@ -13,11 +14,15 @@ class ConsolePanel extends Panel {
     }
 
     getButtons() {
-        return [{
-            html: this.buttonHtml("clear", "Clear the console"),
-            cls: "sys-button",
-            onclick: "consolePanel.setValue('')"
-        }];
+        let clearButton = new Button({
+                id:"clear", 
+                hint:"Clear the console", 
+                internal: `panels.find((p) => p.id==="${this.id}").editor.setValue('')`,
+                icon: "clear" 
+            }, this.id
+        );
+    
+        return [clearButton.getView()];
     }
 
     setOutput(str) {

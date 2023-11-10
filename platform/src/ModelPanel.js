@@ -13,7 +13,6 @@ class ModelPanel extends Panel {
         this.editable = editable;
         this.metamodelPanel = metamodelPanel;
         this.setupSyntaxHighlighting();
-        this.element.dataset.customButtons = JSON.stringify(this.getButtons());
         this.setTitleAndIcon("Model", "flexmi");
     }
 
@@ -60,22 +59,6 @@ class ModelPanel extends Panel {
         else {
             this.editor.getSession().setMode("ace/mode/yaml");
         }
-    }
-
-    getButtons() {
-        return this.editable ? [{
-            html: this.buttonHtml("help", "Flexmi language reference"),
-            cls: "sys-button",
-            onclick: "window.open('https://www.eclipse.org/epsilon/doc/flexmi');"
-        }, {
-            html: this.buttonHtml("refresh", "Render the model object diagram"),
-            cls: "sys-button",
-            onclick: this.id + "Panel.refreshDiagram()"
-        }, {
-            html: this.buttonHtml("diagram", "Show/hide the model object diagram"),
-            cls: "sys-button",
-            onclick: "toggle('" + this.id + "Diagram', function(){" + this.id + "Panel.refreshDiagram();})"
-        }] : [];
     }
 
     /* TODO: Rename to something more sensible */

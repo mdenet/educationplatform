@@ -21,6 +21,7 @@ import { OutputPanel } from "./OutputPanel.js";
 import { TestPanel } from './TestPanel.js';
 import { BlankPanel } from './BlankPanel .js';
 import { XtextEditorPanel } from './XtextEditorPanel.js';
+import { Button } from './Button.js';
 
 import { Preloader } from './Preloader.js';
 import { Backend } from './Backend.js';
@@ -323,47 +324,35 @@ function initialisePanels() {
         // Add elements common to all panels
         newPanel.setTitle(panel.name);
 
-        if(panel.icon){
+        if(panel.icon != null){
             newPanel.setIcon(panel.icon);
         } else {
             newPanel.setIcon(panelDefinition.icon);
         }
         
-        if (panelDefinition.buttons != null){
-            
-            var buttons = panel.ref.buttons.map( (btn) => {
-                var buttonData = {};
+        if (panel.buttons == null && panelDefinition.buttons != null){
+            // No activity defined buttons
+            newPanel.addButtons( Button.createButtons( panelDefinition.buttons, panel.id));
 
-                buttonData.icon =  btn.icon;
-                buttonData.hint = btn.hint;
-                buttonData.action = generateButtonOnclickHtml(btn, panel.id);
+        } else if (panel.buttons != null && panelDefinition.buttons != null) {
+            // The activity has defined the buttons
+            let resolvedButtonConfigs = panel.buttons.map(btn =>{    
+                let resolvedButton;
 
-                return buttonData;
+                if (btn.ref){
+                    // button reference so resolve
+                    resolvedButton= panelDefinition.buttons.find((pdBtn)=> pdBtn.id===btn.ref);
+                } else {
+                    // activity defined button
+                    resolvedButton= btn;
+                }
+                return resolvedButton;
             });
-
-            newPanel.addButtons(buttons);   
-        }   
-
-                
+            panel.buttons = resolvedButtonConfigs;
+            newPanel.addButtons( Button.createButtons( resolvedButtonConfigs, panel.id));
+        }
+ 
         return newPanel;
-}
-
-
-function generateButtonOnclickHtml(button, panelId){
-
-    var onclickHtml; 
-
-    if (button["url"] != undefined) {
-        onclickHtml = "window.open('" + button.url + "');";
-                       
-    } else if (button["actionfunction"] != undefined)  {        
-        onclickHtml = "runAction( '" + panelId + "', '" + button.id +"' )";
-
-    } else {
-        console.log( "Button '" + button.id + "' with uknown key.");
-    }
-
-    return onclickHtml;
 }
 
 
@@ -818,7 +807,14 @@ function runAction(source, sourceButton) {
     // Get the action
     var action = activityManager.getActionForCurrentActivity(source, sourceButton);
     
-    const buttonConfig =   action.source.ref.buttons.find( btn => btn.id == sourceButton );
+    let buttonConfig;
+    if(action.source.buttons){
+        //Buttons defined by activity
+        buttonConfig=  action.source.buttons.find( btn => btn.id == sourceButton );
+    } else {
+        //Buttons defined by tool
+        buttonConfig= action.source.ref.buttons.find( btn => btn.id == sourceButton );
+    }  
     const toolActionFunction = toolsManager.getActionFunction( buttonConfig.actionfunction ); // TODO tidy up by resolving tool references
 
     // Create map containing panel values

@@ -1,5 +1,7 @@
+
 import { ModelPanel } from "./ModelPanel.js";
-import { language } from "./Playground.js";
+import { language } from "./Playground.js"
+import { Button } from "./Button.js";
 
 class OutputPanel extends ModelPanel {
 
@@ -21,11 +23,15 @@ class OutputPanel extends ModelPanel {
     setupSyntaxHighlighting() {}
 
     getButtons() {
-        return (this.outputType == "code") ? [{
-            html: this.buttonHtml("highlight", "Set generated text language"),
-            cls: "sys-button",
-            onclick: this.id + "Panel.setOutputLanguage()"
-        }] : [];
+        let highlightButton = new Button({
+                id:"highlight", 
+                hint:"Set generated text language", 
+                internal: `panels.find((p) => p.id==="${this.id}").editor.setOutputLanguage()`,
+                icon: "highlight" 
+            }, this.id
+        );
+
+        return (this.outputType == "code") ? [highlightButton.getView()] : [];
     }
 
     getSelect() {

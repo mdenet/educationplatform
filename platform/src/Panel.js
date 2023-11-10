@@ -97,27 +97,14 @@ class Panel {
         return this.type;
     }
 
-    buttonHtml(icon, hint) {
-        return "<span class='mif-" + icon + "' data-role='hint' data-hint-text='" + hint + "' data-hint-position='bottom'></span>";
-    }
-
-
     /**
      * Add the buttons to the page
-     * @param {object[]} buttons  Objects with attributes: icon, hint, action
-     * 
-     * TODO Support image files for icon
+     * @param {Button[]} buttons  the Button objects to add
      */
     addButtons(buttons){
 
         var buttonViewData= buttons.map( (btn) => {
-            var buttonData={};
-            
-            buttonData.html= this.buttonHtml(btn.icon, btn.hint);
-            buttonData.cls= "sys-button";
-            buttonData.onclick= btn.action;
-
-            return buttonData;
+            return btn.getView();
         }); 
 
         buttonViewData.reverse(); // So they are displayed in the order they are defined
