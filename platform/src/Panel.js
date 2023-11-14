@@ -97,32 +97,20 @@ class Panel {
         return this.type;
     }
 
-    buttonHtml(icon, hint) {
-        return "<span class='mif-" + icon + "' data-role='hint' data-hint-text='" + hint + "' data-hint-position='bottom'></span>";
-    }
-
-
     /**
      * Add the buttons to the page
-     * @param {object[]} buttons  Objects with attributes: icon, hint, action
-     * 
-     * TODO Support image files for icon
+     * @param {Button[]} buttons - The Button objects to add.
      */
     addButtons(buttons){
+        if (buttons.length > 0){
+            var buttonViewData= buttons.map( (btn) => {
+                return btn.getView();
+            }); 
 
-        var buttonViewData= buttons.map( (btn) => {
-            var buttonData={};
-            
-            buttonData.html= this.buttonHtml(btn.icon, btn.hint);
-            buttonData.cls= "sys-button";
-            buttonData.onclick= btn.action;
+            buttonViewData.reverse(); // So they are displayed in the order they are defined
 
-            return buttonData;
-        }); 
-
-        buttonViewData.reverse(); // So they are displayed in the order they are defined
-
-        this.element.dataset.customButtons = JSON.stringify(buttonViewData);
+            this.element.dataset.customButtons = JSON.stringify(buttonViewData);
+        }
     }
 
 

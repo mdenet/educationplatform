@@ -1,5 +1,7 @@
+
 import { ModelPanel } from "./ModelPanel.js";
 import { language } from "./Playground.js";
+import { Button } from "./Button.js";
 
 class OutputPanel extends ModelPanel {
 
@@ -13,20 +15,25 @@ class OutputPanel extends ModelPanel {
         this.outputType = outputType;
         this.outputLanguage = outputLanguage;
         this.language = language;
-        this.element.dataset.customButtons = JSON.stringify(this.getButtons());
+
+        let buttons = []; 
+        if (this.outputType == "code"){
+            let highlightButton = new Button(
+                { id:"highlight", 
+                hint:"Set generated text language", 
+                internal: `panels.find((p) => p.id==="${this.id}").editor.setOutputLanguage()`,
+                icon: "highlight" }, 
+                this.id
+            );
+            buttons.push(highlightButton);
+        }
+        this.addButtons(buttons);
+
         this.getEditor().getSession().setMode("ace/mode/" + outputLanguage.toLowerCase());
-        //this.getEditor().getSession().setUseWrapMode(false);
     }
 
     setupSyntaxHighlighting() {}
 
-    getButtons() {
-        return (this.outputType == "code") ? [{
-            html: this.buttonHtml("highlight", "Set generated text language"),
-            cls: "sys-button",
-            onclick: this.id + "Panel.setOutputLanguage()"
-        }] : [];
-    }
 
     getSelect() {
         return Metro.getPlugin("#generatedFiles", 'select');
