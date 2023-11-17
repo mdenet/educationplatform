@@ -106,7 +106,25 @@ if (urlParameters.has("code") && urlParameters.has("state")  ){
 // Clean authentication parameters from url
 urlParameters.delete("code");
 urlParameters.delete("state");
-window.history.replaceState({}, document.title, "/?" + urlParameters.toString());
+
+
+// Encode ':' and '/' with toString
+// Skips the default encoding to so that the URL can be reused
+let params = [];
+for (const [key, value] of urlParameters) {
+  // For a specific key ('activities' in this case), you add it to the array without encoding
+  if (key === 'activities') {
+    params.push(`${key}=${value}`);
+  } else {
+    // For all other parameters, you still want to encode them
+    params.push(`${key}=${encodeURIComponent(value)}`);
+  }
+}
+// Now join all the parameters with '&' to form the query string
+let queryString = params.join('&');
+
+// Use replaceState to update the URL without encoding the parameter
+window.history.replaceState({}, document.title, "?" + queryString);
 
 
 function initialiseActivity(){
@@ -297,9 +315,6 @@ function initialisePanels() {
             break;
 
             case "OutputPanel":
-            
-                const panelDef =  toolsManager.getPanelDefinition(newPanelId);
-
                 newPanel =  new OutputPanel(newPanelId, panelDefinition.language, outputType, outputLanguage);
                 
                 newPanel.hideEditor();
@@ -756,9 +771,8 @@ function handleResponseActionFunction(action, requestPromise){
                     case "puml": 
                     case "dot":
                         // UML or Graph
-    
                         var krokiEndpoint = "";
-                        if (outputType == "puml") krokiEndpoint = "plantuml";
+                        if (action.outputType == "puml") krokiEndpoint = "plantuml";
                         else krokiEndpoint = "graphviz/svg"
 
                         var krokiXhr = new XMLHttpRequest();
