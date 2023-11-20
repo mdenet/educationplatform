@@ -27,6 +27,13 @@ jobs:
       
       - name: Build the education platform
         run: npm run build --workspaces
+      
+      - name: Archive artifacts 
+        uses: actions/upload-artifact@v3 
+        if: success() 
+        with: 
+          name: dist 
+          path: platform/dist/ 
 
       - name: Run the unit tests
         run: npm test --workspaces
@@ -39,3 +46,38 @@ jobs:
           path: platform/reports/*.xml
           reporter: java-junit
           fail-on-error: true
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    
+    # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Retrieve artifact
+        uses: actions/download-artifact@v3
+        with: 
+          name: dist
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: './dist/'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
