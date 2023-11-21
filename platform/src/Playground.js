@@ -39,7 +39,6 @@ var activity;
 var url = window.location + "";
 var questionMark = url.indexOf("?");
 
-export var consolePanel;
 var preloader = new Preloader();
 export var backend = new Backend();
 
@@ -309,9 +308,6 @@ function initialisePanels() {
         
             case "ConsolePanel":
                 newPanel =  new ConsolePanel(newPanelId);
-
-                // TODO Support for multiple consoles
-                consolePanel = newPanel; 
             break;
 
             case "OutputPanel":
@@ -707,28 +703,31 @@ function handleResponseActionFunction(action, requestPromise){
 
         var response = JSON.parse(responseText);
         var outputPanel = panels.find( pn => pn.id ==  action.output.id);
+        
+        var outputConsole;
+        if (action.outputConsole != null){
+            outputConsole = panels.find(pn => pn.id == action.outputConsole.id);
+        } else {
+            outputConsole = outputPanel;
+        }
 
         Metro.notify.killAll();
 
         if (response.hasOwnProperty("error")) {
-            consolePanel.setError(response.error);
+            outputConsole.setError(response.error);
         } else {
 
             var responseDiagram = Object.keys(response).find( key => key.toLowerCase().includes("diagram") );
 
-            //
-            //   TODO Need to handle response from language workbench, and store editor URL
-            // 
-
             if (response.output != "") {
                 // Text
-                outputPanel.setValue(response.output)
+                outputConsole.setValue(response.output)  
             }
             
             if (response.editorUrl) {
                 // Language workbench
                 longNotification("Building editor");
-                checkEditorReady( response.editorStatusUrl, response.editorUrl, action.source.editorPanel, action.source.editorActivity);
+                checkEditorReady( response.editorStatusUrl, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole);
                 
 
             } else if (responseDiagram != undefined) {
@@ -981,21 +980,30 @@ function savePanelContents(event){
 
 /**
  * Poll for editor to become available. 
- * @param {String} statusUrl the url for cheking the status of the editor panel.
- * @param {String} editorInstanceUrl the editor instance's url. 
- * @param {String} editorPanelId the id of the editor panel.
- * @param {String} editorActivityId TODO remove as this can be found using editorPanelId to save having to specify in config.
+ * @param {String} statusUrl - the url for cheking the status of the editor panel.
+ * @param {String} editorInstanceUrl - the editor instance's url. 
+ * @param {String} editorPanelId - the id of the editor panel.
+ * @param {String} editorActivityId - TODO remove as this can be found using editorPanelId to save having to specify in config.
+ * @param {Panel} logPanel - the panel to log progress to.
  */
-async function checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId){
+async function checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId, logPanel){
 
    let response  = await fetch(statusUrl);
 
    if (response.status == 200){ 
         const result = await response.json();
 
-        if (!result.editorReady){
+        if (result.output){
+            logPanel.setValue(result.output);
+        }
+        
+        if (result.error){
+            // Unsuccessful
+            console.log("Editor failed start.");
+
+        } else if (!result.editorReady){
             await new Promise(resolve => setTimeout(resolve, 2000));
-            await checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId);
+            await checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId, logPanel);
 
         } else {
             // Successful 
@@ -1018,7 +1026,6 @@ async function checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, edi
     window.fit = fit;
     window.updateGutterVisibility = updateGutterVisibility;
     window.runAction = runAction;
-    window.consolePanel = consolePanel;
     window.panels = panels;
     window.savePanelContents = savePanelContents;
     window.backend = backend;

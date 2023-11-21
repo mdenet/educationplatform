@@ -69,6 +69,7 @@ class ActivityManager {
             }
             
             action.output = this.resolvePanelReference(activityId, action.output);
+            action.outputConsole = this.resolvePanelReference(activityId, action.outputConsole);
         }
     }
 
