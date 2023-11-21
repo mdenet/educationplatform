@@ -27,6 +27,10 @@
         "output": {
             "description": "Panel id where the tool function return will be displayed.",
             "type": "string"
+        },
+        "outputConsole": {
+            "description": "Panel id where the toolfunction console output will be displayed.",
+            "type": "string"
         }
     },
     "required": ["source", "sourceButton", "parameters", "output"]
