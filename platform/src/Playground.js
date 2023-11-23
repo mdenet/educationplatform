@@ -14,6 +14,7 @@ import { ActivityManager } from './ActivityManager.js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
 import { EducationPlatformError } from './EducationPlatformError.js'
 import { ConfigValidationError } from './ConfigValidationError.js';
+import { ActivityValidator } from './ActivityValidator.js';
 
 import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
@@ -170,6 +171,12 @@ function initialiseActivity(){
         
         activity = activityManager.getSelectedActivity(); 
 
+        // Validate the resolved activity
+        errors = errors.concat( ActivityValidator.validate(activity) );   
+    }
+
+    if  (errors.length==0){
+        // The resolved activity has been validated
         initialisePanels();
     }
 
