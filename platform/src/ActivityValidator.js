@@ -1,6 +1,3 @@
-
-
-import { extendErrors } from 'ajv/dist/compile/errors';
 import { ConfigValidationError } from './ConfigValidationError';
 
 const ERROR_CATEGORY = "ERROR_CONFIG_DEF"
@@ -78,7 +75,7 @@ class ActivityValidator {
             );
         }
 
-        if ( ("outputConsole" in action) && !this.idExists( panels, action.outputConsole.id)){ // action ids are resolved so get id from object
+        if ( (action.outputConsole !=null) && !this.idExists( panels, action.outputConsole.id)){ // action ids are resolved so get id from object
             errors.push( 
                 new ConfigValidationError(ERROR_CATEGORY, "A panel does not exist for the given id.",  
                 `actions -> outputConsole: ${action.outputConsole}`, errorFileType.ACTIVITY)
@@ -86,17 +83,59 @@ class ActivityValidator {
         }
 
         return errors;
-;    }
+    }
 
 
     // Tool checks
-    // TODO 
+    /**
+     * Check the panel definitions reference ids
+     * @param {Object} tool - A tool with all references resolved.
+     * @returns {ConfigValidationError[]} Array of configuration errors, empty if there are none.
+     */
+    static checkPanelDefs(tool){
+        let errors = [];
+
+        tool.panelDefs.forEach( (pDef) => {
+            errors = errors.concat( this.checkPanelButtonsFunctionIdsExist(pDef, tool.functions) );
+        });
+
+        return errors;
+    }
+
+    /**
+     * Check buttons function ids exist. 
+     * @param {*} panel - Panel .
+     * @param {*} functions - .
+     * @returns {ConfigValidationError[]} Array of configuration errors, empty if there are none.
+     */
+    static checkPanelButtonsFunctionIdsExist(panel, functions) {
+        let errors = [];
+
+        if("buttons" in panel){
+            panel.buttons.forEach( (btn) => {
+
+                if ( ("actionfunction" in btn) && !this.idExists(functions, btn.actionfunction) ) {
+                    errors.push( 
+                        new ConfigValidationError(ERROR_CATEGORY, "A function does not exist for the given id.",  
+                        `panel.id: ${panel.id} -> buttton.id: ${btn.id}, actionfunction: ${btn.actionfunction}`, errorFileType.TOOL)
+                    );
+                } else if (("renderfunction" in btn) && !this.idExists(functions, btn.renderfunction) ){
+                    errors.push( 
+                        new ConfigValidationError(ERROR_CATEGORY, "A function does not exist for the given id.",  
+                        `panel.id: ${panel.id} -> buttton.id: ${btn.id}, renderfunction: ${btn.renderfunction}`, errorFileType.TOOL)
+                    );
+                }
+            });
+        }
+
+        return errors;
+    }
 
     
     // Utility
 
     /**
-     * 
+     * Determines if an object with a matching id exists for the given items.  
      * @param {Object[]} items - Array of objects that have ids. 
      * @param {String} id - The id to check.
      * @returns true if exists.
@@ -104,16 +143,37 @@ class ActivityValidator {
     static idExists(items, id){
         let found = false;
 
-        if (id != null){
-            let foundItem= items.find( (i) => i.id === id );
-            found= (id === foundItem?.id);
+        if (id != null && items.length > 0){
+            let foundItem;
+                
+            foundItem= items.find( (i) => { 
+                if (i.constructor.name == "Object") {
+                    // Simple object so expect id attribute
+                    return i.id === id
+                } else {
+                    // Class so expect accessor method 
+                    return i.getId() === id;
+                }
+            });
+ 
+            found= (foundItem != null);
         }
         return found;
     }
 
     
-    static validate(activity){
+    /**
+     * Runs all checks on a given activity.
+     * @param {Object} activity - An activity with all references resolved.
+     * @param {Object[]} tools - The tools used by the activity.
+     * @returns {ConfigValidationError[]} Array of configuration errors, empty if there are none.
+     */
+    static validate(activity, tools){
         let errors = [];
+
+        Object.values(tools).forEach((tl)=>{
+            errors = errors.concat ( this.checkPanelDefs(tl) );
+        });
 
         errors = errors.concat( this.checkLayoutPanelIdsExist(activity) );
 

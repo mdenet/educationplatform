@@ -172,7 +172,7 @@ function initialiseActivity(){
         activity = activityManager.getSelectedActivity(); 
 
         // Validate the resolved activity
-        errors = errors.concat( ActivityValidator.validate(activity) );   
+        errors = errors.concat( ActivityValidator.validate(activity, toolsManager.tools) );   
     }
 
     if  (errors.length==0){
