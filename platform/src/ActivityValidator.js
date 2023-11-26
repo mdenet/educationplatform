@@ -85,6 +85,25 @@ class ActivityValidator {
         return errors;
     }
 
+    /**
+     * Checks the given panels references exist.
+     * @param {*} panels - The panels with references resolved.
+     * @returns {ConfigValidationError[]} Array of configuration errors, empty if there are none.
+     */
+    static checkPanelRefs(panels){
+        let errors = [];
+
+        panels.forEach( (pn) => {
+            if (!(pn.ref instanceof Object)){ // Un-resolved panels remain as ids
+                errors.push( 
+                    new ConfigValidationError(ERROR_CATEGORY, "A referenced panel definition does not exist with the given id.",  
+                    `panels -> id: ${pn.id}, ref: ${pn.ref}`, errorFileType.ACTIVITY)
+                );
+            }
+        });
+
+        return errors;
+    }
 
     // Tool checks
     /**
@@ -103,9 +122,9 @@ class ActivityValidator {
     }
 
     /**
-     * Check buttons function ids exist. 
-     * @param {*} panel - Panel .
-     * @param {*} functions - .
+     * Check buttons function ids exist for a given panel. 
+     * @param {*} panel - Panel to check.
+     * @param {*} functions - The available functions.
      * @returns {ConfigValidationError[]} Array of configuration errors, empty if there are none.
      */
     static checkPanelButtonsFunctionIdsExist(panel, functions) {
@@ -178,6 +197,8 @@ class ActivityValidator {
         errors = errors.concat( this.checkLayoutPanelIdsExist(activity) );
 
         errors = errors.concat( this.checkActions(activity) );
+
+        errors = errors.concat( this.checkPanelRefs(activity.panels) );
         
         return errors;
     }
