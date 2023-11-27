@@ -2,6 +2,7 @@ import { parseConfigFile } from "./Utility.js";
 import { FunctionRegistry } from "../src/FunctionRegistry.js"
 import { ActionFunction } from "./ActionFunction.js";
 import { ToolConfigValidator } from "./ToolConfigValidator.js";
+import { EducationPlatformError } from "./EducationPlatformError.js";
 
 class ToolManager {
 
@@ -52,8 +53,17 @@ class ToolManager {
 
             let xhr = new XMLHttpRequest();
             xhr.open("GET", toolUrl.url, false);
-            xhr.send();
-    
+
+            try{
+                xhr.send();
+            } catch (e) {
+                if (e instanceof DOMException){
+                    errors.push( new EducationPlatformError(`A tool configuration file was not accessible at: ${toolUrl.url}. 
+                                                            Check the tool's url given in the activity file is correct and the tool 
+                                                            service is still available.`) );
+                }
+            }
+
             if (xhr.status === 200) {    
 
                 let validatedConfig = this.parseAndValidateToolConfig(xhr.responseText);

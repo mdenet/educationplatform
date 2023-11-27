@@ -1,6 +1,7 @@
 import { pan } from "svg-pan-zoom";
 import { urlParamPrivateRepo, parseConfigFile } from "./Utility.js";
 import { ActivityConfigValidator } from "./ActivityConfigValidator.js";
+import { EducationPlatformError } from "./EducationPlatformError.js";
 
 const NAV_ID_PREFIX = "nav-entry-";
 
@@ -99,11 +100,18 @@ class ActivityManager {
      * @returns errors from parsing and validation
      */
     fetchActivities() {
+        let errors = []; 
+        let fileContent
 
-        let file  = this.fileHandler.fetchFile( this.activitiesUrl , urlParamPrivateRepo() )
-        let fileContent = file.content;
-
-        let errors = [];
+        try{
+            let file = this.fileHandler.fetchFile( this.activitiesUrl , urlParamPrivateRepo() );
+            fileContent = file.content;
+        } catch (e) {
+            if (e instanceof DOMException){
+                errors.push( new EducationPlatformError(`The activity configuration file was not accessible at: ${this.activitiesUrl}. 
+                                                        Check the activity file is available at the given url.`) );
+            }
+        }
 
         if (fileContent != null){
 
