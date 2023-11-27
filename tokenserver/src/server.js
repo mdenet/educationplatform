@@ -51,8 +51,10 @@ expressApp.use(errorHandlingMiddleware);
 
 
 githubApp.on("token", async ({ token, octokit, expiresAt }) => {
-  const { data } = await octokit.request("GET /user");
-  console.log(`Token retrieved for ${data.login}`);
+  const today = new Date();
+  const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+  const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+  console.log(`Token successfully retrieved for a user on ${date} ${time}`);
 });
 
 
