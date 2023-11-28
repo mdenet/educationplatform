@@ -96,16 +96,19 @@ class ModelPanel extends Panel {
     renderDiagram(svg) {
         var diagramId = this.id + "Diagram";
         var diagramElement = document.getElementById(diagramId);
+
+        const originalHeight = diagramElement.offsetHeight; // Setting the image overrides the panel height
+                                                            // causing it to be displayed off-centre or hidden. 
+                                                            // Save the height so it can be restored.
+
         diagramElement.innerHTML = svg;
         var svg = document.getElementById(diagramId).firstElementChild;
         
-        //if (diagramId == "outputDiagram") {
-            diagramElement.parentElement.style.padding = "0px";
-        //}
-    
+        diagramElement.parentElement.style.padding = "0px";
+
         svg.style.width = diagramElement.offsetWidth + "px";
-        svg.style.height = diagramElement.offsetHeight + "px";
-    
+        svg.style.height = originalHeight + "px";
+        
         svgPanZoom(svg, {
           zoomEnabled: true,
           fit: true,
