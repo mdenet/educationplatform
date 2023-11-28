@@ -8,8 +8,12 @@ class Panel {
     valueSha;
     fileUrl;
 
-    constructor(id, editor) {
+    constructor(id) {
         this.id = id;
+        
+    }
+
+    initialize(editor) {
         this.getElement();
 
         // Set up the panel's editor
@@ -26,7 +30,7 @@ class Panel {
         } else {
             this.editor = editor;
         }
-        
+
         this.visible = true;
     }
 

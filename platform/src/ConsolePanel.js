@@ -6,9 +6,13 @@ class ConsolePanel extends Panel {
 
     constructor(id) {
         super(id);
+    }
+
+    intialize(editor) {
+        super.initialize(editor)
+
         this.editor.setReadOnly(true);
         this.editor.setValue("", 1);
-
         let buttons = [];
         let clearButton = new Button(
             { id:"clear", 
