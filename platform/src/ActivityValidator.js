@@ -1,4 +1,4 @@
-import { ConfigValidationError } from './ConfigValidationError';
+import { ConfigValidationError, CONTEXT_SEPARATOR } from './ConfigValidationError';
 
 const ERROR_CATEGORY = "ERROR_CONFIG_DEF"
 
@@ -29,7 +29,7 @@ class ActivityValidator {
             if (!this.idExists(activity.panels, id)){
                     errors.push( 
                         new ConfigValidationError(ERROR_CATEGORY, "A panel does not exist for the given id.",  
-                        `${activity.id} -> layout -> ${id}`, errorFileType.ACTIVITY)
+                        `activity.id: ${activity.id}, layout ${CONTEXT_SEPARATOR} area ${CONTEXT_SEPARATOR} ${id}`, errorFileType.ACTIVITY)
                 );
             }
         });
@@ -39,46 +39,51 @@ class ActivityValidator {
 
     /**
      * Check the actions reference ids
-     * @param {*} activity - An activity with all references resolved.
+     * @param {Object} activity - An activity with all references resolved.
      * @returns {ConfigValidationError[]} Array of configuration errors, empty if there are none.
      */
     static checkActions(activity){
         let errors = [];
 
-        activity.actions.forEach( (act) => {
-            errors = errors.concat( this.checkActionIdsExist(act, activity.panels) );
+        activity.actions.forEach( (act, index) => {
+            let newErrors = this.checkActionIdsExist(act, activity.panels);
+            
+            ConfigValidationError.addContextToErrors(newErrors, `activity.id: ${activity.id}, actions[${index}]`);
+            errors = errors.concat(newErrors);
         });
+
+        
 
         return errors;
     }
 
     /**
      * Check an action panel ids exist
-     * @param {*} action - The action to check
-     * @param {*} panels - The panels 
+     * @param {Object} action - The action to check.
+     * @param {Object[]} panels - The panels. 
      * @returns {ConfigValidationError[]} Array of configuration errors, empty if there are none.
      */
     static checkActionIdsExist(action, panels){
         let errors = [];
 
-        if (!this.idExists( panels, action.source.id)){ // action ids are resolved so get id from object
+        if ( !(action.source instanceof Object) && !this.idExists(panels, action.source.id) ){ // action ids are resolved so get id from object
             errors.push( 
                 new ConfigValidationError(ERROR_CATEGORY, "A panel does not exist for the given id.",  
-                `actions -> source: ${action.source}`, errorFileType.ACTIVITY)
+                `source: ${action.source}`, errorFileType.ACTIVITY)
             );
         }
 
-        if (!this.idExists( panels, action.output.id)){ // action ids are resolved so get id from object
+        if ( !(action.output instanceof Object) && !this.idExists(panels, action.output.id) ){ // action ids are resolved so get id from object
             errors.push( 
                 new ConfigValidationError(ERROR_CATEGORY, "A panel does not exist for the given id.",  
-                `actions -> output: ${action.output}`, errorFileType.ACTIVITY)
+                `output: ${action.output}`, errorFileType.ACTIVITY)
             );
         }
 
-        if ( (action.outputConsole !=null) && !this.idExists( panels, action.outputConsole.id)){ // action ids are resolved so get id from object
+        if ( action.outputConsole != null && !(action.outputConsole instanceof Object) && !this.idExists( panels, action.outputConsole.id) ){ // action ids are resolved so get id from object
             errors.push( 
                 new ConfigValidationError(ERROR_CATEGORY, "A panel does not exist for the given id.",  
-                `actions -> outputConsole: ${action.outputConsole}`, errorFileType.ACTIVITY)
+                `outputConsole: ${action.outputConsole}`, errorFileType.ACTIVITY)
             );
         }
 
@@ -87,17 +92,17 @@ class ActivityValidator {
 
     /**
      * Checks the given panels references exist.
-     * @param {*} panels - The panels with references resolved.
+     * @param {Object[]} activity - The activity with references resolved.
      * @returns {ConfigValidationError[]} Array of configuration errors, empty if there are none.
      */
-    static checkPanelRefs(panels){
+    static checkPanelRefs(activity){
         let errors = [];
 
-        panels.forEach( (pn) => {
+        activity.panels.forEach( (pn, index) => {
             if (!(pn.ref instanceof Object)){ // Un-resolved panels remain as ids
                 errors.push( 
                     new ConfigValidationError(ERROR_CATEGORY, "A referenced panel definition does not exist with the given id.",  
-                    `panels -> id: ${pn.id}, ref: ${pn.ref}`, errorFileType.ACTIVITY)
+                    `activity.id: ${activity.id}, panels[${index}] ${CONTEXT_SEPARATOR} id: ${pn.id}, ref: ${pn.ref}`, errorFileType.ACTIVITY)
                 );
             }
         });
@@ -114,8 +119,11 @@ class ActivityValidator {
     static checkPanelDefs(tool){
         let errors = [];
 
-        tool.panelDefs.forEach( (pDef) => {
-            errors = errors.concat( this.checkPanelButtonsFunctionIdsExist(pDef, tool.functions) );
+        tool.panelDefs.forEach( (pDef, index) => {
+            let newErrors = this.checkPanelButtonsFunctionIdsExist(pDef, tool.functions);
+            
+            ConfigValidationError.addContextToErrors(newErrors, `tool.id: ${tool.id}, panelDefs[${index}]:`);
+            errors = errors.concat(newErrors);
         });
 
         return errors;
@@ -123,8 +131,8 @@ class ActivityValidator {
 
     /**
      * Check buttons function ids exist for a given panel. 
-     * @param {*} panel - Panel to check.
-     * @param {*} functions - The available functions.
+     * @param {Obejct} panel - Panel to check.
+     * @param {Object[]} functions - The available functions.
      * @returns {ConfigValidationError[]} Array of configuration errors, empty if there are none.
      */
     static checkPanelButtonsFunctionIdsExist(panel, functions) {
@@ -136,12 +144,12 @@ class ActivityValidator {
                 if ( ("actionfunction" in btn) && !this.idExists(functions, btn.actionfunction) ) {
                     errors.push( 
                         new ConfigValidationError(ERROR_CATEGORY, "A function does not exist for the given id.",  
-                        `panel.id: ${panel.id} -> buttton.id: ${btn.id}, actionfunction: ${btn.actionfunction}`, errorFileType.TOOL)
+                        `id: ${panel.id} ${CONTEXT_SEPARATOR} buttton.id: ${btn.id}, actionfunction: ${btn.actionfunction}`, errorFileType.TOOL)
                     );
                 } else if (("renderfunction" in btn) && !this.idExists(functions, btn.renderfunction) ){
                     errors.push( 
                         new ConfigValidationError(ERROR_CATEGORY, "A function does not exist for the given id.",  
-                        `panel.id: ${panel.id} -> buttton.id: ${btn.id}, renderfunction: ${btn.renderfunction}`, errorFileType.TOOL)
+                        `id: ${panel.id} ${CONTEXT_SEPARATOR} buttton.id: ${btn.id}, renderfunction: ${btn.renderfunction}`, errorFileType.TOOL)
                     );
                 }
             });
@@ -198,7 +206,7 @@ class ActivityValidator {
 
         errors = errors.concat( this.checkActions(activity) );
 
-        errors = errors.concat( this.checkPanelRefs(activity.panels) );
+        errors = errors.concat( this.checkPanelRefs(activity) );
         
         return errors;
     }
