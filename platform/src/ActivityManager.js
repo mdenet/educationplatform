@@ -346,7 +346,12 @@ class ActivityManager {
 
                 // Resolve the panel definition reference  
                 if ( typeof apanel.ref == "string" ){
-                    apanel.ref = this.accessPanelDef(apanel.ref);
+                    
+                    const panelDef = this.accessPanelDef(apanel.ref);
+
+                    if (panelDef != null){
+                        apanel.ref = panelDef;
+                    }
                 }
             }
         
@@ -451,7 +456,7 @@ class ActivityManager {
 
         for (const panel of  this.activities[activityId].panels) {
             
-            if (this.accessPanelDef(panel.ref).generated  && !this.isPanelGenerated(panel.id) ){
+            if (this.accessPanelDef(panel.ref)?.generated  && !this.isPanelGenerated(panel.id) ){
                 generatedPanelFound = this.accessPanelDef(panel.ref).generated;
                 break;
             }

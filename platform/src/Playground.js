@@ -14,6 +14,7 @@ import { ActivityManager } from './ActivityManager.js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
 import { EducationPlatformError } from './EducationPlatformError.js'
 import { ConfigValidationError } from './ConfigValidationError.js';
+import { ActivityValidator } from './ActivityValidator.js';
 
 import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
@@ -170,6 +171,12 @@ function initialiseActivity(){
         
         activity = activityManager.getSelectedActivity(); 
 
+        // Validate the resolved activity
+        errors = errors.concat( ActivityValidator.validate(activity, toolsManager.tools) );   
+    }
+
+    if  (errors.length==0){
+        // The resolved activity has been validated
         initialisePanels();
     }
 
@@ -247,7 +254,9 @@ function initialisePanels() {
     for ( let apanel of activity.panels ){
 
         var newPanel = createPanelForDefinitionId(apanel);
-        panels.push(newPanel);
+        if (newPanel != null){
+            panels.push(newPanel);
+        }
     }    
 
 
@@ -277,20 +286,21 @@ function initialisePanels() {
 }
 
 
-   /**
-     * Create a panel for a given panel config entry
-     * 
-     * @param {Object} panel - The activity config panel definition.
-     * @return {Panel} the platform Panel
-     */
-    function createPanelForDefinitionId(panel){
-        const panelDefinition = panel.ref;
-        var newPanel = null;
-        var buttons;
+/**
+ * Create a panel for a given panel config entry
+ * 
+ * @param {Object} panel - The activity config panel definition.
+ * @return {Panel} the platform Panel
+ */
+function createPanelForDefinitionId(panel){
+    const panelDefinition = panel.ref;
+    var newPanel = null;
+    var buttons;
 
-        const newPanelId= panel.id;
+    const newPanelId= panel.id;
 
-        // TODO Populate the different panel types from the tool panel definition.
+    if (panelDefinition != null){
+
         switch(panelDefinition.panelclass) {
             case "ProgramPanel":
                 newPanel =  new ProgramPanel(newPanelId);
@@ -331,7 +341,7 @@ function initialisePanels() {
             default:
             newPanel = new TestPanel(newPanelId);                
         }
-        
+    
         // Add elements common to all panels
         newPanel.setTitle(panel.name);
 
@@ -362,8 +372,8 @@ function initialisePanels() {
             panel.buttons = resolvedButtonConfigs;
             newPanel.addButtons( Button.createButtons( resolvedButtonConfigs, panel.id));
         }
- 
-        return newPanel;
+    }
+    return newPanel;
 }
 
 
