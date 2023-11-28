@@ -1,0 +1,41 @@
+name: NodeJS with Webpack
+
+on:
+  workflow_run:
+      workflows: [run-unit-tests]
+      branches: [main]
+      types:
+        - completed
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js 16.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16.x'
+    - name: Build
+      run: |
+        cd platform
+        npm install
+        npm run build -- --env tokenServerUrl=http://example.com:1234
+        npm run package
+    - name: Upload Github Pages artifact
+      uses: actions/upload-pages-artifact@v2.0.0
+      with:
+        path: platform/dist
+  deploy:
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Github Pages
+        id: deployment
+        uses: actions/deploy-pages@v2.0.4
