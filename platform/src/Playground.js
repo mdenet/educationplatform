@@ -31,7 +31,7 @@ import { PlaygroundUtility } from './PlaygroundUtility.js';
 import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateRepo } from './Utility.js';
 import { ActionFunction } from './ActionFunction.js';
 
-const TOKEN_HANDLER_URL = "http://127.0.0.1:10000";
+const TOKEN_HANDLER_URL = TOKEN_SERVER_URL || "http://127.0.0.1:10000";
 const COMMON_UTILITY_URL = window.location.href.replace(window.location.search,"") + "common/utility.json";
 
 var outputType = "text";
