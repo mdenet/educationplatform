@@ -27,10 +27,10 @@ class Panel {
                 fontSize: "11pt",
                 useSoftTabs: true
             });
+
         } else {
             this.editor = editor;
         }
-        
         this.visible = true;
     }
 

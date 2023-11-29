@@ -336,16 +336,8 @@ function initialisePanels() {
 
                 newPanel = new CompositePanel(newPanelId);
                 if (panel.childrenPanels) {
-                    for (let childPanelId of panel.childrenPanels) {
-
-                        var childPanelConfig = activity.panels.find( p => p.id === childPanelId )
-
-                        if (childPanelConfig == null) {
-                            console.error(`Error: No configuration found for child panel with ID ${childPanelId}`);
-                            continue; // Skip this iteration and continue with the next
-                        }            
-
-                        let childPanel = createPanelForDefinitionId(childPanelConfig);
+                    for (let childPanelConfig of panel.childrenPanels) {     
+                        var childPanel = createPanelForDefinitionId(childPanelConfig);
                         newPanel.addPanel(childPanel);
                     }
                 }
@@ -729,11 +721,11 @@ function handleResponseActionFunction(action, requestPromise){
     requestPromise.then( (responseText) => {
 
         var response = JSON.parse(responseText);
-        var outputPanel = panels.find( pn => pn.id ==  action.output.id);
-        
+        const outputPanel = activityManager.findPanel( action.output.id, panels);
+
         var outputConsole;
         if (action.outputConsole != null){
-            outputConsole = panels.find(pn => pn.id == action.outputConsole.id);
+            outputConsole = activityManager.findPanel(action.outputConsole.id, panels);
         } else {
             outputConsole = outputPanel;
         }
@@ -746,7 +738,7 @@ function handleResponseActionFunction(action, requestPromise){
 
             var responseDiagram = Object.keys(response).find( key => key.toLowerCase().includes("diagram") );
 
-            if (response.output != "") {
+            if (response.output) {
                 // Text
                 outputConsole.setValue(response.output)  
             }
@@ -758,13 +750,8 @@ function handleResponseActionFunction(action, requestPromise){
                 
 
             } else if (responseDiagram != undefined) {
-                // Diagrams 
-                // outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
-                // outputPanel.showDiagram();
-                
+              
                 outputPanel.renderDiagram( response[responseDiagram] );
-                
-                // outputPanel.showDiagram();
                 
             } else if (response.generatedFiles) {
                 // Multiple text files
@@ -776,7 +763,13 @@ function handleResponseActionFunction(action, requestPromise){
                 switch (action.outputType){
                     case "code":
                         // Text
+                        var editor = outputPanel.getEditor();
+                        console.log("BEFORE THE CALL");
+                        console.log(editor.getValue());
+                        console.log(response.generatedText.trim());
                         outputPanel.getEditor().setValue(response.generatedText.trim(), 1);
+                        console.log("AFTER THE CALL");
+                        console.log(outputPanel.getEditor().getValue());
                         break;
 
                     case "html":
@@ -808,12 +801,9 @@ function handleResponseActionFunction(action, requestPromise){
                         krokiXhr.onreadystatechange = function () {
                             if (krokiXhr.readyState === 4) {
                                 if (krokiXhr.status === 200) {
-                                    // outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
-                                    // outputPanel.showDiagram();
 
                                     outputPanel.renderDiagram(krokiXhr.responseText);
 
-                                    // outputPanel.showDiagram();
                                 }
                             }
                         };
@@ -866,7 +856,7 @@ function runAction(source, sourceButton) {
         const panelId = action.parameters[paramName].id;
         
         if (panelId) { 
-            const panel = panels.find( pn => pn.id ==  panelId );
+            const panel = activityManager.findPanel(panelId, panels);
             param.type = panel.getType();
             param.value = panel.getValue();
 
@@ -904,18 +894,11 @@ function runAction(source, sourceButton) {
 }
 
 
-
-function hidePanelById(elementId) {
+function togglePanelById(elementId) {
     const panelElement = document.getElementById(elementId);
     if (panelElement) {
-        $("#" + panelElement.parentElement.id).hide();
-     }
-}
-
-function showPanelById(elementId) {
-    const panelElement = document.getElementById(elementId);
-    if (panelElement) {
-        $("#" + panelElement.parentElement.id).show();
+        const parentElement = panelElement.parentElement;
+        toggle(parentElement.id);
     }
 }
 
@@ -1070,12 +1053,11 @@ async function checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, edi
     window.fit = fit;
     window.updateGutterVisibility = updateGutterVisibility;
     window.runAction = runAction;
-    window.hidePanelById = hidePanelById;
-    window.showPanelById = showPanelById;
     window.panels = panels;
     window.savePanelContents = savePanelContents;
     window.backend = backend;
     window.toggle = toggle;
+    window.togglePanelById = togglePanelById;
     //window.renderDiagram = renderDiagram;
     window.longNotification = longNotification;
     window.getPanelTitle = getPanelTitle;

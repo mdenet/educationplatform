@@ -55,8 +55,8 @@ class ConsolePanel extends Panel {
         root.setAttribute("id", this.id + "Panel");
 
         var editor = document.createElement("div");
-        editor.setAttribute("id", this.id + "Editor");
         editor.setAttribute("class", "editor");
+        editor.setAttribute("id", this.id + "Editor");
 
         root.appendChild(editor);
 
