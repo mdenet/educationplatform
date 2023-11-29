@@ -23,19 +23,7 @@ class CompositePanel extends Panel {
         this.childrenPanels = this.childrenPanels.filter(p => p !== panel);
     }
 
-    showPanel(panelId) {
-        const panel = this.childrenPanels.find(p => p.id === panelId);
-        if (panel) {
-            panel.setVisible(true);
-        }
-    }
 
-    hidePanel(panelId) {
-        const panel = this.childrenPanels.find(p => p.id === panelId);
-        if (panel) {
-            panel.setVisible(false);
-        }
-    }
 
     createElement() {
         var root = document.createElement("div");
