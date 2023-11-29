@@ -22,7 +22,7 @@ class ProgramPanel extends Panel {
     fit() {
         var editorElement = document.getElementById(this.id + "Editor");
         if (editorElement != null) {
-            editorElement.parentNode.style = "flex-basis: calc(100% - 4px);";
+            editorElement.parentElement.style = "flex-basis: calc(100% - 4px);";
         }
         this.editor.resize();
     }

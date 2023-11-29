@@ -30,7 +30,7 @@ class Panel {
         } else {
             this.editor = editor;
         }
-
+        
         this.visible = true;
     }
 

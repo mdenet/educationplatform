@@ -306,7 +306,7 @@ function initialisePanels() {
                 // Set from the activity 
                 newPanel.setValue(panel.file);
                 newPanel.setValueSha(panel.sha); 
-                newPanel.setFileUrl(panel.url)
+                newPanel.setFileUrl(panel.url);
             break;
         
             case "ConsolePanel":
@@ -318,8 +318,8 @@ function initialisePanels() {
                 newPanel =  new OutputPanel(newPanelId, panelDefinition.language, outputType, outputLanguage);
                 newPanel.initialize();
 
-                newPanel.hideEditor();
-                newPanel.showDiagram();
+                // newPanel.hideEditor();
+                // newPanel.showDiagram();
             break;
 
             case "XtextEditorPanel":
@@ -759,12 +759,12 @@ function handleResponseActionFunction(action, requestPromise){
 
             } else if (responseDiagram != undefined) {
                 // Diagrams 
-                outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
-                outputPanel.showDiagram();
+                // outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
+                // outputPanel.showDiagram();
                 
                 outputPanel.renderDiagram( response[responseDiagram] );
                 
-                outputPanel.showDiagram();
+                // outputPanel.showDiagram();
                 
             } else if (response.generatedFiles) {
                 // Multiple text files
@@ -808,12 +808,12 @@ function handleResponseActionFunction(action, requestPromise){
                         krokiXhr.onreadystatechange = function () {
                             if (krokiXhr.readyState === 4) {
                                 if (krokiXhr.status === 200) {
-                                    outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
-                                    outputPanel.showDiagram();
+                                    // outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
+                                    // outputPanel.showDiagram();
 
                                     outputPanel.renderDiagram(krokiXhr.responseText);
 
-                                    outputPanel.showDiagram();
+                                    // outputPanel.showDiagram();
                                 }
                             }
                         };
