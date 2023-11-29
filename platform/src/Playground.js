@@ -335,6 +335,11 @@ function createPanelForDefinitionId(panel){
 
                 newPanel.setType(panelDefinition.language);
 
+                // Set from the activity 
+                newPanel.setValue(panel.file);
+                newPanel.setValueSha(panel.sha); 
+                newPanel.setFileUrl(panel.url)
+
             break;
 
             // TODO create other panel types e.g. models and metamodels so the text is formatted correctly
