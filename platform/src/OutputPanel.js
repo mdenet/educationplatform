@@ -131,27 +131,6 @@ class OutputPanel extends ProgramPanel {
 
 
 
-    // renderDiagram(svg) {
-    //     var diagramId = this.id + "Panel";
-    //     var diagramElement = document.getElementById(diagramId);
-    //     diagramElement.innerHTML = svg;
-    //     var svg = document.getElementById(diagramId).firstElementChild;
-        
-    //     //if (diagramId == "outputDiagram") {
-    //         diagramElement.parentElement.style.padding = "0px";
-    //     //}
-    
-    //     // svg.style.width = diagramElement.offsetWidth + "px";
-    //     // svg.style.height = diagramElement.offsetHeight + "px";
-
-
-    //     svgPanZoom(svg, {
-    //       zoomEnabled: true,
-    //       fit: true,
-    //       center: true
-    //     });
-    // }
-
     renderDiagram(svg) {
         var diagramId = this.id + "Panel";
         var diagramElement = document.getElementById(diagramId);
@@ -174,7 +153,7 @@ class OutputPanel extends ProgramPanel {
             center: true
         });
     }
-
+    
     
 
 }
