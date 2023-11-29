@@ -32,8 +32,17 @@ class Button {
             this.action = "runAction( '" + parentPanel + "', '" + buttonConfigObject.id +"' )";
     
         } else if (buttonConfigObject["internal"] != undefined) {
-            this.action = buttonConfigObject.internal;
-            
+
+            if ((buttonConfigObject.targetPanel) && (buttonConfigObject.internal === "show" || buttonConfigObject.internal === "hide")) {
+                if (buttonConfigObject.internal === "hide") {
+                    this.action = "hidePanelById( '" + buttonConfigObject.targetPanel + "Panel' )";  
+                } else {
+                    this.action = "showPanelById( '" + buttonConfigObject.targetPanel + "Panel' )";  
+                }
+            } else {
+                this.action = buttonConfigObject.internal;
+            }
+
         } else {
             console.log( "Button '" + buttonConfigObject.id + "' with uknown key.");
         }

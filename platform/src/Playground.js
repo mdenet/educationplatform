@@ -372,7 +372,7 @@ function initialisePanels() {
             // No activity defined buttons
             newPanel.addButtons( Button.createButtons( panelDefinition.buttons, panel.id));
 
-        } else if (panel.buttons != null && panelDefinition.buttons != null) {
+        } else if (panel.buttons != null && panelDefinition.buttons == null) {
             // The activity has defined the buttons
             let resolvedButtonConfigs = panel.buttons.map(btn =>{    
                 let resolvedButton;
@@ -903,6 +903,23 @@ function runAction(source, sourceButton) {
     longNotification("Executing program");
 }
 
+
+
+function hidePanelById(elementId) {
+    const panelElement = document.getElementById(elementId);
+    if (panelElement) {
+        $("#" + panelElement.parentElement.id).hide();
+     }
+}
+
+function showPanelById(elementId) {
+    const panelElement = document.getElementById(elementId);
+    if (panelElement) {
+        $("#" + panelElement.parentElement.id).show();
+    }
+}
+
+
 function notification(title, message, cls="light"){
     const crossIcon = "<div class=\"default-icon-cross\" style=\"float:right\"></div>"
     Metro.notify.create(crossIcon + "<b>"  + title + "</b>" + "<br>" + message + "<br>", null, {keepOpen: true, cls: cls, width: 300});
@@ -1053,6 +1070,8 @@ async function checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, edi
     window.fit = fit;
     window.updateGutterVisibility = updateGutterVisibility;
     window.runAction = runAction;
+    window.hidePanelById = hidePanelById;
+    window.showPanelById = showPanelById;
     window.panels = panels;
     window.savePanelContents = savePanelContents;
     window.backend = backend;
