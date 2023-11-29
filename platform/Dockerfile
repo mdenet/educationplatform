@@ -12,10 +12,9 @@ COPY package*.json ./
 
 COPY . .
 
-RUN npm install; npm run build
+ARG TOKEN_SERVER_URL=http://127.0.0.1:10000
 
-
-
+RUN npm install && npm run build -- --env tokenServerUrl=${TOKEN_SERVER_URL} && npm run package
 
 FROM nginx:1.23
 

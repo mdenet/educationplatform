@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "scripts": {
     "test": "karma start",
-    "build": "webpack --mode=development && copyfiles -u 1 \"public/**/*\" dist",
+    "build": "webpack --mode=development",
+    "package": "copyfiles -u 1 \"public/**/*\" dist",
     "start": "docker compose up --build --force-recreate"
   },
   "devDependencies": {
