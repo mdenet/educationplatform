@@ -29,6 +29,10 @@ class OutputPanel extends ModelPanel {
         }
         this.addButtons(buttons);
 
+	if (this.language == "multi") {
+	  this.createFileSelector();
+	}
+
         this.getEditor().getSession().setMode("ace/mode/" + outputLanguage.toLowerCase());
     }
 
@@ -103,24 +107,22 @@ class OutputPanel extends ModelPanel {
         var root = super.createElement();
         root.setAttribute("style", "padding: 0px");
 
-        // TODO add support for multiple files, create selector here.
-
         return root;
     }
 
     /**
      *  Adds the file selection dropdown to the panel on the page
      */
-    createFileSelector(){
-
+    createFileSelector() {
         var select = document.createElement("select");
 
         select.setAttribute("data-role", "select");
-        select.setAttribute("data-on-item-select", this, id + "Panel.generatedFileSelected()");
+        select.setAttribute("data-on-item-select", `panels.find((p) => p.id==="${this.id}").generatedFileSelected()`);
         select.setAttribute("id", "generatedFiles");
         select.setAttribute("style","width:100%");
+
+        var root = this.getElement();
         root.insertBefore(select, root.children[0]);
-        console.log(this.select);
     }
 
 }
