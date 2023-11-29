@@ -967,7 +967,7 @@ function getPreviousVisibleSibling(element) {
 
 function savePanelContents(event){
     
-    let editablePanels = panels.filter (p => p instanceof ProgramPanel)
+    let editablePanels = panels.filter (p => ((p instanceof ProgramPanel) || (p instanceof XtextEditorPanel)))
 
     let fileStorePromises = [];
 
