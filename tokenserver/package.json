@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node -r dotenv/config ./dist/server.js",
-    "test": "echo \"Warning: no tests to run.\""
+    "test": "jasmine"
   },
   "dependencies": {
     "@octokit/auth-oauth-app": "^5.0.5",
@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@types/cookie": "^0.5.1",
+    "jasmine": "^5.1.0",
     "ts-loader": "^9.4.2",
     "typescript": "^5.0.3"
   }
