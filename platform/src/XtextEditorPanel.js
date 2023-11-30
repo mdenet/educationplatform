@@ -31,6 +31,9 @@ class XtextEditorPanel extends Panel {
 
     }
 
+    canSave() {
+        return true;
+    }
 
     /**
      *  Sets the mode of the editor for syntax highlighting
