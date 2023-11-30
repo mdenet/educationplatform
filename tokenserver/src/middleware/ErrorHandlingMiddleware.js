@@ -2,7 +2,7 @@
 
 const errorHandlingMiddleware = (err, req, res, next) => {
   if (err.status != null) {
-    res.status(err.statusCode).json({
+    res.status(err.status).json({
         msg: err.message,
         success: false,
       });
