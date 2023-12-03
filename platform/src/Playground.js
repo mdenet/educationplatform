@@ -52,7 +52,38 @@ export var toolsManager;
 
 var urlParameters = new URLSearchParams(window.location.search);    
 
+// Redirect to activities file contained in referrer.
+//
+// This can be useful for providing a link to the MDENet EP from the README,
+// in a way that translates automatically to forks. It only works if the
+// referrer is something like https://github.com/user/repo, and would be used
+// like this (where '/main' means to fetch it from the main branch, and
+// '/activity.json' is the path in that branch):
+//
+// https://host/?activitiesFromReferrer=/main/activity.json&privaterepo=true
 
+const PARAM_ACTFROMREF = 'activitiesFromReferrer';
+const RAW_URL_PREFIX = 'https://raw.githubusercontent.com/';
+if (document.referrer && urlParameters.has(PARAM_ACTFROMREF)) {
+  let referrerAddress = new URL(document.referrer);
+  let pathSegments = referrerAddress.pathname.split('/');
+  if (referrerAddress.host == 'github.com' && pathSegments.length >= 3) {
+    let ghUser = pathSegments[1];
+    let ghRepo = pathSegments[2];
+
+    var activity = urlParameters.get(PARAM_ACTFROMREF);
+    if (!activity.startsWith('/')) {
+      activity = '/' + activity;
+    }
+
+    // Redirect to the URL with the full ?activities key
+    let activitiesUrl = RAW_URL_PREFIX + ghUser + '/' + ghRepo + activity;
+    let docAddress = new URL(document.location.href);
+    docAddress.searchParams.delete(PARAM_ACTFROMREF);
+    docAddress.searchParams.append('activities', activitiesUrl);
+    window.location.replace(docAddress.toString());
+  }
+}
 
 document.getElementById("btnnologin").onclick= () => {
     PlaygroundUtility.hideLogin();
