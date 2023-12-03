@@ -92,13 +92,11 @@ if (urlParameters.has("code") && urlParameters.has("state")  ){
     tokenRequest.code = urlParameters.get("code");
 
     //TODO loading box
-    let authDetails=  jsonRequest(TOKEN_HANDLER_URL + "/mdenet-auth/login/token",
-                                               JSON.stringify(tokenRequest), true );
-    authDetails.then( (details) => {
-        console.log("AUTHENTICATED: " + details.toString());
-        
+    let authDetails = jsonRequest(TOKEN_HANDLER_URL + "/mdenet-auth/login/token",
+                                  JSON.stringify(tokenRequest), true );
+    authDetails.then((details) => {
+        document.getElementById('save')?.classList.remove('hidden');
         window.sessionStorage.setItem("isAuthenticated", true);
-
         initialiseActivity();
     } );
 }
