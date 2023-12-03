@@ -12,7 +12,7 @@ export const config = {
 
     encKey: process.env.TS_ENC_KEY,
 
-    trustedWebOrigins: ['http://127.0.0.1:8080'],
+    trustedWebOrigins: process.env.TRUSTED_ORIGINS?.split(",") || 'http://127.0.0.1:8080',
 
     cookieOptions: {
         httpOnly: true,
