@@ -55,6 +55,27 @@ class Panel {
         return this.visible;
     }
 
+    /**
+     * Can the contents of this panel (or at least some of it) be saved in a meaningful way -- in other words, is this stuff we would expect the student to change?
+     *
+     * @returns true if the panel should be considered when saving contents.
+     */
+    canSave() {
+        return false;
+    }
+
+    /**
+     * Save the contents of this panel using the filehandler given. Return a promise that will complete when the saving completes.
+     * 
+     * Only called if {#canSave} returns true.
+     * 
+     * @param {*} fileHandler the handler to be used for saving
+     * @returns a promise
+     */
+    save(fileHandler) {
+        return fileHandler.storeFile(this.getFileUrl(), this.getValueSha(), this.getValue());
+    }
+
     getEditor() {
         return this.editor;
     }

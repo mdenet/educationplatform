@@ -965,13 +965,14 @@ function getPreviousVisibleSibling(element) {
 
 function savePanelContents(event){
     
-    let editablePanels = panels.filter (p => p instanceof ProgramPanel)
+    let panelsToSave = panels.filter (p => p.canSave());
 
     let fileStorePromises = [];
 
-    for(const panel of editablePanels){
+    // FIXME: This currently creates separate commits for each panel. We really would want one commit for all of them together...
+    for(const panel of panelsToSave){
         
-        let storePromise = fileHandler.storeFile(panel.getFileUrl(), panel.getValueSha(), panel.getValue());
+        let storePromise = panel.save(fileHandler);
         
         if (storePromise!=null) {
             
