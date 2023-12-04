@@ -24,11 +24,17 @@ class ConsolePanel extends Panel {
         this.setTitleAndIcon("Console", "console");   
     }
 
+    setValue(value) {
+        this.setOutput(value+"");
+    }
+
     setOutput(str) {
-        document.getElementById(this.id + "Editor").style.color = "black";
+        let element = document.getElementById(this.id + "Editor");
+        element.style.color = "black";
         this.editor.getSession().setUseWrapMode(false);
         this.editor.setValue(str, 1);
-
+        // Scroll to the bottom. This works because we're really still using an ACE editor even in the console panel.
+        this.editor.renderer.scrollToLine(Number.POSITIVE_INFINITY);
     }
 
     setError(str) {
