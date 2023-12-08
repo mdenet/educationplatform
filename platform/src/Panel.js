@@ -92,6 +92,8 @@ class Panel {
 
     setValue(value) {
         this.editor.setValue((value+""), 1);
+        // Reset undo manager
+        this.editor.session.getUndoManager().markClean();
     }
 
     getValueSha() {
