@@ -33,6 +33,8 @@ class ConsolePanel extends Panel {
         element.style.color = "black";
         this.editor.getSession().setUseWrapMode(false);
         this.editor.setValue(str, 1);
+        // Reset undo manager
+        this.editor.session.getUndoManager().reset();
         // Scroll to the bottom. This works because we're really still using an ACE editor even in the console panel.
         this.editor.renderer.scrollToLine(Number.POSITIVE_INFINITY);
     }
