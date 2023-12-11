@@ -26,6 +26,9 @@ class Panel {
         } else {
             this.editor = editor;
         }
+
+        // Reset undo manager
+        this.editor.session.getUndoManager().reset();
         
         this.visible = true;
     }
@@ -73,7 +76,10 @@ class Panel {
      * @returns a promise
      */
     save(fileHandler) {
-        return fileHandler.storeFile(this.getFileUrl(), this.getValueSha(), this.getValue());
+        let thisEditor = this.editor;
+        return fileHandler.storeFile(this.getFileUrl(), this.getValueSha(), this.getValue())
+                          // Mark the editor clean if the save completed
+                          .then((response) => { thisEditor.session.getUndoManager().markClean(); });
     }
 
     getEditor() {
@@ -86,6 +92,8 @@ class Panel {
 
     setValue(value) {
         this.editor.setValue((value+""), 1);
+        // Reset undo manager
+        this.editor.session.getUndoManager().markClean();
     }
 
     getValueSha() {
