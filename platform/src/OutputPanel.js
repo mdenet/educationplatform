@@ -16,6 +16,11 @@ class OutputPanel extends ModelPanel {
         this.outputLanguage = outputLanguage;
         this.language = language;
 
+    }
+
+    initialize(editor) {
+        super.initialize(editor);
+
         let buttons = []; 
         if (this.outputType == "code"){
             let highlightButton = new Button(
@@ -32,8 +37,7 @@ class OutputPanel extends ModelPanel {
 	if (this.language == "multi") {
 	  this.createFileSelector();
 	}
-
-        this.getEditor().getSession().setMode("ace/mode/" + outputLanguage.toLowerCase());
+        this.getEditor().getSession().setMode("ace/mode/" + this.outputLanguage.toLowerCase());
     }
 
     setupSyntaxHighlighting() {}

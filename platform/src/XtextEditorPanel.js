@@ -3,11 +3,13 @@ import { Panel } from "./Panel.js";
 
 class XtextEditorPanel extends Panel {
 
-    constructor(id = "program", url, extension) {
-        
-        let aceEditor;
+    constructor(id = "program") {
+        super(id);
+    }
 
-        super(id, aceEditor);
+    initialize(url, extension){
+        let aceEditor;
+        super.initialize(aceEditor);
 
         let editorContainer = this.element.querySelector('.editor');
 
@@ -27,8 +29,6 @@ class XtextEditorPanel extends Panel {
         });
 
         this.editor.renderer.setShowGutter(true);
-
-
     }
 
     canSave() {

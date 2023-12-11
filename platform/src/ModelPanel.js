@@ -12,6 +12,11 @@ class ModelPanel extends Panel {
         super(id);
         this.editable = editable;
         this.metamodelPanel = metamodelPanel;
+    }
+
+    initialize(editor) {
+        super.initialize(editor);
+
         this.setupSyntaxHighlighting();
         this.setTitleAndIcon("Model", "flexmi");
     }
@@ -134,6 +139,7 @@ class ModelPanel extends Panel {
             var parentElement = editorElement.parentElement.parentElement.parentElement;
             editorElement.style.width = parentElement.offsetWidth + "px";
             editorElement.style.height = parentElement.offsetHeight - 42 + "px";
+
         }
 
         this.editor.resize();

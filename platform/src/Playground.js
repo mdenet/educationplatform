@@ -22,6 +22,7 @@ import { OutputPanel } from "./OutputPanel.js";
 import { TestPanel } from './TestPanel.js';
 import { BlankPanel } from './BlankPanel .js';
 import { XtextEditorPanel } from './XtextEditorPanel.js';
+import { CompositePanel } from './CompositePanel.js';
 import { Button } from './Button.js';
 
 import { Preloader } from './Preloader.js';
@@ -302,6 +303,7 @@ function createPanelForDefinitionId(panel){
         switch(panelDefinition.panelclass) {
             case "ProgramPanel":
                 newPanel =  new ProgramPanel(newPanelId);
+                newPanel.initialize();
                 
                 // Set from the tool panel definition  
                 newPanel.setEditorMode(panelDefinition.language);
@@ -316,11 +318,13 @@ function createPanelForDefinitionId(panel){
         
             case "ConsolePanel":
                 newPanel =  new ConsolePanel(newPanelId);
+                newPanel.initialize();
             break;
 
             case "OutputPanel":
                 newPanel =  new OutputPanel(newPanelId, panelDefinition.language, outputType, outputLanguage);
-                
+                newPanel.initialize();
+
                 newPanel.hideEditor();
                 newPanel.showDiagram();
             break;
@@ -329,8 +333,8 @@ function createPanelForDefinitionId(panel){
 
                 let editorUrl = sessionStorage.getItem(newPanelId);
                 
-                newPanel = new XtextEditorPanel(newPanelId, editorUrl, panel.extension);
-
+                newPanel = new XtextEditorPanel(newPanelId);
+                newPanel.initialize(editorUrl, panel.extension);
                 newPanel.setType(panelDefinition.language);
 
                 // Set from the activity 
@@ -338,6 +342,27 @@ function createPanelForDefinitionId(panel){
                 newPanel.setValueSha(panel.sha); 
                 newPanel.setFileUrl(panel.url)
 
+            break;
+
+            case "CompositePanel":
+
+                newPanel = new CompositePanel(newPanelId);
+                if (panel.childrenPanels) {
+                    for (let childPanelId of panel.childrenPanels) {
+
+                        var childPanelConfig = activity.panels.find( p => p.id === childPanelId )
+
+                        if (childPanelConfig == null) {
+                            console.error(`Error: No configuration found for child panel with ID ${childPanelId}`);
+                            continue; // Skip this iteration and continue with the next
+                        }            
+
+                        let childPanel = createPanelForDefinitionId(childPanelConfig);
+                        newPanel.addPanel(childPanel);
+                    }
+                }
+                newPanel.initialize();
+                
             break;
 
             // TODO create other panel types e.g. models and metamodels so the text is formatted correctly
