@@ -37,14 +37,16 @@ class CompositePanel extends Panel {
         }
     }
 
-    // You can add other composite-specific methods here, such as methods to show/hide all childrenPanels
-
     createElement() {
         var root = document.createElement("div");
         root.setAttribute("class", "compositePanel");
         root.setAttribute("data-role", "panel");
         root.setAttribute("id", this.id + "Panel");
 
+
+        root.style.display = "flex";
+        root.style.flexDirection = "column";
+        root.style.flex = "1";
 
         var childElementList = []
         if (this.childrenPanels) {
@@ -62,23 +64,14 @@ class CompositePanel extends Panel {
     }
 
     fit() {
-        this.childrenPanels.forEach(panel => {
-            if (typeof panel.fit === 'function') {
-                panel.fit();
-            }
-        });
-
-        // Fit the composite panel itself
         const panelElement = document.getElementById(this.id + "Panel");
-        if (panelElement != null) {
-            // Assuming the parent element is the container for the composite panel
-            const parentElement = panelElement.parentElement;
-
-            // Set the width and height of the composite panel based on its parent
-            panelElement.style.width = parentElement.offsetWidth + "px";
-            panelElement.style.height = parentElement.offsetHeight + "px";
-        }
+        panelElement.firstChild.style.height = "100%";
+        
+        this.childrenPanels.forEach(panel => {
+            panel.fit();
+        });
     }
+    
 }
 
 export { CompositePanel };

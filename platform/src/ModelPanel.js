@@ -133,17 +133,30 @@ class ModelPanel extends Panel {
 
     fit() {
         // Fit the editor
+        // var editorElement = document.getElementById(this.id + "Editor");
+        // if (editorElement != null) {
+        //     editorElement.parentNode.parentNode.style = "flex-basis: calc(100% - 4px); padding: 0px";
+        //     var parentElement = editorElement.parentElement.parentElement.parentElement;
+        //     editorElement.style.width = parentElement.offsetWidth + "px";
+        //     editorElement.style.height = parentElement.offsetHeight - 42 + "px";
+        // }
+        // this.editor.resize();
+
+
+
         var editorElement = document.getElementById(this.id + "Editor");
-        if (editorElement != null) {
-            editorElement.parentNode.parentNode.style = "flex-basis: calc(100% - 4px); padding: 0px";
-            var parentElement = editorElement.parentElement.parentElement.parentElement;
-            editorElement.style.width = parentElement.offsetWidth + "px";
-            editorElement.style.height = parentElement.offsetHeight - 42 + "px";
+        var parentElement = editorElement.parentElement
+        var g1 = parentElement.parentElement
+        var g2 = g1.parentElement
+        var g3 = g2.parentElement
+        var g4 = g3.parentElement
+        var g5 = g4.parentElement
 
-        }
-
+        g1.style = "flex-basis: calc(100% - 4px); padding: 0px";
+        editorElement.style.width = g4.offsetWidth + "px";
+        editorElement.style.height = g4.offsetHeight - 42 + "px";
         this.editor.resize();
-        
+
         // Fit the diagram
         var diagramElement = document.getElementById(this.id + "Diagram");
         if (diagramElement != null) {

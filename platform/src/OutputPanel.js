@@ -1,9 +1,9 @@
 
-import { ModelPanel } from "./ModelPanel.js";
+import { ProgramPanel } from "./ProgramPanel.js";
 import { language } from "./Playground.js";
 import { Button } from "./Button.js";
-
-class OutputPanel extends ModelPanel {
+import svgPanZoom from 'svg-pan-zoom';
+class OutputPanel extends ProgramPanel {
 
     outputType;
     outputLanguage;
@@ -128,6 +128,54 @@ class OutputPanel extends ModelPanel {
         var root = this.getElement();
         root.insertBefore(select, root.children[0]);
     }
+
+
+
+    // renderDiagram(svg) {
+    //     var diagramId = this.id + "Panel";
+    //     var diagramElement = document.getElementById(diagramId);
+    //     diagramElement.innerHTML = svg;
+    //     var svg = document.getElementById(diagramId).firstElementChild;
+        
+    //     //if (diagramId == "outputDiagram") {
+    //         diagramElement.parentElement.style.padding = "0px";
+    //     //}
+    
+    //     // svg.style.width = diagramElement.offsetWidth + "px";
+    //     // svg.style.height = diagramElement.offsetHeight + "px";
+
+
+    //     svgPanZoom(svg, {
+    //       zoomEnabled: true,
+    //       fit: true,
+    //       center: true
+    //     });
+    // }
+
+    renderDiagram(svg) {
+        var diagramId = this.id + "Panel";
+        var diagramElement = document.getElementById(diagramId);
+        diagramElement.innerHTML = svg;
+    
+        // Ensure that the container has no padding or margin
+        diagramElement.style.padding = "0";
+        diagramElement.style.margin = "0";
+    
+        var svgElement = diagramElement.firstElementChild;
+    
+        // Set the SVG's width and height to 100% of the container
+        svgElement.style.width = "100%";
+        svgElement.style.height = "100%";
+    
+        // Initialize SVG pan and zoom
+        svgPanZoom(svgElement, {
+            zoomEnabled: true,
+            fit: true,
+            center: true
+        });
+    }
+
+    
 
 }
 
