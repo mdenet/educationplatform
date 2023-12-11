@@ -11,12 +11,14 @@ class CompositePanel extends Panel {
         super.initialize(editor)
         this.childrenPanels.forEach(panel => {
             panel.initialize(editor);
+            panel.parentComposite = this;
         });
     }
 
 
     addPanel(panel) {
         this.childrenPanels.push(panel);
+        panel.parentComposite = this; // Set a reference to the parent CompositePanel
     }
 
     removePanel(panel) {
@@ -31,14 +33,13 @@ class CompositePanel extends Panel {
         root.setAttribute("data-role", "panel");
         root.setAttribute("id", this.id + "Panel");
 
-
         root.style.display = "flex";
         root.style.flexDirection = "column";
         root.style.flex = "1";
 
         var childElementList = []
         if (this.childrenPanels) {
-            this.childrenPanels.forEach(childPanel => {
+            this.childrenPanels.forEach(childPanel => { 
                 var childElement = childPanel.getElement();
                 childElementList.push(childElement);
             });

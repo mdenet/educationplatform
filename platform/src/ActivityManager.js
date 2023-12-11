@@ -82,7 +82,7 @@ class ActivityManager {
      */
     resolvePanelReference(activityId, panelRef){
 
-        const foundPanel = this.activities[activityId].panels.find( pnl => pnl.id == panelRef );
+        const foundPanel = this.findPanel(panelRef,this.activities[activityId].panels);
 
         if ( foundPanel != undefined && typeof foundPanel.id == "string" ){
             
@@ -92,6 +92,26 @@ class ActivityManager {
 
             return panelRef;
         }
+    }
+
+    /**
+     * Required to search within CompositePanels
+     * 
+     * @param {*} panelRef 
+     * @param {*} panelList 
+     * @returns 
+     */
+    findPanel(panelRef, panelList) {
+        for(let panel of panelList) {
+            if (panel.id == panelRef) return panel;
+            else {
+                if (panel.childrenPanels) {
+                    const pnl = this.findPanel(panelRef, panel.childrenPanels)
+                    if (pnl) return pnl;
+                }
+            }
+        }
+        return undefined;
     }
 
     /**
@@ -326,6 +346,34 @@ class ActivityManager {
         return null;
     }
 
+
+
+    /* resolve panel refs recursively because of CompositePanels */
+    resolveRef(panelList) {
+        for ( let apanel of panelList ){
+                
+            if (apanel.file != null) { 
+                apanel.url =  new URL( apanel.file, this.activitiesUrl).href; 
+                let file = this.fetchFile(apanel.file);
+                apanel.file = file.content;
+                apanel.sha = file.sha; 
+            };
+
+            // Resolve the panel definition reference  
+            if ( typeof apanel.ref == "string" ){
+                const panelDef = this.accessPanelDef(apanel.ref);
+
+                if (panelDef != null){
+                    apanel.ref = panelDef;
+                }
+            }
+
+            if (apanel.childrenPanels) {
+                this.resolveRef(apanel.childrenPanels);
+            }
+        }
+    }
+
     /**
      * Fetches the contents of the activity with the provided ID
      */ 
@@ -335,25 +383,7 @@ class ActivityManager {
     
             var activity = this.activities[id];
 
-            for ( let apanel of activity.panels ){
-                
-                if (apanel.file != null) { 
-                    apanel.url =  new URL( apanel.file, this.activitiesUrl).href; 
-                    let file = this.fetchFile(apanel.file);
-                    apanel.file = file.content;
-                    apanel.sha = file.sha; 
-                };
-
-                // Resolve the panel definition reference  
-                if ( typeof apanel.ref == "string" ){
-                    
-                    const panelDef = this.accessPanelDef(apanel.ref);
-
-                    if (panelDef != null){
-                        apanel.ref = panelDef;
-                    }
-                }
-            }
+            this.resolveRef(activity.panels);
         
             return activity;
         }

@@ -33,12 +33,8 @@ class Button {
     
         } else if (buttonConfigObject["internal"] != undefined) {
 
-            if ((buttonConfigObject.targetPanel) && (buttonConfigObject.internal === "show" || buttonConfigObject.internal === "hide")) {
-                if (buttonConfigObject.internal === "hide") {
-                    this.action = "hidePanelById( '" + buttonConfigObject.targetPanel + "Panel' )";  
-                } else {
-                    this.action = "showPanelById( '" + buttonConfigObject.targetPanel + "Panel' )";  
-                }
+            if (buttonConfigObject.targetPanel && buttonConfigObject.internal === "toggle") {
+                this.action = "togglePanelById( '" + buttonConfigObject.targetPanel + "Panel' )";  
             } else {
                 this.action = buttonConfigObject.internal;
             }
