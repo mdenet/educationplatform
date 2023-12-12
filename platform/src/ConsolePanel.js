@@ -8,7 +8,7 @@ class ConsolePanel extends Panel {
         super(id);
     }
 
-    intialize(editor) {
+    initialize(editor) {
         super.initialize(editor)
 
         this.editor.setReadOnly(true);

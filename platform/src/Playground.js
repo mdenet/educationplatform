@@ -62,7 +62,7 @@ document.getElementById("btnnologin").onclick= () => {
 
 if (!urlParamPrivateRepo()){
     // Public repo so no need to authenticate
-    initialiseActivity();
+    initializeActivity();
     
 } else {
     PlaygroundUtility.showLogin();
@@ -98,7 +98,7 @@ if (urlParameters.has("code") && urlParameters.has("state")  ){
     authDetails.then((details) => {
         document.getElementById('save')?.classList.remove('hidden');
         window.sessionStorage.setItem("isAuthenticated", true);
-        initialiseActivity();
+        initializeActivity();
     } );
 }
 
@@ -126,7 +126,7 @@ let queryString = params.join('&');
 window.history.replaceState({}, document.title, "?" + queryString);
 
 
-function initialiseActivity(){
+function initializeActivity(){
 
     let errors = [];
 
@@ -176,7 +176,7 @@ function initialiseActivity(){
 
     if  (errors.length==0){
         // The resolved activity has been validated
-        initialisePanels();
+        initializePanels();
     }
 
     if (errors.length > 0) {
@@ -243,7 +243,7 @@ function displayErrors(errors){
         }
 }
 
-function initialisePanels() {
+function initializePanels() {
     
     if (activity.outputLanguage != null) {
         outputLanguage = activity.outputLanguage;
