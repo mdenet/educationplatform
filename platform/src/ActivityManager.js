@@ -105,8 +105,8 @@ class ActivityManager {
         for(let panel of panelList) {
             if (panel.id == panelRef) return panel;
             else {
-                if (panel.childrenPanels) {
-                    const pnl = this.findPanel(panelRef, panel.childrenPanels)
+                if (panel.childPanels) {
+                    const pnl = this.findPanel(panelRef, panel.childPanels)
                     if (pnl) return pnl;
                 }
             }
@@ -368,8 +368,8 @@ class ActivityManager {
                 }
             }
 
-            if (apanel.childrenPanels) {
-                this.resolveRef(apanel.childrenPanels);
+            if (apanel.childPanels) {
+                this.resolveRef(apanel.childPanels);
             }
         }
     }

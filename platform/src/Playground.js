@@ -347,8 +347,8 @@ function createPanelForDefinitionId(panel){
             case "CompositePanel":
 
                 newPanel = new CompositePanel(newPanelId);
-                if (panel.childrenPanels) {
-                    for (let childPanelConfig of panel.childrenPanels) {     
+                if (panel.childPanels) {
+                    for (let childPanelConfig of panel.childPanels) {     
                         var childPanel = createPanelForDefinitionId(childPanelConfig);
                         newPanel.addPanel(childPanel);
                     }

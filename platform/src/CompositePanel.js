@@ -2,14 +2,14 @@ import { Panel } from "./Panel.js";
 import { Layout } from "./Layout.js";
 
 class CompositePanel extends Panel {
-    childrenPanels = [];
+    childPanels = [];
     constructor(id = "composite") {
         super(id);
     }
 
     initialize(editor) {
         super.initialize(editor)
-        this.childrenPanels.forEach(panel => {
+        this.childPanels.forEach(panel => {
             panel.initialize(editor);
             panel.parentComposite = this;
         });
@@ -17,12 +17,12 @@ class CompositePanel extends Panel {
 
 
     addPanel(panel) {
-        this.childrenPanels.push(panel);
+        this.childPanels.push(panel);
         panel.parentComposite = this; // Set a reference to the parent CompositePanel
     }
 
     removePanel(panel) {
-        this.childrenPanels = this.childrenPanels.filter(p => p !== panel);
+        this.childPanels = this.childPanels.filter(p => p !== panel);
     }
 
 
@@ -38,8 +38,8 @@ class CompositePanel extends Panel {
         root.style.flex = "1";
 
         var childElementList = []
-        if (this.childrenPanels) {
-            this.childrenPanels.forEach(childPanel => { 
+        if (this.childPanels) {
+            this.childPanels.forEach(childPanel => { 
                 var childElement = childPanel.getElement();
                 childElementList.push(childElement);
             });
@@ -56,7 +56,7 @@ class CompositePanel extends Panel {
         const panelElement = document.getElementById(this.id + "Panel");
         panelElement.firstChild.style.height = "100%";
         
-        this.childrenPanels.forEach(panel => {
+        this.childPanels.forEach(panel => {
             panel.fit();
         });
     }
