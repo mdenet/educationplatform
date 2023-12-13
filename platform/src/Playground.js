@@ -774,13 +774,7 @@ function handleResponseActionFunction(action, requestPromise){
                 switch (action.outputType){
                     case "code":
                         // Text
-                        var editor = outputPanel.getEditor();
-                        console.log("BEFORE THE CALL");
-                        console.log(editor.getValue());
-                        console.log(response.generatedText.trim());
                         outputPanel.getEditor().setValue(response.generatedText.trim(), 1);
-                        console.log("AFTER THE CALL");
-                        console.log(outputPanel.getEditor().getValue());
                         break;
 
                     case "html":
