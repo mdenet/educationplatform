@@ -15,6 +15,30 @@ class CompositePanel extends Panel {
         });
     }
 
+    /**
+     * Check whether there are saveable changes to a child panels contents.
+     * @override
+     * @returns true if there are changes that can be saved.
+     */
+    canSave(){
+        let childrenCanSave = false;
+
+        this.childPanels.forEach( (cp) => childrenCanSave = childrenCanSave || cp.canSave() );
+
+        return childrenCanSave;
+    }
+
+    /**
+     * @override
+     */
+    save(fileHandler){
+        this.childPanels.forEach( (cp) => { 
+            if (cp.canSave()){
+                // Save each child panel
+                cp.save(fileHandler);
+            }
+        }); 
+    }
 
     addPanel(panel) {
         this.childPanels.push(panel);
