@@ -40,6 +40,26 @@
     
                     "icon": "problems"
     
+                },
+
+                {
+                    "id": "composite",
+                    
+                    "name": "composite",
+                    
+                    "panelclass": "CompositePanel",
+
+                    "icon": "diagram"
+                },
+
+                {
+                    "id": "output",
+                    
+                    "name": "output",
+
+                    "panelclass": "OutputPanel",
+
+                    "icon": "console"
                 }
             ]
         }

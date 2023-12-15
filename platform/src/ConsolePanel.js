@@ -6,9 +6,13 @@ class ConsolePanel extends Panel {
 
     constructor(id) {
         super(id);
+    }
+
+    initialize(editor) {
+        super.initialize(editor)
+
         this.editor.setReadOnly(true);
         this.editor.setValue("", 1);
-
         let buttons = [];
         let clearButton = new Button(
             { id:"clear", 
@@ -59,8 +63,8 @@ class ConsolePanel extends Panel {
         root.setAttribute("id", this.id + "Panel");
 
         var editor = document.createElement("div");
-        editor.setAttribute("id", this.id + "Editor");
         editor.setAttribute("class", "editor");
+        editor.setAttribute("id", this.id + "Editor");
 
         root.appendChild(editor);
 

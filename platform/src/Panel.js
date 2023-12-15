@@ -8,8 +8,12 @@ class Panel {
     valueSha;
     fileUrl;
 
-    constructor(id, editor) {
+    constructor(id) {
         this.id = id;
+        
+    }
+
+    initialize(editor) {
         this.getElement();
 
         // Set up the panel's editor
@@ -23,6 +27,7 @@ class Panel {
                 fontSize: "11pt",
                 useSoftTabs: true
             });
+
         } else {
             this.editor = editor;
         }

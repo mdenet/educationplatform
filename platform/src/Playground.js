@@ -22,6 +22,7 @@ import { OutputPanel } from "./OutputPanel.js";
 import { TestPanel } from './TestPanel.js';
 import { BlankPanel } from './BlankPanel .js';
 import { XtextEditorPanel } from './XtextEditorPanel.js';
+import { CompositePanel } from './CompositePanel.js';
 import { Button } from './Button.js';
 
 import { Preloader } from './Preloader.js';
@@ -61,7 +62,7 @@ document.getElementById("btnnologin").onclick= () => {
 
 if (!urlParamPrivateRepo()){
     // Public repo so no need to authenticate
-    initialiseActivity();
+    initializeActivity();
     
 } else {
     PlaygroundUtility.showLogin();
@@ -97,7 +98,7 @@ if (urlParameters.has("code") && urlParameters.has("state")  ){
     authDetails.then((details) => {
         document.getElementById('save')?.classList.remove('hidden');
         window.sessionStorage.setItem("isAuthenticated", true);
-        initialiseActivity();
+        initializeActivity();
     } );
 }
 
@@ -125,7 +126,7 @@ let queryString = params.join('&');
 window.history.replaceState({}, document.title, "?" + queryString);
 
 
-function initialiseActivity(){
+function initializeActivity(){
 
     let errors = [];
 
@@ -175,7 +176,7 @@ function initialiseActivity(){
 
     if  (errors.length==0){
         // The resolved activity has been validated
-        initialisePanels();
+        initializePanels();
     }
 
     if (errors.length > 0) {
@@ -242,7 +243,7 @@ function displayErrors(errors){
         }
 }
 
-function initialisePanels() {
+function initializePanels() {
     
     if (activity.outputLanguage != null) {
         outputLanguage = activity.outputLanguage;
@@ -302,6 +303,7 @@ function createPanelForDefinitionId(panel){
         switch(panelDefinition.panelclass) {
             case "ProgramPanel":
                 newPanel =  new ProgramPanel(newPanelId);
+                newPanel.initialize();
                 
                 // Set from the tool panel definition  
                 newPanel.setEditorMode(panelDefinition.language);
@@ -311,26 +313,28 @@ function createPanelForDefinitionId(panel){
                 // Set from the activity 
                 newPanel.setValue(panel.file);
                 newPanel.setValueSha(panel.sha); 
-                newPanel.setFileUrl(panel.url)
+                newPanel.setFileUrl(panel.url);
             break;
         
             case "ConsolePanel":
                 newPanel =  new ConsolePanel(newPanelId);
+                newPanel.initialize();
             break;
 
             case "OutputPanel":
                 newPanel =  new OutputPanel(newPanelId, panelDefinition.language, outputType, outputLanguage);
-                
-                newPanel.hideEditor();
-                newPanel.showDiagram();
+                newPanel.initialize();
+
+                // newPanel.hideEditor();
+                // newPanel.showDiagram();
             break;
 
             case "XtextEditorPanel":
 
                 let editorUrl = sessionStorage.getItem(newPanelId);
                 
-                newPanel = new XtextEditorPanel(newPanelId, editorUrl, panel.extension);
-
+                newPanel = new XtextEditorPanel(newPanelId);
+                newPanel.initialize(editorUrl, panel.extension);
                 newPanel.setType(panelDefinition.language);
 
                 // Set from the activity 
@@ -338,6 +342,19 @@ function createPanelForDefinitionId(panel){
                 newPanel.setValueSha(panel.sha); 
                 newPanel.setFileUrl(panel.url)
 
+            break;
+
+            case "CompositePanel":
+
+                newPanel = new CompositePanel(newPanelId);
+                if (panel.childPanels) {
+                    for (let childPanelConfig of panel.childPanels) {     
+                        var childPanel = createPanelForDefinitionId(childPanelConfig);
+                        newPanel.addPanel(childPanel);
+                    }
+                }
+                newPanel.initialize();
+                
             break;
 
             // TODO create other panel types e.g. models and metamodels so the text is formatted correctly
@@ -358,7 +375,7 @@ function createPanelForDefinitionId(panel){
             // No activity defined buttons
             newPanel.addButtons( Button.createButtons( panelDefinition.buttons, panel.id));
 
-        } else if (panel.buttons != null && panelDefinition.buttons != null) {
+        } else if (panel.buttons != null && panelDefinition.buttons == null) {
             // The activity has defined the buttons
             let resolvedButtonConfigs = panel.buttons.map(btn =>{    
                 let resolvedButton;
@@ -715,11 +732,11 @@ function handleResponseActionFunction(action, requestPromise){
     requestPromise.then( (responseText) => {
 
         var response = JSON.parse(responseText);
-        var outputPanel = panels.find( pn => pn.id ==  action.output.id);
-        
+        const outputPanel = activityManager.findPanel( action.output.id, panels);
+
         var outputConsole;
         if (action.outputConsole != null){
-            outputConsole = panels.find(pn => pn.id == action.outputConsole.id);
+            outputConsole = activityManager.findPanel(action.outputConsole.id, panels);
         } else {
             outputConsole = outputPanel;
         }
@@ -732,7 +749,7 @@ function handleResponseActionFunction(action, requestPromise){
 
             var responseDiagram = Object.keys(response).find( key => key.toLowerCase().includes("diagram") );
 
-            if (response.output != "") {
+            if (response.output) {
                 // Text
                 outputConsole.setValue(response.output)  
             }
@@ -744,13 +761,8 @@ function handleResponseActionFunction(action, requestPromise){
                 
 
             } else if (responseDiagram != undefined) {
-                // Diagrams 
-                outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
-                outputPanel.showDiagram();
-                
+              
                 outputPanel.renderDiagram( response[responseDiagram] );
-                
-                outputPanel.showDiagram();
                 
             } else if (response.generatedFiles) {
                 // Multiple text files
@@ -794,12 +806,9 @@ function handleResponseActionFunction(action, requestPromise){
                         krokiXhr.onreadystatechange = function () {
                             if (krokiXhr.readyState === 4) {
                                 if (krokiXhr.status === 200) {
-                                    outputPanel.hideEditor(); // TODO Showing diagram before and after renderDiagrams makes outputs image show in panel otherwise nothing. 
-                                    outputPanel.showDiagram();
 
                                     outputPanel.renderDiagram(krokiXhr.responseText);
 
-                                    outputPanel.showDiagram();
                                 }
                             }
                         };
@@ -852,7 +861,7 @@ function runAction(source, sourceButton) {
         const panelId = action.parameters[paramName].id;
         
         if (panelId) { 
-            const panel = panels.find( pn => pn.id ==  panelId );
+            const panel = activityManager.findPanel(panelId, panels);
             param.type = panel.getType();
             param.value = panel.getValue();
 
@@ -888,6 +897,16 @@ function runAction(source, sourceButton) {
  
     longNotification("Executing program");
 }
+
+
+function togglePanelById(elementId) {
+    const panelElement = document.getElementById(elementId);
+    if (panelElement) {
+        const parentElement = panelElement.parentElement;
+        toggle(parentElement.id);
+    }
+}
+
 
 function notification(title, message, cls="light"){
     const crossIcon = "<div class=\"default-icon-cross\" style=\"float:right\"></div>"
@@ -1044,6 +1063,7 @@ async function checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, edi
     window.savePanelContents = savePanelContents;
     window.backend = backend;
     window.toggle = toggle;
+    window.togglePanelById = togglePanelById;
     //window.renderDiagram = renderDiagram;
     window.longNotification = longNotification;
     window.getPanelTitle = getPanelTitle;

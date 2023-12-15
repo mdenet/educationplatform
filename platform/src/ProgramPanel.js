@@ -27,7 +27,7 @@ class ProgramPanel extends Panel {
     fit() {
         var editorElement = document.getElementById(this.id + "Editor");
         if (editorElement != null) {
-            editorElement.parentNode.style = "flex-basis: calc(100% - 4px);";
+            editorElement.parentElement.style = "flex-basis: calc(100% - 4px);";
         }
         this.editor.resize();
     }
@@ -40,8 +40,8 @@ class ProgramPanel extends Panel {
         root.setAttribute("id", this.id + "Panel");
 
         var editor = document.createElement("div");
-        editor.setAttribute("id", this.id + "Editor");
         editor.setAttribute("class", "editor");
+        editor.setAttribute("id", this.id + "Editor");
 
         root.appendChild(editor);
         

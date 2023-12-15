@@ -32,8 +32,13 @@ class Button {
             this.action = "runAction( '" + parentPanel + "', '" + buttonConfigObject.id +"' )";
     
         } else if (buttonConfigObject["internal"] != undefined) {
-            this.action = buttonConfigObject.internal;
-            
+
+            if (buttonConfigObject.targetPanel && buttonConfigObject.internal === "toggle") {
+                this.action = "togglePanelById( '" + buttonConfigObject.targetPanel + "Panel' )";  
+            } else {
+                this.action = buttonConfigObject.internal;
+            }
+
         } else {
             console.log( "Button '" + buttonConfigObject.id + "' with uknown key.");
         }
