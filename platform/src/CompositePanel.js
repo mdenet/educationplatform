@@ -32,12 +32,15 @@ class CompositePanel extends Panel {
      * @override
      */
     save(fileHandler){
-        this.childPanels.forEach( (cp) => { 
-            if (cp.canSave()){
-                // Save each child panel
-                cp.save(fileHandler);
+        let savePromises =  this.childPanels.map( (cp) => { 
+            if (cp.canSave()) { 
+                //save each child panel
+                return cp.save(fileHandler); 
+            } else { 
+                return null; 
             }
-        }); 
+        });
+        return Promise.all(savePromises);
     }
 
     addPanel(panel) {
