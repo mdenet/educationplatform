@@ -9,12 +9,14 @@ WORKDIR /usr/src/mdenet-ts
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
 COPY package*.json ./
+COPY tokenserver ./tokenserver/
+RUN npm ci
 
-RUN npm install
-COPY  . .
-RUN npm run build
+RUN npm run build --workspace=tokenserver
 
 EXPOSE ${TS_PORT}
+
+WORKDIR /usr/src/mdenet-ts/tokenserver
 
 CMD ["node", "-r", "dotenv/config", "dist/server.js"]
 

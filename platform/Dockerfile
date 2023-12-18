@@ -10,17 +10,20 @@ WORKDIR /usr/src/mdenet-ep
 # where available (npm@5+)
 COPY package*.json ./
 
-COPY . .
+COPY platform/ ./platform/
 
 ARG TOKEN_SERVER_URL=http://127.0.0.1:10000
 
-RUN npm install && npm run build -- --env tokenServerUrl=${TOKEN_SERVER_URL} && npm run package
+RUN npm ci --workspace=platform\
+        && npm run build --workspace=platform -- --env tokenServerUrl=${TOKEN_SERVER_URL}\
+        && npm run package --workspace=platform
+
 
 FROM nginx:1.23
 
 WORKDIR /usr/share/nginx/html
 
-COPY --from=epbundle /usr/src/mdenet-ep/dist/. .
+COPY --from=epbundle /usr/src/mdenet-ep/platform/dist/. .
 
 RUN chmod -R 755 .
 
