@@ -4,5 +4,8 @@
   "workspaces": [
     "platform",
     "tokenserver"
-  ]
+  ],
+  "overrides": { 
+    "socket.io-parser": ">=4.2.3" 
+  } 
 }
