@@ -7,7 +7,7 @@ import 'ace-builds/src-min-noconflict/mode-html';
 import 'ace-builds/src-min-noconflict/ext-modelist';
 import 'ace-builds/src-min-noconflict/ext-language_tools';
 
-import 'metro4';
+import 'metro4/build/metro';
 
 import { FileHandler } from './FileHandler.js';
 import { ActivityManager } from './ActivityManager.js';
