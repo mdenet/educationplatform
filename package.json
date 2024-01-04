@@ -4,5 +4,9 @@
   "workspaces": [
     "platform",
     "tokenserver"
-  ]
+  ],
+  "overrides": { 
+    "socket.io-parser": ">=4.2.3",
+    "@octokit/webhooks": ">=10.9.2"
+  } 
 }
