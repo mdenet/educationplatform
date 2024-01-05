@@ -9,7 +9,7 @@ class ProgramPanel extends Panel {
 
     canSave() {
         // Only save if there are any actual changes to save -- this avoids empty commits.
-        return !(this.editor.session.getUndoManager().isClean());
+        return (this.getValueSha()) && (!(this.editor.session.getUndoManager().isClean()));
     }
 
     /**
