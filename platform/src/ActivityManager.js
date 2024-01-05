@@ -346,15 +346,40 @@ class ActivityManager {
         return null;
     }
 
+    /**
+     * Interpolate someString using information from session storage.
+     * 
+     * @param {*} someString the string to be changed
+     */
+    interpolate(someString) {
+        let result = someString;
 
+        // console.log (`Asked to interpolate ${someString}.`);
+
+        for (let i = 0; i < sessionStorage.length; i++) {
+            let currentKey = sessionStorage.key(i);
+
+            // console.log(`Interpolating for key ${currentKey}.`);
+
+            if (currentKey !== "isAuthenticated") {
+                // TODO: This *assumes* this can only be a panel ID, but that may change over time,
+                // so this code may need to be improved to only allow access to panel IDs explicitly
+                result = result.replace("${ID-" + currentKey + "}", sessionStorage.getItem(currentKey));
+            }
+        }
+
+        // console.log(`Result of interpolation: ${result}.`);
+        return result;
+    }
 
     /* resolve panel refs recursively because of CompositePanels */
     resolveRef(panelList) {
         for ( let apanel of panelList ){
                 
-            if (apanel.file != null) { 
-                apanel.url =  new URL( apanel.file, this.activitiesUrl).href; 
-                let file = this.fetchFile(apanel.file);
+            if (apanel.file != null) {
+                let panelURLString = this.interpolate(apanel.file);
+                apanel.url =  new URL(panelURLString, this.activitiesUrl).href; 
+                let file = this.fetchFile(panelURLString);
                 apanel.file = file.content;
                 apanel.sha = file.sha; 
             };
