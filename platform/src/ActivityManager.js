@@ -354,12 +354,8 @@ class ActivityManager {
     interpolate(someString) {
         let result = someString;
 
-        // console.log (`Asked to interpolate ${someString}.`);
-
         for (let i = 0; i < sessionStorage.length; i++) {
             let currentKey = sessionStorage.key(i);
-
-            // console.log(`Interpolating for key ${currentKey}.`);
 
             if (currentKey !== "isAuthenticated") {
                 // TODO: This *assumes* this can only be a panel ID, but that may change over time,
@@ -368,7 +364,6 @@ class ActivityManager {
             }
         }
 
-        // console.log(`Result of interpolation: ${result}.`);
         return result;
     }
 
