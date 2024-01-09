@@ -375,8 +375,10 @@ class ActivityManager {
                 let panelURLString = this.interpolate(apanel.file);
                 apanel.url =  new URL(panelURLString, this.activitiesUrl).href; 
                 let file = this.fetchFile(panelURLString);
-                apanel.file = file.content;
-                apanel.sha = file.sha; 
+                if (file) {
+                    apanel.file = file.content;
+                    apanel.sha = file.sha; 
+                }
             };
 
             // Resolve the panel definition reference  
