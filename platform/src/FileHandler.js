@@ -12,38 +12,39 @@ class FileHandler {
 
     fetchFile(url, isPrivate){
 
-        if(isPrivate){
-
+        if (isPrivate){
             // Private so request via token server
             const requestUrl = this.getPrivateFileRequestUrl(url);
 
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", requestUrl, false);
-            xhr.withCredentials = true;
-            xhr.send();
-            
-            if (xhr.status === 200) {  
+            if (requestUrl != null) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", requestUrl, false);
+                xhr.withCredentials = true;
+                xhr.send();
                 
-                let response = JSON.parse(xhr.responseText);
-
-                return { content: window.atob(response.data.content), sha: response.data.sha };
-            
-            } else {
-                return null;
-            }           
+                if (xhr.status === 200) {  
+                    
+                    let response = JSON.parse(xhr.responseText);
+    
+                    return { content: window.atob(response.data.content), sha: response.data.sha };
+                
+                } else {
+                    return null;
+                }
+            }
+        }
+        
+        // At this point, this is either a public repository, or it's a private repository but an unknown type of URL.
+        // In either case, we assume that we can simply access the URL directly.
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, false);
+        xhr.send();
+        
+        if (xhr.status === 200) {    
+            return { content: xhr.responseText, sha: null }; //TODO need to retrieve the sha for the file IF it's from a public repository
 
         } else {
-            // Public so request directly
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", url, false);
-            xhr.send();
-            
-            if (xhr.status === 200) {    
-                return { content: xhr.responseText, sha: null }; //TODO need to retrieve the sha for the file
-
-            } else {
-                return null;
-            }
+            return null;
         }
     }
 
