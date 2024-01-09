@@ -442,7 +442,7 @@ function invokeActionFunction(functionId, parameterMap){
             
             if(metamodelId==null){
                 // Convert with no metamodel to consider
-                convertedValue = convert( givenParameter.val, givenParameter.type, 
+                convertedValue = convert( givenParameter.value, givenParameter.type, 
                                           actionFunctionParam.type, paramName ); // TODO issue #58 remove paramName
 
             } else {
