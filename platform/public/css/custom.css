@@ -69,6 +69,10 @@
 	content: url("../images/diagram.gif");
 }
 
+.mif-diagram-generate::before {
+	content: url("../images/diagram-generate.gif");
+}
+
 .mif-refresh::before {
 	content: url("../images/refresh.png");
 }
