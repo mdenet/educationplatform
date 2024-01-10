@@ -485,8 +485,10 @@ class ActivityManager {
          var toolUrls = [];
 
          for ( const activitykey of  Object.keys(this.activities)){
-            
-            toolUrls = toolUrls.concat( this.activities[activitykey].tools );
+            toolUrls = toolUrls.concat(this.activities[activitykey].tools
+                                                                   .map((url, _idx) => { 
+                                                                            return this.interpolate(url); 
+                                                                        }));
          }
 
          return ( new Set(toolUrls) );
