@@ -17,7 +17,7 @@
         "panelclass": {
             "description": "The type of panel.",
             "type": "string",
-            "enum": [ "ProgramPanel", "ConsolePanel", "OutputPanel"]
+            "enum": [ "ProgramPanel", "ConsolePanel", "OutputPanel", "XtextEditorPanel", "CompositePanel"]
         },
         "icon": {
             "description": "Reference to the name of the icon to use.",
@@ -30,7 +30,10 @@
         "buttons": {
             "description": "For tools that create editor instances e.g. language workbenches, reference to the id of a panel of editorActivity that is the editor instance.",
             "type": "array",
-            "$ref": "button.schema.json"
+            "items": {
+                "type": "object",
+                "$ref": "button.schema.json"
+            }
         }
     },
     "required": ["id", "name", "panelclass", "icon"]
