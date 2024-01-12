@@ -65,8 +65,12 @@ class ToolManager {
             }
 
             if (xhr.status === 200) {    
+                // Rewrite URLs in tool config
+                let baseURL = toolUrl.url.substring(0, toolUrl.url.lastIndexOf("/")); // remove the name of the json file (including the trailing slash)
+                let toolConfig = xhr.responseText.replaceAll("{{BASE-URL}}", baseURL);
 
-                let validatedConfig = this.parseAndValidateToolConfig(xhr.responseText);
+                // Now parse tool config
+                let validatedConfig = this.parseAndValidateToolConfig(toolConfig);
 
                 if ( validatedConfig.errors.length == 0 ){
                     
