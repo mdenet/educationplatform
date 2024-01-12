@@ -509,9 +509,10 @@ class ActivityManager {
         let generatedPanelFound = false;
 
         for (const panel of  this.activities[activityId].panels) {
-            
-            if (this.accessPanelDef(panel.ref)?.generated  && !this.isPanelGenerated(panel.id) ){
-                generatedPanelFound = this.accessPanelDef(panel.ref).generated;
+            let panelDef = this.accessPanelDef(panel.ref);
+            // If no panel definition can be found, treat the panel as generated. Panel definitions may only be contributed by generated tools.
+            if ((!panelDef) || (panelDef.generated  && !this.isPanelGenerated(panel.id))) {
+                generatedPanelFound = true;
                 break;
             }
         }
