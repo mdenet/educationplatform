@@ -360,7 +360,8 @@ class ActivityManager {
             if (currentKey !== "isAuthenticated") {
                 // TODO: This *assumes* this can only be a panel ID, but that may change over time,
                 // so this code may need to be improved to only allow access to panel IDs explicitly
-                result = result.replace("{{ID-" + currentKey + "}}", sessionStorage.getItem(currentKey));
+                // Removing trailing slash to avoid double slashes
+                result = result.replace("{{ID-" + currentKey + "}}", sessionStorage.getItem(currentKey).replace(/\/$/, ""));
             }
         }
 
