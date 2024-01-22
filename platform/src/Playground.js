@@ -1033,6 +1033,8 @@ async function checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, edi
         if (result.error){
             // Unsuccessful
             console.log("Editor failed start.");
+            Metro.notify.killAll();
+            notification("Build Failed", "An error occurred while building the editor.");
 
         } else if (!result.editorReady){
             await new Promise(resolve => setTimeout(resolve, 2000));
