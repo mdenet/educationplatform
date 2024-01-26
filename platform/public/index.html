@@ -16,8 +16,9 @@
 <body class="h-100" onresize="fit()" onload="fit();updateGutterVisibility();">
     <div id="preloader"><img src="images/preloader.gif" width="100px"></div>
 
-    <div id='feedback-button'>
-        <p><a href="FEEDBAK_SURVEY_URL" target="_blank" rel="noopener noreferrer">
+    <div id="feedback-button" style="display:none">
+        <!--feedback href set by env variable FEEDBACK_SURVEY_URL in dockerfile-->
+        <p><a id="feedback-url" target="_blank" rel="noopener noreferrer">
             <img src="images/rate_review.svg" alt="Feedback" width="20" height="20">
         </a></p>
     </div>

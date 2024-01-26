@@ -53,9 +53,13 @@ export var toolsManager;
 
 var urlParameters = new URLSearchParams(window.location.search);    
 
-
+if (FEEDBACK_SURVEY_URL){
+    PlaygroundUtility.setFeedbackButtonUrl(FEEDBACK_SURVEY_URL);
+    PlaygroundUtility.showFeedbackButton();
+}
 
 document.getElementById("btnnologin").onclick= () => {
+
     PlaygroundUtility.hideLogin();
 }
 
