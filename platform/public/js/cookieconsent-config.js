@@ -20,7 +20,7 @@ CookieConsent.run({
                 },
                 preferencesModal: {
                     title: 'Manage cookie preferences',
-                    acceptNecessaryBtn: 'Reject all',
+                    acceptNecessaryBtn: 'Accept necessary cookies',
                     savePreferencesBtn: 'Accept current selection',
                     closeIconLabel: 'Close modal',
                     sections: [
@@ -42,13 +42,13 @@ CookieConsent.run({
                                   {
                                      name: 'mdenetep-auth',
                                      description: 'Used for user authentication purposes and enables the platform to save user progress to and read from private GitHub repositories that they choose.',
-                                     host: 'PLATFORM_DEPLOY_DOMAIN',
+                                     host: window.location.hostname,
                                      duration: 'session'
                                   },
                                   {
                                      name: 'JSESSIONID',
                                      description: 'Random session ID used to access each generated Xtext editor.',
-                                     host: 'PLATFORM_DEPLOY_DOMAIN',
+                                     host: window.location.hostname,
                                      duration: 'session'
                                   }
                                 ]
