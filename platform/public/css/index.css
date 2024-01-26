@@ -22,3 +22,19 @@
     background-color: darkslategrey;
     color: aliceblue;
 }
+
+#feedback-button {
+    position: absolute !important;
+    z-index: 10000 !important;
+    padding: 12px;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px 0 gray, 0 6px 20px 0 gray;
+    background-color: lightblue;
+    bottom: 5%;
+    left: 2%;
+    transition-duration: 0.4s;
+  }
+
+  #feedback-button:hover { 
+    background-color: #3498db;
+  }

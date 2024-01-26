@@ -57,3 +57,12 @@ The default test configurations provided by the activities server
 For activities that use backend tool functions the corresponding tool server must be available to process the requests.
 
 The Epsilon backend docker services for a  fully function configuration can be found [here](https://github.com/epsilonlabs/playground-docker).
+
+
+### Environment Variables
+This section documents the environment variables supported by the platform.
+
+| Name                    | Type | Description | Example | 
+| ---                     | ---  | ---         | --- | 
+| TOKEN_SERVER_URL       | Url | The url of the token server. Used for GitHub authentication enabling saving and private git repository access.  | https://tokenserver.mde-network.org  |
+| FEEDBACK_SURVEY_URL | Url |  The url that is used for the user feedback button.  | https://forms.office.com/?id=X  |
