@@ -45,7 +45,7 @@ export function jsonRequest(url, json, useCredentials=false){
         var xhr = new XMLHttpRequest();
 
         xhr.open("POST", url);
-        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
         xhr.withCredentials = useCredentials;
         
         xhr.onload = function () {
