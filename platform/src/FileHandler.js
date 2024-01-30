@@ -10,6 +10,11 @@ class FileHandler {
     }
 
 
+    base64ToBytes(base64) {
+        const binString = window.atob(base64);
+        return Uint8Array.from(binString, (m) => m.codePointAt(0));
+    }
+
     fetchFile(url, isPrivate){
 
         if (isPrivate){
@@ -19,14 +24,17 @@ class FileHandler {
             if (requestUrl != null) {
                 var xhr = new XMLHttpRequest();
                 xhr.open("GET", requestUrl, false);
+                xhr.setRequestHeader("Accept", "application/json; charset=UTF-8");
                 xhr.withCredentials = true;
                 xhr.send();
                 
                 if (xhr.status === 200) {  
                     
                     let response = JSON.parse(xhr.responseText);
-    
-                    return { content: window.atob(response.data.content), sha: response.data.sha };
+
+                    let contents = new TextDecoder().decode(this.base64ToBytes(response.data.content));
+
+                    return { content: contents, sha: response.data.sha };
                 
                 } else {
                     return null;
