@@ -15,6 +15,11 @@ class FileHandler {
         return Uint8Array.from(binString, (m) => m.codePointAt(0));
     }
 
+    bytesToBase64(bytes) {
+        const binString =  String.fromCodePoint(...bytes);
+        return window.btoa(binString);
+    }
+
     fetchFile(url, isPrivate){
 
         if (isPrivate){
@@ -70,7 +75,7 @@ class FileHandler {
             request.params.message = message;   
 
             request.params.sha= sha;  
-            request.params.content= window.btoa(newFileContent);  
+            request.params.content= this.bytesToBase64( new TextEncoder().encode(newFileContent) );
 
             if(branch != null){
                 request.params.branch = branch;
