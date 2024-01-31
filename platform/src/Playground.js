@@ -379,14 +379,14 @@ function createPanelForDefinitionId(panel){
             // No activity defined buttons
             newPanel.addButtons( Button.createButtons( panelDefinition.buttons, panel.id));
 
-        } else if (panel.buttons != null && panelDefinition.buttons == null) {
+        } else if (panel.buttons != null && panelDefinition.buttons != null) {
             // The activity has defined the buttons
             let resolvedButtonConfigs = panel.buttons.map(btn =>{    
                 let resolvedButton;
 
-                if (btn.ref){
+                if (typeof btn == "string"){
                     // button reference so resolve
-                    resolvedButton= panelDefinition.buttons.find((pdBtn)=> pdBtn.id===btn.ref);
+                    resolvedButton= panelDefinition.buttons.find((pdBtn)=> pdBtn.id===btn);
                 } else {
                     // activity defined button
                     resolvedButton= btn;
