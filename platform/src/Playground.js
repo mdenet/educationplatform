@@ -384,9 +384,9 @@ function createPanelForDefinitionId(panel){
             let resolvedButtonConfigs = panel.buttons.map(btn =>{    
                 let resolvedButton;
 
-                if (typeof btn == "string"){
+                if (btn.ref){
                     // button reference so resolve
-                    resolvedButton= panelDefinition.buttons.find((pdBtn)=> pdBtn.id===btn);
+                    resolvedButton= panelDefinition.buttons.find((pdBtn)=> pdBtn.id===btn.ref);
                 } else {
                     // activity defined button
                     resolvedButton= btn;
