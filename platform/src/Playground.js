@@ -379,7 +379,7 @@ function createPanelForDefinitionId(panel){
             // No activity defined buttons
             newPanel.addButtons( Button.createButtons( panelDefinition.buttons, panel.id));
 
-        } else if (panel.buttons != null && panelDefinition.buttons == null) {
+        } else if (panel.buttons != null && panelDefinition.buttons != null) {
             // The activity has defined the buttons
             let resolvedButtonConfigs = panel.buttons.map(btn =>{    
                 let resolvedButton;
