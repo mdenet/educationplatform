@@ -29,6 +29,17 @@
         "editorPanel": {
             "description": "For tools that create editor instances e.g. language workbenches, reference to the id of a panel of editorActivity that is the editor instance.",
             "type": "string"
+        },
+        "buttons": {
+            "description": "Buttons to use instead of the default buttons defined by the panel. Can be a Button object or an Object with a ref attribute whose value is the id of a button from the panel's definition.",
+            "type": "array",
+            "items": {
+                "type": "object", 
+                "oneOf": [
+                    {"$ref": "button.schema.json"},
+                    {"$ref": "ref.schema.json"}
+                 ]
+            }
         }
     },
     "required": ["id", "name", "ref"]
