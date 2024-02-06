@@ -6,6 +6,8 @@ const  schemaActivtyConfig = require('../schemas/activity-config.schema.json');
 const schemaLayout  = require('../schemas/layout.schema.json');
 const schemaAction  = require('../schemas/action.schema.json');
 const schemaPanel  = require('../schemas/panel.schema.json');
+const schemaButton = require( '../schemas/button.schema.json');
+const schemaRef = require( '../schemas/ref.schema.json');
 
 
 class ActivityConfigValidator {
@@ -13,7 +15,7 @@ class ActivityConfigValidator {
     validate;
 
     constructor() {
-        const schemaValidator = new Ajv({allErrors: true, schemas: [schemaActivtyConfig, schemaLayout, schemaAction, schemaPanel]});
+        const schemaValidator = new Ajv({allErrors: true, schemas: [schemaActivtyConfig, schemaLayout, schemaAction, schemaPanel, schemaButton, schemaRef]});
         this.validate = schemaValidator.getSchema("https://mde-network.com/ep/activity-config.schema.json"); // id from local schema file
     }
 
