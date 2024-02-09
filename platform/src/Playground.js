@@ -245,6 +245,21 @@ function displayErrors(errors){
                 contentPanelDiv.append(content);
             });
         }
+
+        const otherErrors = errors.filter((e) => !(configErrors.includes(e) || platformErrors.includes(e)))
+        if (otherErrors.length > 0) {
+            let contentTitle = document.createElement("h2");
+            contentTitle.innerText = "Errors:";
+            contentPanelDiv.append(contentTitle);
+
+            otherErrors.forEach( (err) => {
+                let content = document.createElement("p");
+                let contentText= `${err.constructor.name}: ${err.message}` ;
+                content.append(document.createTextNode(contentText));
+
+                contentPanelDiv.append(content);
+            });
+        }
 }
 
 function initializePanels() {
