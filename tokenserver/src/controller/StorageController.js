@@ -29,14 +29,16 @@ class StorageController {
         
         var paramOwner = req.query.owner;
         var paramRepo = req.query.repo;
+        var paramBranch = req.query.ref;
         var paramPath = req.query.path;
         
-        if ( paramOwner!=null &&  paramRepo!=null && paramPath!=null ) {
+        if ( paramOwner!=null &&  paramRepo!=null && paramPath!=null && paramBranch!=null ) {
 
-            let repoData = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+            let repoData = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}?ref={ref}', {
                 owner: paramOwner,
                 repo: paramRepo,
                 path: paramPath,
+                ref: paramBranch,
                 headers: {
                     'X-GitHub-Api-Version': config.githubApiVersion
                 }
