@@ -123,14 +123,12 @@ class ActivityManager {
         let errors = []; 
         let fileContent
 
-        try{
+        try {
             let file = this.fileHandler.fetchFile( this.activitiesUrl , urlParamPrivateRepo() );
             fileContent = file.content;
         } catch (e) {
-            if (e instanceof DOMException){
-                errors.push( new EducationPlatformError(`The activity configuration file was not accessible at: ${this.activitiesUrl}. 
-                                                        Check the activity file is available at the given url.`) );
-            }
+            errors.push( new EducationPlatformError(`The activity configuration file was not accessible at: ${this.activitiesUrl}. 
+                                                    Check the activity file is available at the given url and you have the correct access rights.`) );
         }
 
         if (fileContent != null){
