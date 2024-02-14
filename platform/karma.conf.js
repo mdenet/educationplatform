@@ -6,6 +6,7 @@ module.exports = function(config) {
 
     plugins: [
         require('karma-webpack'),
+        require('karma-coverage'),
         require('karma-jasmine'),
         require('karma-chrome-launcher'),
         require('karma-jasmine-html-reporter'),
@@ -54,7 +55,7 @@ module.exports = function(config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://www.npmjs.com/search?q=keywords:karma-reporter
-    reporters: ['kjhtml','progress','junit'],
+    reporters: ['kjhtml','progress','junit', 'coverage'],
 
 
     // web server port
@@ -95,6 +96,11 @@ module.exports = function(config) {
       classNameFormatter: undefined, // function (browser, result) to customize the classname attribute in xml testcase element
       properties: {}, // key value pair of properties to add to the <properties> section of the report
       xmlVersion: null // use '1' if reporting to be per SonarQube 6.2 XML format
+    },
+    
+    coverageReporter: {
+      type : 'html',
+      dir : 'coverage/'
     }
     
   })
