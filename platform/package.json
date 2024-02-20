@@ -7,7 +7,7 @@
     "build": "webpack --mode=development",
     "package": "copyfiles -u 1 \"public/**/*\" dist",
     "start": "docker compose up --build --force-recreate",
-    "lint": "eslint src/**/*.js"
+    "lint": "eslint src/**/*.js --format junit --output-file ./reports/lint-results.xml"
   },
   "devDependencies": {
     "copyfiles": "^2.4.1",
