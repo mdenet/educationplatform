@@ -25,6 +25,9 @@ jobs:
             npm ci
             npm install -g karma-cli
       
+      - name: Code linting
+        run: npm run lint
+      
       - name: Build the education platform
         run: npm run build --workspaces
 
