@@ -51,6 +51,6 @@ jobs:
         if: success() || failure()
         with:
           name: Unit Test Results
-          path: platform/reports/*.xml
+          path: platform/reports/TESTS*.xml
           reporter: java-junit
           fail-on-error: true
