@@ -1,6 +1,5 @@
-
+/*global Metro ace -- Metro and ace are externally imported*/
 import { ProgramPanel } from "./ProgramPanel.js";
-import { language } from "./Playground.js";
 import { Button } from "./Button.js";
 import svgPanZoom from 'svg-pan-zoom';
 class OutputPanel extends ProgramPanel {
@@ -34,9 +33,9 @@ class OutputPanel extends ProgramPanel {
         }
         this.addButtons(buttons);
 
-	if (this.language == "multi") {
-	  this.createFileSelector();
-	}
+    if (this.language == "multi") {
+      this.createFileSelector();
+    }
         this.getEditor().getSession().setMode("ace/mode/" + this.outputLanguage.toLowerCase());
     }
 
