@@ -1,4 +1,5 @@
-import { pan } from "svg-pan-zoom";
+
+/*global $ -- jquery is externally imported*/
 import { urlParamPrivateRepo, parseConfigFile } from "./Utility.js";
 import { ActivityConfigValidator } from "./ActivityConfigValidator.js";
 import { EducationPlatformError } from "./EducationPlatformError.js";
@@ -59,7 +60,7 @@ class ActivityManager {
 
     resolveActionReferences(activityId){
         
-        var activity = this.activities[activityId];
+        let activity = this.activities[activityId];
         
         for( var action of activity.actions ) {
             action.source = this.resolvePanelReference(activityId, action.source); 
@@ -378,7 +379,7 @@ class ActivityManager {
                     apanel.file = file.content;
                     apanel.sha = file.sha; 
                 }
-            };
+            }
 
             // Resolve the panel definition reference  
             if ( typeof apanel.ref == "string" ){
@@ -402,7 +403,7 @@ class ActivityManager {
 
         if (this.hasActivity(id)) {
     
-            var activity = this.activities[id];
+            let activity = this.activities[id];
 
             this.resolveRef(activity.panels);
         
@@ -410,7 +411,7 @@ class ActivityManager {
         }
 
         // If we are here it means that such an activity has not been found
-        var activity = {};
+        let activity = {};
         activity.language = "";
         activity.program = "// Activity " + id + " has not been found";
         activity.secondProgram = "";
@@ -485,7 +486,7 @@ class ActivityManager {
 
          for ( const activitykey of  Object.keys(this.activities)){
             toolUrls = toolUrls.concat(this.activities[activitykey].tools
-                                                                   .map((url, _idx) => { 
+                                                                   .map((url) => { 
                                                                             return this.interpolate(url); 
                                                                         }));
          }
