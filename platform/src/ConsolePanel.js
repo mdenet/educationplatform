@@ -1,3 +1,5 @@
+/*global ace -- ace is externally imported*/
+
 import { Panel } from "./Panel.js";
 import { define } from "ace-builds";
 import { Button } from "./Button.js";
@@ -74,7 +76,7 @@ class ConsolePanel extends Panel {
     detectHyperlinks(editor) {
         var locationRegexp = /\(((.+?)@(\d+):(\d+)-(\d+):(\d+))\)/i;
 
-        define("hoverlink", [], function (require, exports, module) {
+        define("hoverlink", [], function (require, exports) {
             "use strict";
 
             var oop = require("ace/lib/oop");
@@ -201,7 +203,7 @@ class ConsolePanel extends Panel {
                     this.update();
                 };
 
-                this.onMouseOut = function (e) {
+                this.onMouseOut = function () {
                     this.clear();
                 };
 
@@ -223,13 +225,18 @@ class ConsolePanel extends Panel {
         editor.hoverLink.on("open", function (e) {
             var location = e.value;
             if (editor.getValue().indexOf(location) > -1) {
+
+            /* TODO Fix link highlighting original epsilon playground behaviour
+                    by supporting the platforms flexible panel layout.
+
                 var matches = location.match(locationRegexp);
                 var Range = ace.require("ace/range").Range;
-               // var panel = programPanel;
+                var panel = programPanel;
 
                 panel.getEditor().selection.setRange(new Range(
                     parseInt(matches[3]) - 1, parseInt(matches[4]),
-                    parseInt(matches[5]) - 1, parseInt(matches[6])));
+                    parseInt(matches[5]) - 1, parseInt(matches[6]))); 
+             */
             }
         });
     }
