@@ -1,7 +1,0 @@
-
-
-class ToolConfigUtility {
-
-    static buttonsTocustomButtons()
-
-}
