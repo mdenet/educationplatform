@@ -1,3 +1,5 @@
+/*global ace -- ace is externally imported*/
+
 class Panel {
 
     id;
@@ -84,7 +86,7 @@ class Panel {
         let thisEditor = this.editor;
         return fileHandler.storeFile(this.getFileUrl(), this.getValueSha(), this.getValue())
                           // Mark the editor clean if the save completed
-                          .then((response) => { thisEditor.session.getUndoManager().markClean(); });
+                          .then(() => { thisEditor.session.getUndoManager().markClean(); });
     }
 
     getEditor() {
