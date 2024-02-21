@@ -2,7 +2,6 @@ import * as express from "express";
 
 import {InvalidRequestException} from "../exceptions/InvalidRequestException.js";
 import {asyncCatch} from "../middleware/ErrorHandlingMiddleware.js";
-import {serialize} from "cookie";
 import {getAuthCookieName} from "../cookieName.js";
 import {getEncryptedCookie} from "../lib-curity/cookieEncrypter";
 import { config } from "../config.js";
@@ -27,7 +26,7 @@ class LoginController {
         this.octokitApp = octokitAppInstance;
     }
 
-    getAuthUrl = async (req, res) => {
+    getAuthUrl = async (req, res, next) => {
         try {
             //TODO validate request url
 

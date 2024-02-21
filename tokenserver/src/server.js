@@ -1,13 +1,8 @@
-
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
-//import {Octokit, App, OAuthApp, createNodeMiddleware } from "octokit";
-import * as http from 'http';
-
-
-import {OAuthApp, createNodeMiddleware} from "@octokit/oauth-app";
+import {OAuthApp} from "@octokit/oauth-app";
 import {LoginController} from "./controller/LoginController.js";
 import {StorageController} from './controller/StorageController.js';
 import {config} from "./config.js";
@@ -49,8 +44,7 @@ for (const [path, controller] of Object.entries(controllers)) {
 expressApp.use(errorHandlingMiddleware);
 
 
-
-githubApp.on("token", async ({ token, octokit, expiresAt }) => {
+githubApp.on("token", async () => {
   const today = new Date();
   const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
   const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
@@ -61,6 +55,3 @@ githubApp.on("token", async ({ token, octokit, expiresAt }) => {
 expressApp.listen(config.port, function() {
   console.log(`Auth server is listening on HTTP port ${config.port}`)
 })
-
-
-export { default };

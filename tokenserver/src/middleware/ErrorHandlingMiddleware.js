@@ -1,6 +1,6 @@
 
 
-const errorHandlingMiddleware = (err, req, res, next) => {
+const errorHandlingMiddleware = (err, req, res) => {
   if (err.status != null) {
     res.status(err.status).json({
         msg: err.response.data.message,
