@@ -225,6 +225,8 @@ class ConsolePanel extends Panel {
         editor.hoverLink.on("open", function (e) {
             var location = e.value;
             if (editor.getValue().indexOf(location) > -1) {
+                /* TODO  fix link highlighting issue mdenet/educationplatform#181
+                          original epsilon playground behaviour */
             }
         });
     }
