@@ -287,15 +287,6 @@ function initializePanels() {
         }
     });
 
-    /* TODO Fix run program shortcut key original epsilon playground behaviour.
-    $(window).keydown(function(event) {
-      if ((event.metaKey && event.keyCode == 83) || (event.ctrlKey && event.keyCode == 83)) { 
-        runProgram();
-        event.preventDefault(); 
-      }
-    });
-    */
-
     Metro.init();
 
     activityManager.openActiveActivitiesSubMenu();

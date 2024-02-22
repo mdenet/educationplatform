@@ -225,18 +225,6 @@ class ConsolePanel extends Panel {
         editor.hoverLink.on("open", function (e) {
             var location = e.value;
             if (editor.getValue().indexOf(location) > -1) {
-
-            /* TODO Fix link highlighting original epsilon playground behaviour
-                    by supporting the platforms flexible panel layout.
-
-                var matches = location.match(locationRegexp);
-                var Range = ace.require("ace/range").Range;
-                var panel = programPanel;
-
-                panel.getEditor().selection.setRange(new Range(
-                    parseInt(matches[3]) - 1, parseInt(matches[4]),
-                    parseInt(matches[5]) - 1, parseInt(matches[6]))); 
-             */
             }
         });
     }
