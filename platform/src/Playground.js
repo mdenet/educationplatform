@@ -1,4 +1,9 @@
-import 'ace-builds/src-min-noconflict/ace';
+/*global $ -- jquery is exterally imported*/
+/*global TOKEN_SERVER_URL -- is set by environment variable*/
+/*global FEEDBACK_SURVEY_URL -- is set by environment variable*/
+/*global Metro -- Metro is externally imported*/
+
+import * as ace from 'ace-builds/src-min-noconflict/ace';
 import 'ace-builds/src-min-noconflict/theme-eclipse';
 import 'ace-builds/src-min-noconflict/mode-xml';
 import 'ace-builds/src-min-noconflict/mode-yaml';
@@ -30,7 +35,6 @@ import { Backend } from './Backend.js';
 import { Layout } from './Layout.js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
 import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateRepo } from './Utility.js';
-import { ActionFunction } from './ActionFunction.js';
 
 const TOKEN_HANDLER_URL = TOKEN_SERVER_URL || "http://127.0.0.1:10000";
 const COMMON_UTILITY_URL = window.location.href.replace(window.location.search,"") + "common/utility.json";
@@ -38,14 +42,11 @@ const COMMON_UTILITY_URL = window.location.href.replace(window.location.search,"
 var outputType = "text";
 var outputLanguage = "text";
 var activity;
-var url = window.location + "";
-var questionMark = url.indexOf("?");
 
 var preloader = new Preloader();
 export var backend = new Backend();
 
 var panels = [];
-var buttonActionFunctions = [];
 
 export var fileHandler = new FileHandler(TOKEN_HANDLER_URL);
 export var activityManager;
@@ -99,7 +100,7 @@ if (urlParameters.has("code") && urlParameters.has("state")  ){
     //TODO loading box
     let authDetails = jsonRequest(TOKEN_HANDLER_URL + "/mdenet-auth/login/token",
                                   JSON.stringify(tokenRequest), true );
-    authDetails.then((details) => {
+    authDetails.then( () => {
         document.getElementById('save')?.classList.remove('hidden');
         window.sessionStorage.setItem("isAuthenticated", true);
         initializeActivity();
@@ -189,9 +190,6 @@ function initializeActivity(){
 }
 
 function displayErrors(errors){
-
-        let errorText = "";
-
 
         const contentPanelName = "content-panel";
      
@@ -289,13 +287,6 @@ function initializePanels() {
         }
     });
 
-    $(window).keydown(function(event) {
-      if ((event.metaKey && event.keyCode == 83) || (event.ctrlKey && event.keyCode == 83)) { 
-        runProgram();
-        event.preventDefault(); 
-      }
-    });
-
     Metro.init();
 
     activityManager.openActiveActivitiesSubMenu();
@@ -313,14 +304,13 @@ function initializePanels() {
 function createPanelForDefinitionId(panel){
     const panelDefinition = panel.ref;
     var newPanel = null;
-    var buttons;
 
     const newPanelId= panel.id;
 
     if (panelDefinition != null){
 
         switch(panelDefinition.panelclass) {
-            case "ProgramPanel":
+            case "ProgramPanel": {
                 newPanel =  new ProgramPanel(newPanelId);
                 newPanel.initialize();
                 
@@ -333,23 +323,19 @@ function createPanelForDefinitionId(panel){
                 newPanel.setValue(panel.file);
                 newPanel.setValueSha(panel.sha); 
                 newPanel.setFileUrl(panel.url);
-            break;
-        
-            case "ConsolePanel":
+                break;
+            }
+            case "ConsolePanel": {
                 newPanel =  new ConsolePanel(newPanelId);
                 newPanel.initialize();
-            break;
-
-            case "OutputPanel":
+                break;
+            }
+            case "OutputPanel": {
                 newPanel =  new OutputPanel(newPanelId, panelDefinition.language, outputType, outputLanguage);
                 newPanel.initialize();
-
-                // newPanel.hideEditor();
-                // newPanel.showDiagram();
-            break;
-
-            case "XtextEditorPanel":
-
+                break;
+            }
+            case "XtextEditorPanel": {
                 let editorUrl = sessionStorage.getItem(newPanelId);
                 
                 newPanel = new XtextEditorPanel(newPanelId);
@@ -361,9 +347,9 @@ function createPanelForDefinitionId(panel){
                 newPanel.setValueSha(panel.sha); 
                 newPanel.setFileUrl(panel.url)
 
-            break;
-
-            case "CompositePanel":
+                break;
+            }
+            case "CompositePanel": {
 
                 newPanel = new CompositePanel(newPanelId);
                 if (panel.childPanels) {
@@ -374,11 +360,12 @@ function createPanelForDefinitionId(panel){
                 }
                 newPanel.initialize();
                 
-            break;
-
+                break;
+            }
             // TODO create other panel types e.g. models and metamodels so the text is formatted correctly
-            default:
-            newPanel = new TestPanel(newPanelId);                
+            default: {
+                newPanel = new TestPanel(newPanelId);    
+            }            
         }
     
         // Add elements common to all panels
@@ -417,15 +404,6 @@ function createPanelForDefinitionId(panel){
     return newPanel;
 }
 
-
-function copyToClipboard(str) {
-    var el = document.createElement('textarea');
-    el.value = str;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-}
 
 function getPanelTitle(panelId) {
     return $("#" + panelId)[0].dataset.titleCaption;
@@ -479,7 +457,7 @@ function invokeActionFunction(functionId, parameterMap){
         
         } else {
             // Matching types add values to promise for synchronisation 
-            let value =  new Promise( function (resolve, reject) { 
+            let value =  new Promise( function (resolve) { 
                 let parameterData = {};
                 
                 parameterData.name = paramName;
@@ -764,7 +742,7 @@ function handleResponseActionFunction(action, requestPromise){
 
         Metro.notify.killAll();
 
-        if (response.hasOwnProperty("error")) {
+        if ( Object.prototype.hasOwnProperty.call(response, "error")) {
             outputConsole.setError(response.error);
         } else {
 
@@ -837,7 +815,7 @@ function handleResponseActionFunction(action, requestPromise){
                         break;
 
                         default:
-                            console.log("Unknown output type: " + cation.outputType);
+                            console.log("Unknown output type: " + action.outputType);
                 }
             }
 
@@ -909,7 +887,7 @@ function runAction(source, sourceButton) {
     // Call backend conversion and service functions
     let actionResultPromise = invokeActionFunction(buttonConfig.actionfunction, parameterMap)
 
-    actionResultPromise.catch( (err) => {
+    actionResultPromise.catch( () => {
          errorNotification("There was an error translating action function parameter types.");
     } );
 
@@ -1002,7 +980,7 @@ function getPreviousVisibleSibling(element) {
     }
 }
 
-function savePanelContents(event){
+function savePanelContents(){
     
     let panelsToSave = panels.filter (p => p.canSave());
 
@@ -1015,7 +993,7 @@ function savePanelContents(event){
         
         if (storePromise!=null) {
             
-            storePromise.then( response => {
+            storePromise.then( () => {
                 console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
             });
 
@@ -1023,10 +1001,10 @@ function savePanelContents(event){
         }
     }
     
-    Promise.all(fileStorePromises).then( (response) => {
+    Promise.all(fileStorePromises).then( () => {
         successNotification("The activity panel contents have been saved.");
     
-    }).catch((error) => {
+    }).catch(() => {
         errorNotification("An error occurred while trying to save the panel contents.");
     });
 }

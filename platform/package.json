@@ -6,10 +6,12 @@
     "test": "karma start",
     "build": "webpack --mode=development",
     "package": "copyfiles -u 1 \"public/**/*\" dist",
-    "start": "docker compose up --build --force-recreate"
+    "start": "docker compose up --build --force-recreate",
+    "lint": "eslint src/**/*.js --format junit --output-file ./reports/lint-results.xml; exit 0"
   },
   "devDependencies": {
     "copyfiles": "^2.4.1",
+    "eslint": "^8.56.0",
     "jasmine": "^4.5.0",
     "karma": "^6.4.1",
     "karma-chrome-launcher": "^3.1.1",
@@ -17,8 +19,8 @@
     "karma-jasmine-html-reporter": "^2.0.0",
     "karma-junit-reporter": "^2.0.1",
     "karma-webpack": "^5.0.0",
-    "webpack-cli": "^5.1.1",
-    "webpack": ">=5.76.0"
+    "webpack": ">=5.76.0",
+    "webpack-cli": "^5.1.1"
   },
   "dependencies": {
     "ace-builds": "^1.14.0",

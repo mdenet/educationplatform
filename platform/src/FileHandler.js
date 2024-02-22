@@ -27,7 +27,7 @@ class FileHandler {
             const requestUrl = this.getPrivateFileRequestUrl(url);
 
             if (requestUrl != null) {
-                var xhr = new XMLHttpRequest();
+                let xhr = new XMLHttpRequest();
                 xhr.open("GET", requestUrl, false);
                 xhr.setRequestHeader("Accept", "application/json; charset=UTF-8");
                 xhr.withCredentials = true;
@@ -49,7 +49,7 @@ class FileHandler {
         
         // At this point, this is either a public repository, or it's a private repository but an unknown type of URL.
         // In either case, we assume that we can simply access the URL directly.
-        var xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.open("GET", url, false);
         xhr.send();
         

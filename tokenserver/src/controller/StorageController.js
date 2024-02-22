@@ -3,7 +3,6 @@ import * as express from "express";
 import {InvalidRequestException} from "../exceptions/InvalidRequestException.js";
 import { GihubException } from "../exceptions/GithubException.js";
 import {asyncCatch} from "../middleware/ErrorHandlingMiddleware.js";
-import {serialize} from "cookie";
 import {getAuthCookieName} from "../cookieName.js";
 import {decryptCookie} from "../lib-curity/cookieEncrypter";
 import { config } from "../config.js";
@@ -20,7 +19,7 @@ class StorageController {
         this.router.post('/fork', asyncCatch(this.forkRepository));
     }
 
-    getFile = async (req, res, next) => { 
+    getFile = async (req, res) => { 
 
         let encryptedAuthCookie = req.cookies[getAuthCookieName];
         let octokit;
@@ -53,7 +52,7 @@ class StorageController {
 
     }
 
-    storeFile = async (req, res, next) => {
+    storeFile = async (req, res) => {
         let encryptedAuthCookie = req.cookies[getAuthCookieName];
         let octokit;
 
@@ -105,7 +104,7 @@ class StorageController {
         }
     }
 
-    forkRepository = async (req, res, next) => { 
+    forkRepository = async (req, res) => { 
 
         let encryptedAuthCookie = req.cookies[getAuthCookieName];
         let octokit;

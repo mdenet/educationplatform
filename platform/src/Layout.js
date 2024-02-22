@@ -71,7 +71,7 @@ class Layout {
         for (let row of layout) {
             if (row.length > numberOfColumns) {
                 numberOfColumns = row.length;
-            };
+            }
         }
 
         for(let column=0; column < numberOfColumns; column++  ) {

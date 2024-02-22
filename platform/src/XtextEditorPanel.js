@@ -1,3 +1,4 @@
+/*global ace -- ace is externally imported*/
 import { Panel } from "./Panel.js";
 
 

@@ -204,18 +204,19 @@ class ToolManager {
     /**
      * Returns type for a given Panel id
      * @param {*} panelDefId 
-     * @returns panel type 
+     * @returns {string|null} panel type
      */
     getPanelType(panelDefId) {
-        for ( const toolskey of  Object.keys(this.tools)){
 
-            let def = this.getPanelDefinition(panelDefId);
-            
-            return def.language;
-        } 
+        let def = this.getPanelDefinition(panelDefId);
         
-        console.log("Tool with panel definition id '" + panelDefId + "' was not found.");
-        return null;
+        if (def) {
+            return def.language;
+            
+        } else {
+            console.log("Tool with panel definition id '" + panelDefId + "' was not found.");
+            return null;
+        }
     }
 
 
