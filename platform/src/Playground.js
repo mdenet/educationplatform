@@ -31,7 +31,6 @@ import { CompositePanel } from './CompositePanel.js';
 import { Button } from './Button.js';
 
 import { Preloader } from './Preloader.js';
-import { Backend } from './Backend.js';
 import { Layout } from './Layout.js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
 import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateRepo } from './Utility.js';
@@ -42,10 +41,7 @@ const COMMON_UTILITY_URL = window.location.href.replace(window.location.search,"
 var outputType = "text";
 var outputLanguage = "text";
 var activity;
-
 var preloader = new Preloader();
-export var backend = new Backend();
-
 var panels = [];
 
 export var fileHandler = new FileHandler(TOKEN_HANDLER_URL);
@@ -1063,7 +1059,6 @@ async function checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, edi
     window.runAction = runAction;
     window.panels = panels;
     window.savePanelContents = savePanelContents;
-    window.backend = backend;
     window.toggle = toggle;
     window.togglePanelById = togglePanelById;
     //window.renderDiagram = renderDiagram;
