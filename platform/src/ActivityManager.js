@@ -3,6 +3,7 @@
 import { urlParamPrivateRepo, parseConfigFile } from "./Utility.js";
 import { ActivityConfigValidator } from "./ActivityConfigValidator.js";
 import { EducationPlatformError } from "./EducationPlatformError.js";
+import {utility} from "./Utility.js"
 
 const NAV_ID_PREFIX = "nav-entry-";
 
@@ -32,7 +33,7 @@ class ActivityManager {
         this.fileHandler = fileHandler;
 
         // Retrieve the url of the activities configuration
-        var parameters = new URLSearchParams(window.location.search);
+        var parameters = new URLSearchParams(utility.getWindowLocationSearch());
         if (parameters.has("activities")) {
             this.customActivitiesUrl = true;
             this.activitiesUrl = parameters.get("activities");
@@ -48,15 +49,19 @@ class ActivityManager {
                 break;
             }
         }
+    }
 
+    /**
+     *  Intialises activities by fetching the activities from the activitiesUrl 
+     *  remote and resolving action references.
+     */
+    initializeActivities(){
         this.configErrors = this.configErrors.concat(this.fetchActivities());
 
         for(var activityKey of Object.keys(this.activities)) {
             this.resolveActionReferences( this.activities[activityKey].id );
         }
     }
-
-
 
     resolveActionReferences(activityId){
         
