@@ -6,91 +6,67 @@ import { ActivityConfigValidator } from "../../src/ActivityConfigValidator.js";
 import { utility } from "../../src/Utility.js";
 import { ACTIVITY_2PANELS_1ACTION } from "../resources/TestActivityFiles.js";
 import { TOOL_1PANELDEF_1FUNCTION } from "../resources/TestToolFiles.js";
-import { configObjectEquals, configToString } from "../resources/TestUtility.js";
+import { configObjectEquals } from "../resources/TestUtility.js";
 
 
 describe("ActivityManager", () => {
 
-    it("can be created", () => {
-        // Setup
-        const fileh = new FileHandler("test://th.url") 
-        const refPanelDef = () => {};
-            
-        // Call the target object
-        var am = new ActivityManager(refPanelDef , fileh);
-
-        // Check the expected results
-        expect(am).toBeInstanceOf(ActivityManager);
-    })
-
-    it("constructor -  initialises the configValidator property", () => {
-        // Setup
-        const fileh = new FileHandler("test://th.url") 
-        const refPanelDef = () => {};
-
-        // Call the target object
-        var am = new ActivityManager(refPanelDef , fileh);
-
-        // Check the expected results
-        expect(am.configValidator).toBeInstanceOf(ActivityConfigValidator);
-    })        
-
-    it("constructor -  initialises the accessPanelDef property using param panelDefAccessor", () => {
-        // Setup
-        const fileh = new FileHandler("test://th.url") 
-        const refPanelDef = () => {};
-
-        // Call the target object
-        var am = new ActivityManager(refPanelDef , fileh);
-
-        // Check the expected results
-        expect(am.accessPanelDef).toBe(refPanelDef);
-    })  
-
-    it("constructor -  initialises the fileHandler property  using param fileHandler", () => {
-        // Setup
-        const fileh = new FileHandler("test://th.url") 
-        const refPanelDef = () => {};
-
-        // Call the target object
-        var am = new ActivityManager(refPanelDef , fileh);
-
-        // Check the expected results
-        expect(am.fileHandler).toBe(fileh);
-    })  
-
-    it("constructor -  uses the query string to set the activitiesUrl property", () => {
+    describe("constructor", () => {
         // Setup
         const ACTIVITY_URL="test://a.url";
-        const QUERY = "?activities=" + ACTIVITY_URL;
-        const fileh = new FileHandler("test://th.url") 
-        const refPanelDef = () => {};
+        let am;
+        let fileh;
+        let refPanelDef;
+        let spySearch;
 
-        spyOn( utility, "getWindowLocationSearch").and.returnValue(QUERY);
+        beforeEach( () => {
 
-        // Call the target object
-        var am = new ActivityManager(refPanelDef , fileh);
+            fileh = new FileHandler("test://th.url") 
+            refPanelDef = () => {};
 
-        // Check the expected results
-        expect(utility.getWindowLocationSearch).toHaveBeenCalled();
-        expect(am.activitiesUrl).toBe(ACTIVITY_URL);
-    })
+            spySearch = spyOn( utility, "getWindowLocationSearch");
 
-    it ("constructor -  if the current activity is provided in the url query string, set the activityId property", () => {
-        // Setup
-        const ACTIVITY_URL="test://a.url";
-        const ACTIVITY_ID="a1"
-        const QUERY = "?"+ ACTIVITY_ID + "=&" + "activities=" + ACTIVITY_URL;
-        const fileh = new FileHandler("test://th.url") 
-        const refPanelDef = () => {};
-
-        spyOn( utility, "getWindowLocationSearch").and.returnValue(QUERY);
-
-        // Call the target object
-        var am = new ActivityManager(refPanelDef , fileh);
+            // Call the target object
+            am = new ActivityManager(refPanelDef, fileh);
+        })
 
         // Check the expected results
-        expect(am.activityId).toBe(ACTIVITY_ID);
+        it("can be created", () => {
+            expect(am).toBeInstanceOf(ActivityManager);
+        })
+
+        it("initialises the configValidator property", () => {
+            expect(am.configValidator).toBeInstanceOf(ActivityConfigValidator);
+        })        
+
+        it("initialises the accessPanelDef property using param panelDefAccessor", () => {
+            expect(am.accessPanelDef).toBe(refPanelDef);
+        })  
+
+        it("initialises the fileHandler property  using param fileHandler", () => {
+            expect(am.fileHandler).toBe(fileh);
+        })  
+
+        it("uses the query string to set the activitiesUrl property", () => {
+            const QUERY = "?activities=" + ACTIVITY_URL;
+            spySearch.and.returnValue(QUERY); //Update the spy
+
+            am = new ActivityManager(refPanelDef, fileh);
+
+            expect(utility.getWindowLocationSearch).toHaveBeenCalled();
+            expect(am.activitiesUrl).toBe(ACTIVITY_URL);
+        })
+
+        it ("if the current activity is provided in the url query string, set the activityId property", () => {
+            const ACTIVITY_ID="a1"
+            const QUERY = "?"+ ACTIVITY_ID + "=&" + "activities=" + ACTIVITY_URL;
+            spySearch.and.returnValue(QUERY); // Update the spy
+
+            am = new ActivityManager(refPanelDef , fileh);
+
+            expect(am.activityId).toBe(ACTIVITY_ID);
+        })
+
     })
 
     it("initializeActivities - causes the activity file to be fetched from its URL using the fileHandler", () => {
@@ -200,12 +176,12 @@ describe("ActivityManager", () => {
             
             expect(action.source).toBeInstanceOf(Object);
             if (!configObjectEquals( action.source, expectedPanelSource )) {
-                fail("Expected action's source panel'" + configToString(action.source) + "' to equal'" + configToString(expectedPanelSource) + "'");
+                fail("Expected action's source panel'" + JSON.stringify(action.source) + "' to equal'" + JSON.stringify(expectedPanelSource) + "'");
             }
 
             expect(action.output).toBeInstanceOf(Object);
             if (!configObjectEquals( action.output, expectedPanelOutput )){
-                fail("Expected action's source panel'" + configToString(action.output) + "' to equal'" + configToString(expectedPanelOutput) + "'" );
+                fail("Expected action's source panel'" + JSON.stringify(action.output) + "' to equal'" + JSON.stringify(expectedPanelOutput) + "'" );
             }
         })
 

@@ -11,12 +11,3 @@ export function configObjectEquals(configA, configB){
 
     return (strConfigA === strConfigB)
 }
-
-/**
- * Prints a configuration object including its values.
- * @param {Object} config 
- * @returns {string} the string representation
- */
-export function configToString (config) {
-    return JSON.stringify(config);
-}
