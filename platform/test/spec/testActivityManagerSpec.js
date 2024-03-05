@@ -57,7 +57,7 @@ describe("ActivityManager", () => {
             expect(am.activitiesUrl).toBe(ACTIVITY_URL);
         })
 
-        it ("if the current activity is provided in the url query string, set the activityId property", () => {
+        it ("sets the activityId property if the current activity is provided in the url query string", () => {
             const ACTIVITY_ID="a1"
             const QUERY = "?"+ ACTIVITY_ID + "=&" + "activities=" + ACTIVITY_URL;
             spySearch.and.returnValue(QUERY); // Update the spy
