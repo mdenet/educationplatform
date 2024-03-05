@@ -14,7 +14,6 @@ describe("ActivityManager", () => {
     describe("constructor", () => {
         // Setup
         const ACTIVITY_URL="test://a.url";
-        let am;
         let fileh;
         let refPanelDef;
         let spySearch;
@@ -25,25 +24,37 @@ describe("ActivityManager", () => {
             refPanelDef = () => {};
 
             spySearch = spyOn( utility, "getWindowLocationSearch");
-
-            // Call the target object
-            am = new ActivityManager(refPanelDef, fileh);
         })
 
-        // Check the expected results
         it("can be created", () => {
+            // Call the target object
+            let am = new ActivityManager(refPanelDef, fileh);
+
+            // Check the expected results
             expect(am).toBeInstanceOf(ActivityManager);
         })
 
         it("initialises the configValidator property", () => {
+            // Call the target object
+            let am = new ActivityManager(refPanelDef, fileh);
+
+            // Check the expected results            
             expect(am.configValidator).toBeInstanceOf(ActivityConfigValidator);
         })        
 
         it("initialises the accessPanelDef property using param panelDefAccessor", () => {
+            // Call the target object
+            let am = new ActivityManager(refPanelDef, fileh);
+
+            // Check the expected results            
             expect(am.accessPanelDef).toBe(refPanelDef);
         })  
 
         it("initialises the fileHandler property  using param fileHandler", () => {
+            // Call the target object
+            let am = new ActivityManager(refPanelDef, fileh);
+
+            // Check the expected results            
             expect(am.fileHandler).toBe(fileh);
         })  
 
@@ -51,8 +62,10 @@ describe("ActivityManager", () => {
             const QUERY = "?activities=" + ACTIVITY_URL;
             spySearch.and.returnValue(QUERY); //Update the spy
 
-            am = new ActivityManager(refPanelDef, fileh);
+            // Call the target object
+            let am = new ActivityManager(refPanelDef, fileh);
 
+            // Check the expected results
             expect(utility.getWindowLocationSearch).toHaveBeenCalled();
             expect(am.activitiesUrl).toBe(ACTIVITY_URL);
         })
@@ -62,55 +75,18 @@ describe("ActivityManager", () => {
             const QUERY = "?"+ ACTIVITY_ID + "=&" + "activities=" + ACTIVITY_URL;
             spySearch.and.returnValue(QUERY); // Update the spy
 
-            am = new ActivityManager(refPanelDef , fileh);
+            // Call the target object
+            let am = new ActivityManager(refPanelDef, fileh);
 
+            // Check the expected results
             expect(am.activityId).toBe(ACTIVITY_ID);
         })
 
     })
 
-    it("initializeActivities - causes the activity file to be fetched from its URL using the fileHandler", () => {
-        // Setup
+    describe("activity initialisation", () => {
         const ACTIVITY_URL="test://a.url";
         const QUERY="?activities=" + ACTIVITY_URL;
-        const fileh = new FileHandler(ACTIVITY_URL) 
-        const refPanelDef = () => {};
-
-        spyOn( utility, "getWindowLocationSearch").and.returnValue(QUERY);
-        spyOn(FileHandler.prototype, "fetchFile").and.returnValue({ content: {} });
-        
-        // Call the target object
-        var am = new ActivityManager(refPanelDef , fileh);
-        am.initializeActivities();
-
-        // Check the expected results
-        expect(FileHandler.prototype.fetchFile).toHaveBeenCalledWith(ACTIVITY_URL, false);
-    } )
-
-    it("initializeActivities - Resolves references for a valid activity by  calling resolveActionReferences with activity id", ()=> {
-        // Setup
-        const fileh = new FileHandler("test://th.url") 
-        const refPanelDef = () => {};
-        const ACTIVITY_ID = "a1";
-        const activityObject = {
-            a1: {id: ACTIVITY_ID}
-        };
-
-        //spyOn( utility, "getWindowLocationSearch").and.returnValue(QUERY);
-        spyOn( ActivityManager.prototype, "fetchActivities").and.returnValue([]);
-        spyOn( ActivityManager.prototype, "resolveActionReferences");
-
-        // Call the target object
-        var am = new ActivityManager(refPanelDef , fileh);
-        am.activities = activityObject;
-        am.initializeActivities();
-
-        // Check the expected results
-        expect(am.resolveActionReferences).toHaveBeenCalledWith(ACTIVITY_ID);
-    })
-    
-
-    describe("activity initialisation", () => {
         let fileh;
         let refPanelDef;
         let am;
@@ -121,6 +97,8 @@ describe("ActivityManager", () => {
             fileh = new FileHandler("test://th.url"); 
             refPanelDef = () => {};
                 
+            spyOn( ActivityManager.prototype, "resolveActionReferences").and.callThrough();
+            spyOn( utility, "getWindowLocationSearch").and.returnValue(QUERY);
             spyOn(FileHandler.prototype, "fetchFile").and.returnValue({ content: activityFile });
             spyOn(ActivityConfigValidator.prototype, "validateConfigFile").and.returnValue([]);
             spyOn(ActivityManager.prototype, "appendTopLevelActivityMenuItem"); // Uses document.getElementById
@@ -135,6 +113,14 @@ describe("ActivityManager", () => {
         const PANEL1_ID = "panel-1";
         const PANEL2_ID = "panel-2";
         const PANEL_DEINITION_ID = "paneldef-t1";
+
+        it("causes the activity file to be fetched from its URL using the fileHandler", () => {
+            expect(FileHandler.prototype.fetchFile).toHaveBeenCalledWith(ACTIVITY_URL, false);
+        })
+
+        it("resolves references for a valid activity by  calling resolveActionReferences with activity id", ()=> {
+            expect(am.resolveActionReferences).toHaveBeenCalledWith(ACTIVITY_ID);
+        })
 
         it("current activity activityId property is set to the activity id", () => {
             expect(am.activityId).toEqual(ACTIVITY_ID);
