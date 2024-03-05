@@ -4,8 +4,9 @@ import {ActivityManager} from "../../src/ActivityManager.js";
 import { FileHandler } from "../../src/FileHandler.js";
 import { ActivityConfigValidator } from "../../src/ActivityConfigValidator.js";
 import { utility } from "../../src/Utility.js";
-import { ACTIVITY_2PANELS_1ACTION } from "../resources/TestActivityFiles.js"
-import { configObjectEquals, configToString } from "../resources/TestUtility.js"
+import { ACTIVITY_2PANELS_1ACTION } from "../resources/TestActivityFiles.js";
+import { TOOL_1PANELDEF_1FUNCTION } from "../resources/TestToolFiles.js";
+import { configObjectEquals, configToString } from "../resources/TestUtility.js";
 
 
 describe("ActivityManager", () => {
@@ -157,6 +158,7 @@ describe("ActivityManager", () => {
         const ACTIVITY_ID = "activity-1";
         const PANEL1_ID = "panel-1";
         const PANEL2_ID = "panel-2";
+        const PANEL_DEINITION_ID = "paneldef-t1";
 
         it("current activity activityId property is set to the activity id", () => {
             expect(am.activityId).toEqual(ACTIVITY_ID);
@@ -175,34 +177,88 @@ describe("ActivityManager", () => {
             expect(am.activities[ACTIVITY_ID]).toBeInstanceOf(Object);
         }) 
 
-        it("the activities property's value object has required keys", () => {
-            const EXPECTED_KEYS = ["actions", "icon", "id", "layout", "panels", "title", "tools"];
+        it("the activities property is an object that has required keys", () => {
+            const REQUIRED_KEYS = ["actions", "icon", "id", "layout", "panels", "title", "tools"];
   
             const activityObject = am.activities[ACTIVITY_ID];
             let parsedActivityKeys = Object.keys(activityObject);
 
-            expect(parsedActivityKeys).toHaveSize(EXPECTED_KEYS.length)
-            for(const k of EXPECTED_KEYS){
+            expect(parsedActivityKeys).toHaveSize(REQUIRED_KEYS.length)
+            for(const k of REQUIRED_KEYS){
                 if ( !parsedActivityKeys.find( (n) => (n == k) ) ){
                     fail("Expected key '" + k + "' not found in activity object.");
                 }
             }
         }) 
 
-        it("the activities property's value object action panels are resolved", () => {
+        it("the activities actions property panel references have been resolved", () => {
             const expectedActivity = JSON.parse(activityFile).activities[0];
             const expectedPanelSource = expectedActivity.panels.find((p) => p.id===PANEL1_ID);
             const expectedPanelOutput = expectedActivity.panels.find((p) => p.id===PANEL2_ID);
             
             const action = am.activities[ACTIVITY_ID].actions[0];
             
+            expect(action.source).toBeInstanceOf(Object);
             if (!configObjectEquals( action.source, expectedPanelSource )) {
                 fail("Expected action's source panel'" + configToString(action.source) + "' to equal'" + configToString(expectedPanelSource) + "'");
             }
 
+            expect(action.output).toBeInstanceOf(Object);
             if (!configObjectEquals( action.output, expectedPanelOutput )){
                 fail("Expected action's source panel'" + configToString(action.output) + "' to equal'" + configToString(expectedPanelOutput) + "'" );
             }
         })
+
+        it("the panel definitions the current activity references are unresolved", () => {
+            expect (am.activities[ACTIVITY_ID].panels[0].ref).toEqual(PANEL_DEINITION_ID);
+            expect (am.activities[ACTIVITY_ID].panels[1].ref).toEqual(PANEL_DEINITION_ID);
+        })
+    })
+
+
+    describe("getting current activity", () => {
+        const ACTIVITY_URL="http://a.url";
+        const QUERY="?activities=" + ACTIVITY_URL;
+        let fileh;
+        let refPanelDef;
+        let am;
+        const activityFile = ACTIVITY_2PANELS_1ACTION;
+        const toolConfig = JSON.parse(TOOL_1PANELDEF_1FUNCTION).tool;
+        const panelDef = toolConfig.panelDefs[0];
+
+        beforeEach( () => {
+            // Setup
+            fileh = new FileHandler("test://th.url"); 
+            refPanelDef = () => {
+                return panelDef;
+            };
+                
+            spyOn( utility, "getWindowLocationSearch").and.returnValue(QUERY);
+            spyOn(FileHandler.prototype, "fetchFile").and.returnValue({ content: activityFile });
+            spyOn(ActivityConfigValidator.prototype, "validateConfigFile").and.returnValue([]);
+            spyOn(ActivityManager.prototype, "appendTopLevelActivityMenuItem"); // Uses document.getElementById
+            spyOn(ActivityManager.prototype, "fetchFile").and.returnValue({content: "Test Content", sha: "a123"}); 
+
+            // Call the target object
+            am = new ActivityManager(refPanelDef , fileh);
+            am.initializeActivities();
+            am.getSelectedActivity();
+        }) 
+
+        // Check the expected results
+        const ACTIVITY_ID = "activity-1";
+
+        it("the panel definitions for the current activity references are resolved", () => {
+            expect(am.activities[ACTIVITY_ID].panels[0].ref).toBeInstanceOf(Object);
+            expect(am.activities[ACTIVITY_ID].panels[0].ref).toEqual(toolConfig.panelDefs[0])
+
+            expect(am.activities[ACTIVITY_ID].panels[1].ref).toBeInstanceOf(Object);
+            expect(am.activities[ACTIVITY_ID].panels[1].ref).toEqual(toolConfig.panelDefs[0]);
+        })
+
+        it("the activity files are fetched using FileHandler", () => {
+            expect(am.fetchFile.calls.allArgs()).toEqual( [["file1.ext"],  ["file2.ext"] ]);
+        })
+
     })
 })

@@ -15,12 +15,14 @@ export const ACTIVITY_2PANELS_1ACTION = `{
                 {
                     "id": "panel-1",
                     "name": "Panel 1",
-                    "ref": "x"
+                    "ref": "paneldef-t1",
+                    "file": "file1.ext"
                 },
                 {
                     "id": "panel-2",
                     "name": "Panel 2",
-                    "ref": "x"
+                    "ref": "paneldef-t1",
+                    "file": "file2.ext"
                 }
             ],
             "actions": [
