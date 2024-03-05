@@ -208,3 +208,24 @@ export function parseConfigFile(contents, extension="yml"){
 
     return configObject;
 }
+
+/**
+ * Gets query string of the current url - window.location.search.
+ * @returns {string} the query string
+ */
+export function getWindowLocationSearch(){
+    return window.location.search;
+}
+
+/* ES6 Direct imports cannot be stubbed during unit test. Therefore, to enable unit testing 
+   access to functions has to be made using the utility object.  */
+export const utility = {
+    arrayEquals,
+    jsonRequest,
+    jsonRequestConversion,
+    getRequest,
+    urlParamPrivateRepo,
+    isAuthenticated,
+    parseConfigFile,
+    getWindowLocationSearch
+}

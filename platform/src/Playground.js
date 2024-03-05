@@ -140,6 +140,7 @@ function initializeActivity(){
         // An activity configuration has been provided
         toolsManager = new ToolsManager();
         activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager), fileHandler );
+        activityManager.initializeActivities();
         errors = errors.concat(activityManager.getConfigErrors());
     } 
 
