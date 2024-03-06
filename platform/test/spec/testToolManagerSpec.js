@@ -35,7 +35,7 @@ describe("ToolManager", () => {
             jasmine.Ajax.uninstall();
         });
          
-        it("tools URLs can be set", () => {
+        it("sets tools URLs correctly", () => {
             // Call the target object
             tm.setToolsUrls(TOOL_URLS);
 
@@ -45,7 +45,7 @@ describe("ToolManager", () => {
             }
         })
 
-        it("the tool configuration is fetched from the remote given by its URL", () => {
+        it("fetches the tool configuration from the remote given by its URL", () => {
             // Call the target object
             tm.setToolsUrls(TOOL_URLS);
 
@@ -53,7 +53,7 @@ describe("ToolManager", () => {
             expect(XMLHttpRequest.prototype.open).toHaveBeenCalledWith("GET", TOOL_URLS[0],false);
         })
 
-        it("the tool configuration is parsed and stored", () => {
+        it("parses and stores the tool configuration", () => {
             jasmine.Ajax.stubRequest('test://t1.url/tool-config.json').andReturn({
                 "responseText": TOOL_1PANELDEF_1FUNCTION,
                 "status": 200
@@ -88,7 +88,7 @@ describe("ToolManager", () => {
         })
     })
 
-    describe("panel definitions can be retrieved", () => {
+    describe("panel definitions", () => {
         // Setup
         const TOOL_URLS= [ "test://t1.url/tool-config.json" ];
         const PANEL_DEF_ID = "paneldef-t1";
@@ -107,7 +107,7 @@ describe("ToolManager", () => {
             jasmine.Ajax.uninstall();
         });  
 
-        it ("for a panel definition id that exists its object is returned", () => {
+        it ("returns the correct object for an existing panel definition id", () => {
             jasmine.Ajax.stubRequest('test://t1.url/tool-config.json').andReturn({
                 "responseText": TOOL_1PANELDEF_1FUNCTION,
                 "status": 200
@@ -122,7 +122,7 @@ describe("ToolManager", () => {
             expect(foundPanelDef.id).toEqual(PANEL_DEF_ID);
         })
 
-        it ("for a panel definition id that does not exist null is returned", () => {
+        it ("returns null for a panel definition id that does not exist", () => {
             jasmine.Ajax.stubRequest('test://t1.url/tool-config.json').andReturn({
                 "responseText": TOOL_1PANELDEF_1FUNCTION,
                 "status": 200
@@ -138,7 +138,7 @@ describe("ToolManager", () => {
     
     })
 
-    describe("tool grammar import locations can be retrieved", () => {
+    describe("tool grammar imports", () => {
         // Setup
         const TOOL_BASE_URL = "test://t1.url";
         const TOOL_URL= TOOL_BASE_URL + "/tool-config.json";
@@ -165,7 +165,7 @@ describe("ToolManager", () => {
             jasmine.Ajax.uninstall();
         });  
 
-        it ("the ace grammar urls for a tool defined", () => {
+        it ("correctly loads the URL of the ace grammar for a defined tool", () => {
             // Call the target object
             const grammarImports = tm.getToolsGrammarImports();
 
@@ -174,7 +174,7 @@ describe("ToolManager", () => {
         })
 
 
-        it ("the ace grammar module for a tool is defined", () => {
+        it ("correctly loads the ace grammar module for a defined tool", () => {
             // Call the target object
             const grammarImports = tm.getToolsGrammarImports();
 
