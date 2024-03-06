@@ -19,7 +19,9 @@ describe("ToolManager", () => {
 
     describe("initialisation", () => {
          // Setup
-        const TOOL_URLS= [ "test://t1.url/tool-config.json" ];
+        const TOOL_URLS= [ "test://t1.url/tool-config.json",
+                           "test://t2.url/tool-config.json",
+                           "test://t3.url/tool-config.json" ];
         let tm;
 
         beforeEach( () => {
@@ -38,10 +40,12 @@ describe("ToolManager", () => {
         it("sets tools URLs correctly", () => {
             // Call the target object
             tm.setToolsUrls(TOOL_URLS);
-
+    
             // Check the expected results
-            for (const t in tm.toolsUrls){
-                expect(tm.toolsUrls[t].url).toEqual(TOOL_URLS[t]);
+            expect(tm.toolsUrls).toHaveSize(TOOL_URLS.length);
+            
+            for (const i in TOOL_URLS){
+                expect(tm.toolsUrls[i].url).toEqual(TOOL_URLS[i]);
             }
         })
 
@@ -66,19 +70,6 @@ describe("ToolManager", () => {
             const TOOL1_ID= "tool-1"
 
             expect(tm.tools[TOOL1_ID]).toBeInstanceOf(Object);
-        })
-
-        it("the tool configuration that is parsed and stored has the expected keys", () => {
-            jasmine.Ajax.stubRequest('test://t1.url/tool-config.json').andReturn({
-                "responseText": TOOL_1PANELDEF_1FUNCTION,
-                "status": 200
-            });
-
-            // Call the target object
-            tm.setToolsUrls(TOOL_URLS);
-
-            // Check the expected results
-            const TOOL1_ID= "tool-1"
             const EXPECTED_TOOL_KEYS = ["id", "name","version", "author", "homepage", "functions", "panelDefs"];
 
             const storedToolKeys = Object.keys(tm.tools[TOOL1_ID]);
@@ -118,8 +109,11 @@ describe("ToolManager", () => {
             const foundPanelDef= tm.getPanelDefinition(PANEL_DEF_ID);
 
             // Check the expected results
+            const toolConfig = JSON.parse(TOOL_1PANELDEF_1FUNCTION);
+            const expectedPanelDef = toolConfig.tool.panelDefs[0];
+
             expect(foundPanelDef).toBeInstanceOf(Object);
-            expect(foundPanelDef.id).toEqual(PANEL_DEF_ID);
+            expect(foundPanelDef).toEqual(expectedPanelDef);
         })
 
         it ("returns null for a panel definition id that does not exist", () => {
