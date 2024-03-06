@@ -183,7 +183,7 @@ class ToolManager {
     /**
      * Find a panel definition by id
      * @param {string} panelDefId 
-     * @returns {PanelDefinition|null} the found panel definition  
+     * @returns {Object|null} the found panel definition  
      */
     getPanelDefinition(panelDefId) {
 
