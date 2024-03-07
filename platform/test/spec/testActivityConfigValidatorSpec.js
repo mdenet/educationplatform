@@ -18,7 +18,7 @@ describe("ActivityConfigValidator", () => {
         })
     })
 
-    describe("validate tool configration", () => {
+    describe("validate tool configuration", () => {
         let acv;
         let activityConfig;
         

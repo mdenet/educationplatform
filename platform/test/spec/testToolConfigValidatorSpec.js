@@ -18,7 +18,7 @@ describe("ToolConfigValidator", () => {
         })
     })
 
-    describe("validate tool configration", () => {
+    describe("validate tool configuration", () => {
         let tcv;
         let toolConfig;
         
