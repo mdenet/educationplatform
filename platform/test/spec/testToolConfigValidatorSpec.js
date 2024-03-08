@@ -1,8 +1,7 @@
-/*global describe, it, expect, beforeEach --  functions provided by Jasmine */
-import { ToolConfigValidator } from "../../src/ToolConfigValidator"
+/*global describe, it, expect, beforeEach, jasmine --  functions provided by Jasmine */
+import { ToolConfigValidator } from "../../src/ToolConfigValidator";
 import { TOOL_1PANELDEF_1FUNCTION } from "../resources/TestToolFiles.js";
-import { ConfigValidationError } from "../../src/ConfigValidationError.js"
-
+import {customMatchers, checkErrorPopulated} from "../resources/TestUtility.js"
 
 const EXPECTED_FILE_TYPE = "ToolConfig"; 
 
@@ -24,6 +23,7 @@ describe("ToolConfigValidator", () => {
         
         //Setup
         beforeEach( () => {
+            jasmine.addMatchers(customMatchers);
             toolConfig = JSON.parse(TOOL_1PANELDEF_1FUNCTION);
             tcv = new ToolConfigValidator();
         })
@@ -36,18 +36,9 @@ describe("ToolConfigValidator", () => {
             expect(errors).toHaveSize(0);
         })
 
-        it("returns errors that are ConfigValidationError instances",() => {
-            delete toolConfig.tool.id;
-
-            // Call the target object
-            let errors = tcv.validateConfigFile(toolConfig);
-            let e = errors[0];
-            
-            // Check the expected results
-            expect(e).toBeInstanceOf(ConfigValidationError);
-            expect(e.fileType).toEqual(EXPECTED_FILE_TYPE);
-        })
-
+        /*--------------------------------------------------------
+         *   Tool
+         *--------------------------------------------------------*/
         it("returns an error if the config has no id key", () => {
             delete toolConfig.tool.id;
 
@@ -57,7 +48,31 @@ describe("ToolConfigValidator", () => {
             
             // Check the expected results
             expect(errors).toHaveSize(1);
-            checkErrorPopulated(e);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "id"], "/tool");
+        })
+
+        it("returns an error if the config has no name key", () => {
+            delete toolConfig.tool.name;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "name"], "/tool");
+        })
+
+        it("returns an error if the config has no functions key", () => {
+            delete toolConfig.tool.functions;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "functions"], "/tool");
         })
 
         it("returns an error if a panel definition in the config has no id key", () => {
@@ -69,16 +84,161 @@ describe("ToolConfigValidator", () => {
             
             // Check the expected results
             expect(errors).toHaveSize(1);
-            checkErrorPopulated(e);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "id"], "/tool/panelDefs/0");
         })
+
+        /*--------------------------------------------------------
+         *   Panel Definitions
+         *--------------------------------------------------------*/
+        it("returns an error if a panel definition in the config has no name key", () => {
+            delete toolConfig.tool.panelDefs[0].name;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "name"], "/tool/panelDefs/0");
+        })
+
+        it("returns an error if a panel definition in the config has no panelclass key", () => {
+            delete toolConfig.tool.panelDefs[0].panelclass;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "panelclass"], "/tool/panelDefs/0");
+        })
+
+        it("returns an error if a panel definition in the config has no icon key", () => {
+            delete toolConfig.tool.panelDefs[0].icon;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "icon"], "/tool/panelDefs/0");
+        })
+
+        /* ---- Buttons ----  */
+        it("returns an error if a button in the config has no id key", () => {
+            delete toolConfig.tool.panelDefs[0].buttons[0].id;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "id"], "/tool/panelDefs/0/buttons/0");
+        }) 
+
+        it("returns an error if a button in the config has no id key", () => {
+            delete toolConfig.tool.panelDefs[0].buttons[0].icon;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "icon"], "/tool/panelDefs/0/buttons/0");
+        }) 
+
+
+        /*--------------------------------------------------------
+         *   Functions
+         *--------------------------------------------------------*/
+        it("returns an error if a function in the config has no id key", () => {
+            delete toolConfig.tool.functions[0].id;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "id"], "/tool/functions/0");
+        }) 
+
+        it("returns an error if a function in the config has no name key", () => {
+            delete toolConfig.tool.functions[0].name;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "name"], "/tool/functions/0");
+        }) 
+
+        it("returns an error if a function in the config has no parameters key", () => {
+            delete toolConfig.tool.functions[0].parameters;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "parameters"], "/tool/functions/0");
+        }) 
+        
+        it("returns an error if a function in the config has no returnType key", () => {
+            delete toolConfig.tool.functions[0].returnType;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "returnType"], "/tool/functions/0");
+        })
+        
+        it("returns an error if a function in the config has no path key", () => {
+            delete toolConfig.tool.functions[0].path;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "path"], "/tool/functions/0");
+        }) 
+
+        /* ---- Parameters ----  */
+        it("returns an error if a parameter in the config has no name key", () => {
+            delete toolConfig.tool.functions[0].parameters[1].name;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "name"], "/tool/functions/0/parameters/1");
+        })
+        
+        it("returns an error if a parameter in the config has no type key", () => {
+            delete toolConfig.tool.functions[0].parameters[1].type;
+
+            // Call the target object
+            let errors = tcv.validateConfigFile(toolConfig);
+            let e = errors[0];
+            
+            // Check the expected results
+            expect(errors).toHaveSize(1);
+            checkErrorPopulated(e, "required", EXPECTED_FILE_TYPE, ["required", "type"], "/tool/functions/0/parameters/1");
+        }) 
     }) 
 })
 
-function checkErrorPopulated(error){
-    const MIN_LENGTH = 3;
-    expect(error).toBeInstanceOf(ConfigValidationError);
-    expect(error.fileType).toEqual(EXPECTED_FILE_TYPE);
-    expect(error.location.length).toBeGreaterThanOrEqual(MIN_LENGTH);
-    expect(error.category.length).toBeGreaterThanOrEqual(MIN_LENGTH);
-    expect(error.message.length).toBeGreaterThanOrEqual(MIN_LENGTH);
-}
