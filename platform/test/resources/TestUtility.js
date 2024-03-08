@@ -15,7 +15,14 @@ export function configObjectEquals(configA, configB){
     return (strConfigA === strConfigB)
 }
 
+// Jasmine custom matchers
 export const customMatchers = {
+    
+    /**
+     * Matcher to check the expected keywords are present in the give input.
+     * where actual is a Sting and expected is an array of strings that contains 
+     * the keyword to check.
+     */
     toContainKeywords : function(matchersUtil){
         return {
             compare: function(actual, expected){
@@ -28,7 +35,7 @@ export const customMatchers = {
                 result.pass = containedResults.every(r => r);
 
                 if (result.pass){
-                    result.message= "test"; // Negated not case
+                    result.message= `Expected the input to contain none of the keywords '${expected.toString()}' however at least one was found. input: '${actual}'`; // Negated not case
                 } else {
                     result.message= `Expected the input to contain all of the keywords '${expected.toString()}' however at least one was missing. input: '${actual}'`;
                 } 
