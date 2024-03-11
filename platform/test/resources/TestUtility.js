@@ -31,8 +31,7 @@ export const customMatchers = {
                 };
 
                 // Check the condition
-                let containedResults =  expected.map( (akeyword)=> matchersUtil.contains(actual, akeyword) )
-                result.pass = containedResults.every(r => r);
+                result.pass = expected.every( (akeyword)=> matchersUtil.contains(actual, akeyword) );
 
                 if (result.pass){
                     result.message= `Expected the input to contain none of the keywords '${expected.toString()}' however at least one was found. input: '${actual}'`; // Negated not case
