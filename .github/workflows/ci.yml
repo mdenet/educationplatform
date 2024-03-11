@@ -194,4 +194,4 @@ jobs:
       
       - name: Output coverage to summary
         if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        run: $Env:GITHUB_STEP_SUMMARY += Get-Content -Path ".\platform\reports\SummaryGithub.md"
+        run: Get-Content -Path ".\platform\reports\SummaryGithub.md" >> $Env:GITHUB_STEP_SUMMARY
