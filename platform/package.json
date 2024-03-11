@@ -25,6 +25,7 @@
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-html-reporter": "^2.0.0",
     "karma-junit-reporter": "^2.0.1",
+    "karma-safari-launcher": "^1.0.0",
     "karma-webpack": "^5.0.0",
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.1"
