@@ -19,8 +19,8 @@ export function configObjectEquals(configA, configB){
 export const customMatchers = {
     
     /**
-     * Matcher to check the expected keywords are present in the give input.
-     * where actual is a Sting and expected is an array of strings that contains 
+     * Matcher to check the expected keywords are present in the given input.
+     * where actual is a String and expected is an array of strings that contains 
      * the keyword to check.
      */
     toContainKeywords : function(matchersUtil){
