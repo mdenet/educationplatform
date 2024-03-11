@@ -135,3 +135,58 @@ jobs:
       - name: Output coverage to summary
         if: success() || failure() && steps.run-unit-tests.outcome == 'success'
         run: cat ./platform/reports/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+
+
+  build-win: 
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+                  
+      - name: Setup node 18
+        uses: actions/setup-node@v4
+        with: 
+          node-version: 18
+          
+      - name: Install node dependencies
+        run: |
+            npm ci
+            npm install -g karma-cli
+
+      - name: Build the education platform
+        id: build-platform
+        if: success() || failure()
+        run: npm run build --workspaces
+
+      - name: Run the unit tests
+        id: run-unit-tests
+        if: success() || failure() && steps.build-platform.outcome == 'success'
+        run: npm test --workspaces -- --browsers EdgeHeadless
+    
+      - name: Create test report
+        uses: dorny/test-reporter@v1
+        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
+        with:
+          name: Unit Test Results - win
+          path: platform/reports/TESTS*.xml
+          reporter: java-junit
+          fail-on-error: true
+
+      - name: Setup .NET Core - for coverage report # Required to execute ReportGenerator
+        uses: actions/setup-dotnet@v4
+        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
+        with:
+            dotnet-version: 8.x
+            dotnet-quality: 'ga'
+
+      - name: Create coverage md report 
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.1
+        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
+        with:
+            reports: ./platform/reports/coverage-report.xml
+            targetdir: ./platform/reports/
+            reporttypes: MarkdownSummaryGithub
+      
+      - name: Output coverage to summary
+        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
+        run: cat ./platform/reports/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
