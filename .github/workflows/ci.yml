@@ -95,7 +95,9 @@ jobs:
             npm install -g karma-cli
 
       - name: Setup safari driver
-        run: sudo safaridriver --enable
+        run: |
+            sudo safaridriver --enable
+            sudo /usr/bin/safaridriver
       
       - name: Code linting
         run: npm run lint --workspaces
