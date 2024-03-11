@@ -153,6 +153,11 @@ jobs:
             npm ci
             npm install -g karma-cli
 
+      - name: Setup edge driver
+        run: |
+            choco install selenium-chromium-edge-driver
+            $Env:EDGE_BIN = 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
+
       - name: Build the education platform
         id: build-platform
         if: success() || failure()
