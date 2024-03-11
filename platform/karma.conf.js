@@ -9,6 +9,9 @@ module.exports = function(config) {
         require('karma-coverage'),
         require('karma-jasmine'),
         require('karma-chrome-launcher'),
+        require("karma-firefox-launcher"),
+        require("karma-edgium-launcher"),
+        require("karma-safarinative-launcher"),
         require('karma-jasmine-html-reporter'),
         require('karma-junit-reporter')
     ],
@@ -97,7 +100,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://www.npmjs.com/search?q=keywords:karma-launcher
-    browsers: ['ChromeHeadless'],
+    browsers: ['ChromeHeadless','FirefoxHeadless'],
 
 
     // Continuous Integration mode
