@@ -139,7 +139,8 @@ jobs:
 
   build-win: 
     runs-on: windows-latest
-
+    env:
+      EDGE_BIN: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
     steps:
       - uses: actions/checkout@v4
                   
@@ -156,7 +157,6 @@ jobs:
       - name: Setup edge driver
         run: |
             choco install selenium-chromium-edge-driver
-            $Env:EDGE_BIN = 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
 
       - name: Build the education platform
         id: build-platform
