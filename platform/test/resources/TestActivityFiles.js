@@ -22,7 +22,17 @@ export const ACTIVITY_2PANELS_1ACTION = `{
                     "id": "panel-2",
                     "name": "Panel 2",
                     "ref": "paneldef-t1",
-                    "file": "file2.ext"
+                    "file": "file2.ext",
+                    "buttons": [
+                        {
+                            "id": "panel-button-1",
+                            "icon": "icon",
+                            "actionfunction": "function-1"
+                        },
+                        {
+                            "ref": "action-button"
+                        }
+                    ]
                 }
             ],
             "actions": [
