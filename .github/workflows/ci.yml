@@ -97,7 +97,6 @@ jobs:
       - name: Setup safari driver
         run: |
             sudo safaridriver --enable
-            sudo /usr/bin/safaridriver
       
       - name: Code linting
         run: npm run lint --workspaces
@@ -121,7 +120,7 @@ jobs:
       - name: Run the unit tests
         id: run-unit-tests
         if: success() || failure() && steps.build-platform.outcome == 'success'
-        run: npm test --workspaces -- --browsers Safari
+        run: npm test --workspaces -- --browsers SafariNative
     
       - name: Create test report
         uses: dorny/test-reporter@v1
