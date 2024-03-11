@@ -23,7 +23,7 @@ export const customMatchers = {
      * where actual is a String and expected is an array of strings that contains 
      * the keyword to check.
      */
-    toContainKeywords : function(matchersUtil){
+    toContainAllKeywords : function(matchersUtil){
         return {
             compare: function(actual, expected){
 
@@ -65,6 +65,6 @@ export function checkErrorPopulated(error, category, type, messageKeywords, loca
    
     expect(error.category).toEqual(category);
     expect(error.fileType).toEqual(type);
-    expect(error.message).toContainKeywords(messageKeywords);
+    expect(error.message).toContainAllKeywords(messageKeywords);
     expect(error.location).toEqual(location);
 }
