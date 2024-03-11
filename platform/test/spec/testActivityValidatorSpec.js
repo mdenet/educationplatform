@@ -7,7 +7,7 @@ describe("ActivityValidator", () => {
         jasmine.addMatchers(customMatchers);
     })
 
-    describe("check layout panel ids exist", () => {
+    describe("checkLayoutPanelIdsExist()", () => {
         it("returns no errors if panel ids can be resolved", () => {
             //Setup
             const activity = {
@@ -56,7 +56,7 @@ describe("ActivityValidator", () => {
     })
 
 
-    describe("check actions", () => {        
+    describe("checkActions()", () => {        
         it("returns no errors if panel ids can be resolved", () => {
             //Setup
             const activity = {
@@ -174,7 +174,7 @@ describe("ActivityValidator", () => {
     })
 
 
-    describe("check panels", () => {        
+    describe("checkPanelRefs()", () => {        
         it("returns no errors if panel definition refs are resolved", () => {
             //Setup
             const activity = {
@@ -215,7 +215,7 @@ describe("ActivityValidator", () => {
         })
     })
 
-    describe("check tool panel definitions", () => {        
+    describe("checkPanelDefs()", () => {        
         it("returns no errors if panel definitions are valid", () => {
             //Setup
             const tool = {
@@ -301,7 +301,7 @@ describe("ActivityValidator", () => {
         })
     })
 
-    describe("validate", () => {        
+    describe("validate()", () => {        
         it("returns no errors if valid activity and tools are given", () => {
             //Setup
             const activity = {
@@ -414,7 +414,7 @@ describe("ActivityValidator", () => {
         })
     })
 
-    describe("id exists", () => {        
+    describe("idExists()", () => {        
         it("returns true if an id that exists in the items is found", () => {
             //Setup
             const items = [{id:"id1"}, {id:"id2"}, {id:"id3"}, {id:"id4"}, {id:"id5"}];
