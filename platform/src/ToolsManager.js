@@ -227,7 +227,7 @@ class ToolManager {
      * Finds the action function for an action function Id
      * @param {*} actionFuntionId 
      * 
-     * @deprecated issue #40
+     * @deprecated issue #192
      */
     getActionFunction(actionFuntionId) {
         for ( const toolskey of  Object.keys(this.tools)){
@@ -241,7 +241,6 @@ class ToolManager {
         
         console.log("Tool with function id '" + actionFuntionId + "' was not found.");
         return null;
-
     }
 
     
