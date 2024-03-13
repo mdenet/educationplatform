@@ -37,22 +37,29 @@ import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateR
 const TOKEN_HANDLER_URL = PlaygroundUtility.getTokenServerAddress();
 const COMMON_UTILITY_URL = window.location.href.replace(window.location.search,"") + "common/utility.json";
 
-var outputType = "text";
-var outputLanguage = "text";
-var activity;
-var preloader = new Preloader();
-var panels = [];
-
-export var fileHandler = new FileHandler(TOKEN_HANDLER_URL);
-export var activityManager;
-export var toolsManager;
-
 var urlParameters = new URLSearchParams(window.location.search);    
 
-
 class EducationPlatform {
+    outputType;
+    outputLanguage;
+    activity;
+    preloader;
+    panels;
+
+    fileHandler;
+    activityManager;
+    toolsManager;
+
+    constructor() {
+        this.outputType = "text";
+        this.outputLanguage = "text";
+        this.preloader = new Preloader();
+        this.panels = [];
+    }
 
     initialize(){
+        this.fileHandler = new FileHandler(TOKEN_HANDLER_URL);
+
         /* 
         *  Setup the browser environment 
         */
@@ -146,31 +153,31 @@ class EducationPlatform {
 
         if (errors.length==0){
             // An activity configuration has been provided
-            toolsManager = new ToolsManager();
-            activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager), fileHandler );
-            activityManager.initializeActivities();
-            errors = errors.concat(activityManager.getConfigErrors());
+            this.toolsManager = new ToolsManager();
+            this.activityManager = new ActivityManager( (this.toolsManager.getPanelDefinition).bind(this.toolsManager), this.fileHandler );
+            this.activityManager.initializeActivities();
+            errors = errors.concat(this.activityManager.getConfigErrors());
         } 
 
         if (errors.length==0){
             // The activities have been validated
-            toolsManager.setToolsUrls( activityManager.getToolUrls().add(COMMON_UTILITY_URL) );
-            errors = errors.concat(toolsManager.getConfigErrors());
+            this.toolsManager.setToolsUrls( this.activityManager.getToolUrls().add(COMMON_UTILITY_URL) );
+            errors = errors.concat(this.toolsManager.getConfigErrors());
         }
 
         if (errors.length==0){
             // The tools have been validated 
-            activityManager.showActivitiesNavEntries();
+            this.activityManager.showActivitiesNavEntries();
 
             // Import tool grammar highlighting 
-            const  toolImports = toolsManager.getToolsGrammarImports(); 
+            const  toolImports = this.toolsManager.getToolsGrammarImports(); 
 
             for(let ipt of toolImports) {
                 ace.config.setModuleUrl(ipt.module, ipt.url);
             }
 
             // Add Tool styles for icons 
-            for (let toolUrl of activityManager.getToolUrls()){
+            for (let toolUrl of this.activityManager.getToolUrls()){
                 let toolBaseUrl = toolUrl.substring(0, toolUrl.lastIndexOf("/"));
                 var link = document.createElement("link");
                 link.setAttribute("rel", 'stylesheet');
@@ -178,10 +185,10 @@ class EducationPlatform {
                 document.head.appendChild(link);
             }
             
-            activity = activityManager.getSelectedActivity(); 
+            this.activity = this.activityManager.getSelectedActivity(); 
 
             // Validate the resolved activity
-            errors = errors.concat( ActivityValidator.validate(activity, toolsManager.tools) );   
+            errors = errors.concat( ActivityValidator.validate(this.activity, this.toolsManager.tools) );   
         }
 
         if  (errors.length==0){
@@ -198,10 +205,10 @@ class EducationPlatform {
 
             const contentPanelName = "content-panel";
         
-            panels.push(new BlankPanel(contentPanelName));
-            panels[0].setVisible(true);
+            this.panels.push(new BlankPanel(contentPanelName));
+            this.panels[0].setVisible(true);
         
-            new Layout().createFromPanels("navview-content", panels);
+            new Layout().createFromPanels("navview-content", this.panels);
         
             PlaygroundUtility.showMenu();
         
@@ -267,21 +274,21 @@ class EducationPlatform {
 
     initializePanels() {
         
-        if (activity.outputLanguage != null) {
-            outputLanguage = activity.outputLanguage;
+        if (this.activity.outputLanguage != null) {
+            this.outputLanguage = this.activity.outputLanguage;
         }
         
         // Create panels for the given activites
-        for ( let apanel of activity.panels ){
+        for ( let apanel of this.activity.panels ){
 
             var newPanel = this.createPanelForDefinitionId(apanel);
             if (newPanel != null){
-                panels.push(newPanel);
+                this.panels.push(newPanel);
             }
         }    
 
 
-        new Layout().createFrom2dArray("navview-content", panels, activity.layout.area);
+        new Layout().createFrom2dArray("navview-content", this.panels, this.activity.layout.area);
 
 
         PlaygroundUtility.showMenu();
@@ -294,7 +301,7 @@ class EducationPlatform {
 
         Metro.init();
 
-        activityManager.openActiveActivitiesSubMenu();
+        this.activityManager.openActiveActivitiesSubMenu();
         
         this.fit();
     }
@@ -336,7 +343,7 @@ class EducationPlatform {
                     break;
                 }
                 case "OutputPanel": {
-                    newPanel =  new OutputPanel(newPanelId, panelDefinition.language, outputType, outputLanguage);
+                    newPanel =  new OutputPanel(newPanelId, panelDefinition.language, this.outputType, this.outputLanguage);
                     newPanel.initialize();
                     break;
                 }
@@ -425,7 +432,7 @@ class EducationPlatform {
      */
     invokeActionFunction(functionId, parameterMap){
 
-        let actionFunction = toolsManager.functionRegistry_resolve(functionId);
+        let actionFunction = this.toolsManager.functionRegistry_resolve(functionId);
 
         let parameterPromises = [];
 
@@ -611,7 +618,7 @@ class EducationPlatform {
         
         while ( conversionFunctionId==null && functionsToCheck.length > 0){
             let functionId = functionsToCheck.pop();
-            let conversionFunction = toolsManager.getActionFunction(functionId);
+            let conversionFunction = this.toolsManager.getActionFunction(functionId);
 
             // Lookup the conversion function's metamodel type
             let metamodelName = conversionFunction.getInstanceOfParamName( conversionFunction.getParameters()[0].name );
@@ -634,7 +641,7 @@ class EducationPlatform {
 
             } else {
                 // Check for conversion functions converting metamodel if possible 
-                let metamodelConversionFunctionId = toolsManager.getConversionFunction( [metamodelType], targetMetamodelType );
+                let metamodelConversionFunctionId = this.toolsManager.getConversionFunction( [metamodelType], targetMetamodelType );
                 
                 if (metamodelConversionFunctionId != null){
 
@@ -667,7 +674,7 @@ class EducationPlatform {
      */
     functionRegistry_callConversion( functionId, typeValuesMap, parameterName ){
         let conversionRequestData = {};
-        let conversionFunction = toolsManager.getActionFunction(functionId);
+        let conversionFunction = this.toolsManager.getActionFunction(functionId);
 
         // Populate parameters for the conversion request 
         for( const param of conversionFunction.getParameters() ){
@@ -685,7 +692,7 @@ class EducationPlatform {
      */
     functionRegistry_call(functionId, parameters ){
 
-        let actionFunction = toolsManager.getActionFunction(functionId);
+        let actionFunction = this.toolsManager.getActionFunction(functionId);
         let parametersJson = JSON.stringify(parameters);
 
         let requestPromise = jsonRequest(actionFunction.getPath(), parametersJson)
@@ -713,14 +720,14 @@ class EducationPlatform {
      *   TODO: Temporary wrapper called function to be renamed and to be moved to the FunctionRegistry issue #40 
      */
     functionRegistry_find(inputsParamTypes, outputParamType){
-        return toolsManager.getConversionFunction( inputsParamTypes, outputParamType );
+        return this.toolsManager.getConversionFunction( inputsParamTypes, outputParamType );
     }
 
     /**
      *   TODO: Temporary wrapper called function to be renamed and to be moved to the FunctionRegistry issue #40 
      */
     functionRegistry_findPartial(inputsParamTypes, outputParamType){
-        return toolsManager.getPartiallyMatchingConversionFunctions( inputsParamTypes, outputParamType );
+        return this.toolsManager.getPartiallyMatchingConversionFunctions( inputsParamTypes, outputParamType );
     }
 
 
@@ -736,11 +743,11 @@ class EducationPlatform {
         requestPromise.then( (responseText) => {
 
             var response = JSON.parse(responseText);
-            const outputPanel = activityManager.findPanel( action.output.id, panels);
+            const outputPanel = this.activityManager.findPanel( action.output.id, this.panels);
 
             var outputConsole;
             if (action.outputConsole != null){
-                outputConsole = activityManager.findPanel(action.outputConsole.id, panels);
+                outputConsole = this.activityManager.findPanel(action.outputConsole.id, this.panels);
             } else {
                 outputConsole = outputPanel;
             }
@@ -836,15 +843,15 @@ class EducationPlatform {
         splitter.style.minHeight = window.innerHeight + "px";
         splitter.style.maxHeight = window.innerHeight + "px";
 
-        panels.forEach(panel => panel.fit());
-        preloader.hide();
+        this.panels.forEach(panel => panel.fit());
+        this.preloader.hide();
     }
 
 
     runAction(source, sourceButton) {
 
         // Get the action
-        var action = activityManager.getActionForCurrentActivity(source, sourceButton);
+        var action = this.activityManager.getActionForCurrentActivity(source, sourceButton);
         
         let buttonConfig;
         if(action.source.buttons){
@@ -854,7 +861,7 @@ class EducationPlatform {
             //Buttons defined by tool
             buttonConfig= action.source.ref.buttons.find( btn => btn.id == sourceButton );
         }  
-        const toolActionFunction = toolsManager.getActionFunction( buttonConfig.actionfunction ); // TODO tidy up by resolving tool references
+        const toolActionFunction = this.toolsManager.getActionFunction( buttonConfig.actionfunction ); // TODO tidy up by resolving tool references
 
         // Create map containing panel values
         let parameterMap = new Map();
@@ -865,7 +872,7 @@ class EducationPlatform {
             const panelId = action.parameters[paramName].id;
             
             if (panelId) { 
-                const panel = activityManager.findPanel(panelId, panels);
+                const panel = this.activityManager.findPanel(panelId, this.panels);
                 param.type = panel.getType();
                 param.value = panel.getValue();
 
@@ -987,14 +994,14 @@ class EducationPlatform {
 
     savePanelContents(){
         
-        let panelsToSave = panels.filter (p => p.canSave());
+        let panelsToSave = this.panels.filter (p => p.canSave());
 
         let fileStorePromises = [];
 
         // FIXME: This currently creates separate commits for each panel. We really would want one commit for all of them together...
         for(const panel of panelsToSave){
             
-            let storePromise = panel.save(fileHandler);
+            let storePromise = panel.save(this.fileHandler);
             
             if (storePromise!=null) {
                 
@@ -1037,7 +1044,7 @@ class EducationPlatform {
                 // Unsuccessful
                 console.log("Editor failed start.");
                 sessionStorage.removeItem(editorPanelId);
-                activityManager.setActivityVisibility(editorActivityId, false);
+                this.activityManager.setActivityVisibility(editorActivityId, false);
                 Metro.notify.killAll();
                 this.notification("Build Failed", result.error, "ribbed-lightAmber");
 
@@ -1049,7 +1056,7 @@ class EducationPlatform {
                 // Successful 
                 console.log("Editor ready.");
                 sessionStorage.setItem( editorPanelId , editorInstanceUrl );
-                activityManager.setActivityVisibility(editorActivityId, true);
+                this.activityManager.setActivityVisibility(editorActivityId, true);
                 Metro.notify.killAll();
                 this.successNotification("Building complete.");
             }
@@ -1070,7 +1077,7 @@ platform.initialize();
 window.fit = platform.fit.bind(platform);
 window.updateGutterVisibility = platform.updateGutterVisibility.bind(platform);
 window.runAction = platform.runAction.bind(platform);
-window.panels = panels;
+window.panels = platform.panels;
 window.savePanelContents = platform.savePanelContents.bind(platform);
 window.toggle = platform.toggle.bind(platform);
 window.togglePanelById = platform.togglePanelById.bind(platform);
