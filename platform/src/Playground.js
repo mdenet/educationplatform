@@ -32,12 +32,10 @@ import { Button } from './Button.js';
 import { Preloader } from './Preloader.js';
 import { Layout } from './Layout.js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
-import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateRepo } from './Utility.js';
+import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateRepo, utility } from './Utility.js';
 
-const TOKEN_HANDLER_URL = PlaygroundUtility.getTokenServerAddress();
-const COMMON_UTILITY_URL = window.location.href.replace(window.location.search,"") + "common/utility.json";
 
-var urlParameters = new URLSearchParams(window.location.search);    
+const COMMON_UTILITY_URL = utility.getWindowLocationHref().replace( utility.getWindowLocationSearch(), "" ) + "common/utility.json";
 
 class EducationPlatform {
     outputType;
@@ -57,8 +55,8 @@ class EducationPlatform {
         this.panels = [];
     }
 
-    initialize(){
-        this.fileHandler = new FileHandler(TOKEN_HANDLER_URL);
+    initialize( urlParameters, tokenHandlerUrl ){
+        this.fileHandler = new FileHandler(tokenHandlerUrl);
 
         /* 
         *  Setup the browser environment 
@@ -76,7 +74,7 @@ class EducationPlatform {
 
         if (!urlParamPrivateRepo()){
             // Public repo so no need to authenticate
-            this.initializeActivity();
+            this.initializeActivity(urlParameters);
             
         } else {
             PlaygroundUtility.showLogin();
@@ -85,8 +83,8 @@ class EducationPlatform {
         document.getElementById("btnlogin").onclick= async () => {
 
             // Get github url
-            const urlRequest = { url: window.location.href };
-            let authServerDetails= await jsonRequest(TOKEN_HANDLER_URL + "/mdenet-auth/login/url",
+            const urlRequest = { url: utility.getWindowLocationHref() };
+            let authServerDetails= await jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/url",
                                                     JSON.stringify(urlRequest) );
 
             
@@ -94,7 +92,7 @@ class EducationPlatform {
             authServerDetails = JSON.parse(authServerDetails);
 
             // Authenticate redirect 
-            window.location.href = authServerDetails.url;
+            utility.setWindowLocationHref(authServerDetails.url);
         }
 
         if (urlParameters.has("code") && urlParameters.has("state")  ){
@@ -107,12 +105,12 @@ class EducationPlatform {
             tokenRequest.code = urlParameters.get("code");
 
             //TODO loading box
-            let authDetails = jsonRequest(TOKEN_HANDLER_URL + "/mdenet-auth/login/token",
+            let authDetails = jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/token",
                                         JSON.stringify(tokenRequest), true );
             authDetails.then( () => {
                 document.getElementById('save')?.classList.remove('hidden');
                 window.sessionStorage.setItem("isAuthenticated", true);
-                this.initializeActivity();
+                this.initializeActivity(urlParameters);
             } );
         }
 
@@ -142,7 +140,7 @@ class EducationPlatform {
 
 
 
-    initializeActivity(){
+    initializeActivity(urlParameters){
 
         let errors = [];
 
@@ -1031,9 +1029,9 @@ class EducationPlatform {
      */
     async checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId, logPanel){
 
-    let response  = await fetch(statusUrl);
+        let response  = await fetch(statusUrl);
 
-    if (response.status == 200){ 
+        if (response.status == 200){ 
             const result = await response.json();
 
             if (result.output){
@@ -1061,26 +1059,11 @@ class EducationPlatform {
                 this.successNotification("Building complete.");
             }
 
-    } else {
+        } else {
             console.log("ERROR: The editor response could not be checked: " + statusUrl);
             this.errorNotification("Failed to start the editor.");
-    }
+        }
     }
 }
 
-var platform = new EducationPlatform();
-platform.initialize();
-
-// Some functions and variables are accessed  
-// by onclick - or similer - events
-// We need to use window.x = x for this to work
-window.fit = platform.fit.bind(platform);
-window.updateGutterVisibility = platform.updateGutterVisibility.bind(platform);
-window.runAction = platform.runAction.bind(platform);
-window.panels = platform.panels;
-window.savePanelContents = platform.savePanelContents.bind(platform);
-window.toggle = platform.toggle.bind(platform);
-window.togglePanelById = platform.togglePanelById.bind(platform);
-//window.renderDiagram = renderDiagram;
-window.longNotification = platform.longNotification.bind(platform);
-window.getPanelTitle = platform.getPanelTitle.bind(platform);
+export {EducationPlatform}
