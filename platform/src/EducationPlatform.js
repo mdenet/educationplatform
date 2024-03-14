@@ -1,4 +1,4 @@
-/*global $ -- jquery is exterally imported*/
+/*global $ -- jquery is externally imported*/
 /*global FEEDBACK_SURVEY_URL -- is set by environment variable*/
 /*global Metro -- Metro is externally imported*/
 
