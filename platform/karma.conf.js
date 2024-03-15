@@ -1,5 +1,6 @@
 // Karma configuration
 // Generated on Fri Jan 27 2023 10:15:56 GMT+0000 (Greenwich Mean Time)
+const path = require('path');
 
 module.exports = function(config) {
   config.set({
@@ -44,6 +45,13 @@ module.exports = function(config) {
     /* ---------- WEBPACK CONFIG DEV - START ------------ */
       mode: "development",
       devtool: "inline-source-map",
+
+      resolve: {
+        alias: {
+          'xtext/xtext-ace$': path.resolve(__dirname, 'src/xtext/2.31.0/xtext-ace'),
+          'ace/range$': 'ace-builds/src-noconflict/ace',
+        }
+      },
 
       module: {
         rules: [

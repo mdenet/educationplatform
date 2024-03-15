@@ -44,7 +44,7 @@ describe("ToolManager", () => {
             // Check the expected results
             expect(tm.toolsUrls).toHaveSize(TOOL_URLS.length);
             
-            for (const i in TOOL_URLS){
+            for (let i = 0; i < TOOL_URLS.length; i++ ){
                 expect(tm.toolsUrls[i].url).toEqual(TOOL_URLS[i]);
             }
         })

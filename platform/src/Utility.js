@@ -217,6 +217,22 @@ export function getWindowLocationSearch(){
     return window.location.search;
 }
 
+/**
+ * Gets the current url - window.location.href.
+ * @returns {string} the url
+ */
+export function getWindowLocationHref(){
+    return window.location.href;
+}
+
+/**
+ * Sets the current url - window.location.href.
+ * @newUrl {string} the url to navigate to
+ */
+export function setWindowLocationHref(newUrl){
+    return window.location.href = newUrl;
+}
+
 /* ES6 Direct imports cannot be stubbed during unit test. Therefore, to enable unit testing 
    access to functions has to be made using the utility object.  */
 export const utility = {
@@ -227,5 +243,7 @@ export const utility = {
     urlParamPrivateRepo,
     isAuthenticated,
     parseConfigFile,
-    getWindowLocationSearch
+    getWindowLocationSearch,
+    getWindowLocationHref,
+    setWindowLocationHref
 }

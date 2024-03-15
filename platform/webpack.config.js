@@ -5,7 +5,7 @@ module.exports = (env) => {
   return {
     mode: "development",
     devtool: "inline-source-map",
-    entry: './src/Playground.js',
+    entry: './src/index.js',
 
     resolve: {
       alias: {
