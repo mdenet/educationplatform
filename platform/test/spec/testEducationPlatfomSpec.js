@@ -23,6 +23,7 @@ describe("EducationPlatform", () => {
         let platform;
         let invokeReturnedPromise;
         let resolvedActivity;
+        let spyInvokeActionFunction;
 
         beforeEach(()=>{
 
@@ -69,13 +70,14 @@ describe("EducationPlatform", () => {
             invokeReturnedPromise = new Promise(function(resolve) {
                 resolve(true);
             })
-            spyOn(EducationPlatform.prototype , "invokeActionFunction").and.returnValue(invokeReturnedPromise);
+            spyInvokeActionFunction = spyOn(EducationPlatform.prototype , "invokeActionFunction").and.returnValue(invokeReturnedPromise);
 
             //    platform - handle response
             spyOn(EducationPlatform.prototype, "handleResponseActionFunction");
 
             //    platform - notifications
             spyOn(EducationPlatform.prototype, "longNotification");
+            spyOn(EducationPlatform.prototype, "errorNotification");
         })
 
         
@@ -106,6 +108,20 @@ describe("EducationPlatform", () => {
     
             // Check the expected results
             expect(platform.longNotification).toHaveBeenCalledWith(jasmine.stringMatching('(E|e)xecuting'));
+            expect(platform.errorNotification).not.toHaveBeenCalled();
+        })
+
+        it("provides an error notification on unsuccessful function invocation result", async () => {
+            const invokeReturnedPromiseError = new Promise(function(resolve, reject) {
+                reject(new TypeError("test type error"));
+            })
+            spyInvokeActionFunction.and.returnValue(invokeReturnedPromiseError);
+
+            // Call the target object
+            await platform.runAction(PANEL_ID, BUTTON_ID);
+    
+            // Check the expected results
+            expect(platform.errorNotification).toHaveBeenCalledWith(jasmine.stringMatching('error.*translating.*types'));
         })
     })
 
