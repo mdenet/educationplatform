@@ -1,4 +1,4 @@
-/*global describe, it, expect, spyOn, beforeEach, afterEach --  functions provided by Jasmine */
+/*global describe, it, expect, spyOn, beforeEach, afterEach, expectAsync --  functions provided by Jasmine */
 /*global jasmine --  object provided by Jasmine */
 /*global $ -- jquery is externally imported*/
 
@@ -6,8 +6,6 @@ export var TOKEN_SERVER_URL = "test://ts.url";
 import {EducationPlatform} from"../../src/EducationPlatform.js";
 import { ActionFunction } from "../../src/ActionFunction.js";
 import { Panel } from "../../src/Panel.js";
-import { ToolManager } from "../../src/ToolsManager.js";
-
 
 describe("EducationPlatform", () => {
 
@@ -172,7 +170,21 @@ describe("EducationPlatform", () => {
             );
         })
 
-        it("calls functionRegistry_call with the given parameter values for matching types", async () => {
+        it("returns a promise immediately after being called", async () => {
+            const PARAM1_TYPE = ACTION_FUNCTION_PARAM1_TYPE;
+
+            const parameterMap = new Map (
+                [[PARAM1_NAME, {type: PARAM1_TYPE, value: PARAM1_VALUE}],
+                 ["language", {type: "text", value: TOOL_LANGUAGE }] ]
+            )
+
+            // Call the target object
+            const returnedResult = platform.invokeActionFunction(ACTION_FUNCTION_ID, parameterMap);
+
+            await expectAsync(returnedResult).toBePending();
+        })
+
+        it("calls functionRegistry_call with the given parameter values for matching types and returns a promise", async () => {
             const PARAM1_TYPE = ACTION_FUNCTION_PARAM1_TYPE;
 
             const parameterMap = new Map (
@@ -188,8 +200,8 @@ describe("EducationPlatform", () => {
                 [PARAM1_NAME]: PARAM1_VALUE,
                 "language": TOOL_LANGUAGE
             }
-            expect(platform.functionRegistry_call).toHaveBeenCalledWith(ACTION_FUNCTION_ID, EXPECTED_PARAM_VALUES);
             
+            expect(platform.functionRegistry_call).toHaveBeenCalledWith(ACTION_FUNCTION_ID, EXPECTED_PARAM_VALUES);
         })
 
         it("calls functionRegistry_call with the converted parameter values for non-matching types", async () => {
@@ -271,6 +283,41 @@ describe("EducationPlatform", () => {
 
             expect(platform.functionRegistry_call).toHaveBeenCalledWith(ACTION_FUNCTION_ID, EXPECTED_PARAM_VALUES);
         })
+        
+        it("sends request to a conversion function's url with unused parameters set to undefined", async () => {
+            /* This behaviour was to ensure compatibility with java google cloud function based
+             * Epsilon playground pre Micronaut that required all parameters to be provided. */
+            const PARAM1_TYPE = ACTION_FUNCTION_PARAM1_TYPE;
+
+            const parameterMap = new Map (
+                [[PARAM1_NAME, {type: PARAM1_TYPE, value: PARAM1_VALUE}],
+                 ["language", {type: "text", value: TOOL_LANGUAGE }] ]
+            )
+
+            //    platform - toolsManager
+            toolsManagerSpy.functionRegistry_resolve.and.returnValue(
+                new ActionFunction({
+                    parameters: [
+                        {name: PARAM1_NAME, type: ACTION_FUNCTION_PARAM1_TYPE, instanceOf: PARAM2_NAME},
+                        {name: PARAM2_NAME, type: ACTION_FUNCTION_PARAM2_TYPE},
+                        {name: "language", type: "text"}
+                    ]
+                })
+            );
+            
+            // Call the target object
+            await platform.invokeActionFunction(ACTION_FUNCTION_ID, parameterMap);
+
+            // Check the expected results
+            const EXPECTED_PARAM_VALUES = {
+                [PARAM1_NAME]: PARAM1_VALUE,
+                [PARAM2_NAME]: "undefined",
+                "language": TOOL_LANGUAGE
+            }
+            
+            expect(platform.functionRegistry_call).toHaveBeenCalledWith(ACTION_FUNCTION_ID, EXPECTED_PARAM_VALUES);
+        })
+
     })
 
 
