@@ -6,6 +6,7 @@ export var TOKEN_SERVER_URL = "test://ts.url";
 import {EducationPlatform} from"../../src/EducationPlatform.js";
 import { ActionFunction } from "../../src/ActionFunction.js";
 import { Panel } from "../../src/Panel.js";
+import { ToolManager } from "../../src/ToolsManager.js";
 
 
 describe("EducationPlatform", () => {
@@ -124,6 +125,154 @@ describe("EducationPlatform", () => {
             expect(platform.errorNotification).toHaveBeenCalledWith(jasmine.stringMatching('error.*translating.*types'));
         })
     })
+
+
+    describe( "invokeActionFunction", ()=>{
+        const ACTION_FUNCTION_ID = "function-test";
+        const TOOL_LANGUAGE = "lang";
+
+        const PARAM1_NAME = "param1";
+        const PARAM1_VALUE = "panel-1's contents";
+        const PARAM1_CONVERTED_VALUE= "param1's converted contents";
+
+        const PARAM2_NAME = "param2";
+        const PARAM2_VALUE = "param2's contents";
+        const PARAM2_CONVERTED_VALUE= "param2's converted contents";
+
+        // types the test action functions are exepecting
+        const ACTION_FUNCTION_PARAM1_TYPE = "type1";
+        const ACTION_FUNCTION_PARAM2_TYPE = "type2";
+
+        let platform;
+        let toolsManagerSpy;
+    
+        beforeEach(() => {
+            // Setup    
+            platform = new EducationPlatform();
+
+            //    platform - toolsmanager
+            toolsManagerSpy= jasmine.createSpyObj(['functionRegistry_resolve']);
+            
+            toolsManagerSpy.functionRegistry_resolve.and.returnValue(
+                new ActionFunction({
+                    parameters: [
+                        {name: PARAM1_NAME, type: ACTION_FUNCTION_PARAM1_TYPE},
+                        {name: "language", type: "text"}
+                    ]
+                })
+            );
+            
+            platform.toolsManager= toolsManagerSpy;
+             
+            //    platform - functionRegistry_call
+            spyOn( EducationPlatform.prototype, "functionRegistry_call").and.returnValue( 
+                new Promise(function(resolve) {
+                    resolve(true);
+                })
+            );
+        })
+
+        it("calls functionRegistry_call with the given parameter values for matching types", async () => {
+            const PARAM1_TYPE = ACTION_FUNCTION_PARAM1_TYPE;
+
+            const parameterMap = new Map (
+                [[PARAM1_NAME, {type: PARAM1_TYPE, value: PARAM1_VALUE}],
+                 ["language", {type: "text", value: TOOL_LANGUAGE }] ]
+            )
+
+            // Call the target object
+            await platform.invokeActionFunction(ACTION_FUNCTION_ID, parameterMap);
+
+            // Check the expected results
+            const EXPECTED_PARAM_VALUES = {
+                [PARAM1_NAME]: PARAM1_VALUE,
+                "language": TOOL_LANGUAGE
+            }
+            expect(platform.functionRegistry_call).toHaveBeenCalledWith(ACTION_FUNCTION_ID, EXPECTED_PARAM_VALUES);
+            
+        })
+
+        it("calls functionRegistry_call with the converted parameter values for non-matching types", async () => {
+            const PARAM1_TYPE = "typex";
+
+            const parameterMap = new Map (
+                [[PARAM1_NAME, {type: PARAM1_TYPE, value: PARAM1_VALUE}],
+                 ["language", {type: "text", value: TOOL_LANGUAGE }] ]
+            )
+            
+            spyOn( EducationPlatform.prototype, "convert").and.returnValue(
+                new Promise(function(resolve) {
+                    resolve( {name: PARAM1_NAME, data: PARAM1_CONVERTED_VALUE} );
+                })
+            );
+
+            // Call the target object
+            await platform.invokeActionFunction(ACTION_FUNCTION_ID, parameterMap);
+
+            // Check the expected results
+            const EXPECTED_PARAM_VALUES = {
+                [PARAM1_NAME]: PARAM1_CONVERTED_VALUE,
+                "language": TOOL_LANGUAGE
+            }
+
+            expect(platform.convert).toHaveBeenCalledWith(PARAM1_VALUE, PARAM1_TYPE, ACTION_FUNCTION_PARAM1_TYPE, PARAM1_NAME);
+            expect(platform.functionRegistry_call).toHaveBeenCalledWith(ACTION_FUNCTION_ID, EXPECTED_PARAM_VALUES);
+        })
+
+        it("calls functionRegistry_call with the converted parameter values for non-matching types including a metamodel", async () => {
+            const PARAM1_TYPE = "typex";
+            const PARAM2_TYPE = "typez";
+
+            const parameterMap = new Map (  // input to invokeActionFunction
+                [[PARAM1_NAME, {type: PARAM1_TYPE, value: PARAM1_VALUE}],
+                 [PARAM2_NAME, {type: PARAM2_TYPE, value: PARAM2_VALUE}],
+                 ["language", {type: "text", value: TOOL_LANGUAGE }] ]
+            )
+
+            //    platform - toolsManager
+            toolsManagerSpy.functionRegistry_resolve.and.returnValue(
+                new ActionFunction({
+                    parameters: [
+                        {name: PARAM1_NAME, type: ACTION_FUNCTION_PARAM1_TYPE, instanceOf: PARAM2_NAME},
+                        {name: PARAM2_NAME, type: ACTION_FUNCTION_PARAM2_TYPE},
+                        {name: "language", type: "text"}
+                    ]
+                })
+            );
+            
+            //    platform - conversion function spies
+            spyOn( EducationPlatform.prototype, "convertIncludingMetamodel").and.returnValue(
+                new Promise(function(resolve) {
+                    resolve( {name: PARAM1_NAME, data: PARAM1_CONVERTED_VALUE} );
+                })
+            );
+
+            spyOn( EducationPlatform.prototype, "convert").and.returnValue(
+                new Promise(function(resolve) {
+                    resolve( {name: PARAM2_NAME, data: PARAM2_CONVERTED_VALUE} );
+                })
+            );
+
+            // Call the target object
+            await platform.invokeActionFunction(ACTION_FUNCTION_ID, parameterMap);
+
+            // Check the expected results
+            const EXPECTED_PARAM_VALUES = {
+                [PARAM1_NAME]: PARAM1_CONVERTED_VALUE,
+                [PARAM2_NAME]: PARAM2_CONVERTED_VALUE,
+                "language": TOOL_LANGUAGE
+            }
+
+            expect(platform.convert).toHaveBeenCalledWith(PARAM2_VALUE, PARAM2_TYPE, ACTION_FUNCTION_PARAM2_TYPE, PARAM2_NAME);
+
+            expect(platform.convertIncludingMetamodel).toHaveBeenCalledWith(PARAM1_VALUE, PARAM1_TYPE, 
+                                                                            PARAM2_VALUE, PARAM2_TYPE,
+                                                                            ACTION_FUNCTION_PARAM1_TYPE, PARAM1_NAME);
+
+            expect(platform.functionRegistry_call).toHaveBeenCalledWith(ACTION_FUNCTION_ID, EXPECTED_PARAM_VALUES);
+        })
+    })
+
 
     describe("notification", () => {
         let platform;
