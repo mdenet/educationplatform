@@ -148,7 +148,7 @@ describe("EducationPlatformApp", () => {
         const PARAM2_VALUE = "param2's contents";
         const PARAM2_CONVERTED_VALUE = "param2's converted contents";
 
-        // types the test action functions are exepecting
+        // types the test action functions are expecting
         const ACTION_FUNCTION_PARAM1_TYPE = "type1";
         const ACTION_FUNCTION_PARAM2_TYPE = "type2";
         const ACTION_FUNCTION_RESULT= "Test function result";
@@ -329,6 +329,139 @@ describe("EducationPlatformApp", () => {
 
     })
 
+    describe("convert", () => { 
+        let platform;
+        let findConversionSpy;
+
+        const FILE_CONTENTS = "Test file contents.";
+        const SOURCE_TYPE = "test-source-type";
+        const TARGET_TYPE = "test-target-type";
+        const PARAM_NAME = "test";
+        const callConversionReturn = new Promise(function(resolve) {
+            resolve(true);
+        })
+
+        const CONVERSION_FUNCTION_ID = "conversion-function-id";
+
+        beforeEach(()=>{ 
+            // Setup    
+            findConversionSpy = spyOn( EducationPlatform.prototype, "functionRegistry_find").
+            and.returnValue(CONVERSION_FUNCTION_ID);
+
+            spyOn( EducationPlatform.prototype, "functionRegistry_callConversion").and.returnValue(
+                callConversionReturn);
+
+            spyOn( EducationPlatform.prototype, "errorNotification");
+
+            platform = new EducationPlatform();
+
+        })
+
+        it("calls functionRegistry_callConversion on a conversion function being available", ()=>{ 
+            // Call the target object
+            platform.convert(FILE_CONTENTS, SOURCE_TYPE, TARGET_TYPE, PARAM_NAME);
+
+            // Check the expected results
+            expect(platform.functionRegistry_callConversion).toHaveBeenCalledWith(
+                CONVERSION_FUNCTION_ID, { [SOURCE_TYPE]: FILE_CONTENTS } , PARAM_NAME
+            );
+
+            expect(platform.errorNotification).not.toHaveBeenCalled();
+        })
+
+        it("returns a promise on a conversion function being available", ()=>{
+            // Call the target object
+            const convertResult = platform.convert(FILE_CONTENTS, SOURCE_TYPE, TARGET_TYPE, PARAM_NAME);
+
+            // Check the expected results
+            expect(convertResult).toEqual(callConversionReturn);
+        })
+
+        it("returns null and provides an error notification on a conversion function not being available", ()=>{ 
+            findConversionSpy.and.returnValue(null);
+
+            // Call the target object
+            const convertResult = platform.convert(FILE_CONTENTS, SOURCE_TYPE, TARGET_TYPE, PARAM_NAME);
+
+            // Check the expected results
+            expect(convertResult).toEqual(null);
+            expect(platform.errorNotification).toHaveBeenCalledWith(jasmine.stringMatching("(N|n)o conversion function"))
+        })
+
+    })
+
+    describe("convertIncludingMetamodel", () => { 
+        let platform;
+        let findConversionSpy;
+
+        const FILE_CONTENTS = "Test file contents.";
+        const SOURCE_TYPE = "test-source-type";
+        const TARGET_TYPE = "test-target-type";
+        const MM_FILE_CONTENTS = "Test metamodel file contents."
+        const MM_TYPE = "test-metamodel-type";
+        const PARAM_NAME = "test";
+        const callConversionReturn = new Promise(function(resolve) {
+            resolve(true);
+        })
+
+        const CONVERSION_FUNCTION_ID = "conversion-function-id";
+
+        beforeEach(()=>{ 
+            // Setup    
+            findConversionSpy = spyOn( EducationPlatform.prototype, "functionRegistry_findPartial").
+            and.returnValue([CONVERSION_FUNCTION_ID]);
+
+            spyOn( EducationPlatform.prototype, "functionRegistry_callConversion").and.returnValue(
+                callConversionReturn);
+
+            spyOn( EducationPlatform.prototype, "errorNotification");
+
+            platform = new EducationPlatform();
+
+            //    platform - toolsManager
+            let toolsManagerSpy =  jasmine.createSpyObj(['getActionFunction']);
+            toolsManagerSpy.getActionFunction.and.returnValue(new ActionFunction({
+                parameters: [
+                    {name: "input", type: SOURCE_TYPE, instanceOf: "metamodel"},
+                    {name: "metamodel", type: MM_TYPE}
+                ]
+            }));
+            platform.toolsManager= toolsManagerSpy;
+
+        })
+
+        it("calls functionRegistry_callConversion on a conversion function being available", async ()=>{ 
+            // Call the target object
+            await platform.convertIncludingMetamodel(FILE_CONTENTS, SOURCE_TYPE, MM_FILE_CONTENTS, MM_TYPE, TARGET_TYPE, PARAM_NAME);
+
+            // Check the expected results
+            expect(platform.functionRegistry_callConversion).toHaveBeenCalledWith(
+                CONVERSION_FUNCTION_ID, {[SOURCE_TYPE]: FILE_CONTENTS, [MM_TYPE]: MM_FILE_CONTENTS } , PARAM_NAME
+            );
+
+            expect(platform.errorNotification).not.toHaveBeenCalled();
+        })
+
+        it("returns a promise on a conversion function being available", async ()=>{
+            // Call the target object
+            const convertResult = platform.convertIncludingMetamodel(FILE_CONTENTS, SOURCE_TYPE, MM_FILE_CONTENTS, MM_TYPE, TARGET_TYPE, PARAM_NAME);
+
+            // Check the expected results
+            await expectAsync(convertResult).toBePending();
+        })
+
+        it("returns null and provides an error notification on a conversion function not being available", async ()=>{ 
+            findConversionSpy.and.returnValue(null);
+
+            // Call the target object
+            const convertResult = await platform.convertIncludingMetamodel(FILE_CONTENTS, SOURCE_TYPE, MM_FILE_CONTENTS, MM_TYPE, TARGET_TYPE, PARAM_NAME);
+
+            // Check the expected results
+            expect(convertResult).toEqual(null);
+            expect(platform.errorNotification).toHaveBeenCalledWith(jasmine.stringMatching("(N|n)o conversion function"))
+        })
+
+    })
 
     describe("notification()", () => {
         let platform;
