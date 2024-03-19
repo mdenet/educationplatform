@@ -1,4 +1,4 @@
-/*global $ -- jquery is externally imported*/
+/*global $ -- jquery is exterally imported*/
 /*global FEEDBACK_SURVEY_URL -- is set by environment variable*/
 /*global Metro -- Metro is externally imported*/
 
@@ -608,7 +608,11 @@ class EducationPlatformApp {
      */
     async selectConversionFunctionConvertMetamodel(metamodelType, metamodelValue, conversionFunctions, convertMetamodel, parameterName, typeValueMap){
         let conversionFunctionId;
-        let functionsToCheck = [...conversionFunctions]
+        let functionsToCheck = [];
+
+        if (Array.isArray(conversionFunctions)){
+            functionsToCheck = [...conversionFunctions];
+        }
         
         while ( conversionFunctionId==null && functionsToCheck.length > 0){
             let functionId = functionsToCheck.pop();
