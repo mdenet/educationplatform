@@ -329,7 +329,7 @@ describe("EducationPlatformApp", () => {
 
     })
 
-    describe("convert", () => { 
+    describe("convert()", () => { 
         let platform;
         let findConversionSpy;
 
@@ -345,15 +345,15 @@ describe("EducationPlatformApp", () => {
 
         beforeEach(()=>{ 
             // Setup    
-            findConversionSpy = spyOn( EducationPlatform.prototype, "functionRegistry_find").
+            findConversionSpy = spyOn( EducationPlatformApp.prototype, "functionRegistry_find").
             and.returnValue(CONVERSION_FUNCTION_ID);
 
-            spyOn( EducationPlatform.prototype, "functionRegistry_callConversion").and.returnValue(
+            spyOn( EducationPlatformApp.prototype, "functionRegistry_callConversion").and.returnValue(
                 callConversionReturn);
 
-            spyOn( EducationPlatform.prototype, "errorNotification");
+            spyOn( EducationPlatformApp.prototype, "errorNotification");
 
-            platform = new EducationPlatform();
+            platform = new EducationPlatformApp();
 
         })
 
@@ -369,7 +369,7 @@ describe("EducationPlatformApp", () => {
             expect(platform.errorNotification).not.toHaveBeenCalled();
         })
 
-        it("returns a promise on a conversion function being available", ()=>{
+        it("returns a promise on a conversion function being available", ()=> {
             // Call the target object
             const convertResult = platform.convert(FILE_CONTENTS, SOURCE_TYPE, TARGET_TYPE, PARAM_NAME);
 
@@ -377,7 +377,7 @@ describe("EducationPlatformApp", () => {
             expect(convertResult).toEqual(callConversionReturn);
         })
 
-        it("returns null and provides an error notification on a conversion function not being available", ()=>{ 
+        it("returns null and provides an error notification on a conversion function not being available", ()=> { 
             findConversionSpy.and.returnValue(null);
 
             // Call the target object
@@ -390,7 +390,7 @@ describe("EducationPlatformApp", () => {
 
     })
 
-    describe("convertIncludingMetamodel", () => { 
+    describe("convertIncludingMetamodel()", () => { 
         let platform;
         let findConversionSpy;
 
@@ -408,15 +408,15 @@ describe("EducationPlatformApp", () => {
 
         beforeEach(()=>{ 
             // Setup    
-            findConversionSpy = spyOn( EducationPlatform.prototype, "functionRegistry_findPartial").
+            findConversionSpy = spyOn( EducationPlatformApp.prototype, "functionRegistry_findPartial").
             and.returnValue([CONVERSION_FUNCTION_ID]);
 
-            spyOn( EducationPlatform.prototype, "functionRegistry_callConversion").and.returnValue(
+            spyOn( EducationPlatformApp.prototype, "functionRegistry_callConversion").and.returnValue(
                 callConversionReturn);
 
-            spyOn( EducationPlatform.prototype, "errorNotification");
+            spyOn( EducationPlatformApp.prototype, "errorNotification");
 
-            platform = new EducationPlatform();
+            platform = new EducationPlatformApp();
 
             //    platform - toolsManager
             let toolsManagerSpy =  jasmine.createSpyObj(['getActionFunction']);
@@ -430,7 +430,7 @@ describe("EducationPlatformApp", () => {
 
         })
 
-        it("calls functionRegistry_callConversion on a conversion function being available", async ()=>{ 
+        it("calls functionRegistry_callConversion on a conversion function being available", async ()=> { 
             // Call the target object
             await platform.convertIncludingMetamodel(FILE_CONTENTS, SOURCE_TYPE, MM_FILE_CONTENTS, MM_TYPE, TARGET_TYPE, PARAM_NAME);
 
@@ -442,7 +442,7 @@ describe("EducationPlatformApp", () => {
             expect(platform.errorNotification).not.toHaveBeenCalled();
         })
 
-        it("returns a promise on a conversion function being available", async ()=>{
+        it("returns a promise on a conversion function being available", async () => {
             // Call the target object
             const convertResult = platform.convertIncludingMetamodel(FILE_CONTENTS, SOURCE_TYPE, MM_FILE_CONTENTS, MM_TYPE, TARGET_TYPE, PARAM_NAME);
 
@@ -450,7 +450,7 @@ describe("EducationPlatformApp", () => {
             await expectAsync(convertResult).toBePending();
         })
 
-        it("returns null and provides an error notification on a conversion function not being available", async ()=>{ 
+        it("returns null and provides an error notification on a conversion function not being available", async () => { 
             findConversionSpy.and.returnValue(null);
 
             // Call the target object
@@ -462,6 +462,266 @@ describe("EducationPlatformApp", () => {
         })
 
     })
+
+    describe("selectConversionFunctionConvertMetamodel()", () => { 
+        let platform;
+
+        const SOURCE_TYPE =  "test-source-type";
+        const FILE_CONTENTS = "Test file contents.";
+        const MM_FILE_CONTENTS = "Test metamodel file contents."
+        const MM_TARGET_TYPE = "test-metamodel-target-type";
+        const PARAM_NAME = "test";
+
+        const CONVERSION_FUNCTION_ID = "conversion-function-id";
+        const X_FUNCTION_ID = "x-function-id"; // Not interested
+
+        let toolsManagerSpy;
+        
+        beforeEach( () => { 
+            // Setup    
+            spyOn( EducationPlatformApp.prototype, "errorNotification");
+
+            platform = new EducationPlatformApp();
+
+            //    platform - toolsManager
+            toolsManagerSpy = jasmine.createSpyObj(['getActionFunction', 'getConversionFunction']);
+
+            toolsManagerSpy.getActionFunction.and.callFake( (functionId) => {        
+                let actionFunctionConfig;
+
+                switch (functionId){
+                    case CONVERSION_FUNCTION_ID:
+                        actionFunctionConfig = {
+                            parameters: [
+                                {name: "input", type: SOURCE_TYPE, instanceOf: "metamodel"},
+                                {name: "metamodel", type: MM_TARGET_TYPE}
+                            ]
+                        };
+                        break;
+
+                     case X_FUNCTION_ID:
+                        actionFunctionConfig = {
+                            parameters: [
+                                {name: "input", type: SOURCE_TYPE, instanceOf: "metamodel"},
+                                {name: "metamodel", type: "X"}
+                            ]
+                        }
+                            break;
+                    default:
+                        actionFunctionConfig = null;
+                }
+
+                return new ActionFunction(actionFunctionConfig)
+            })
+            platform.toolsManager = toolsManagerSpy;
+            
+        })
+
+        it("returns a function id if a conversion is possible without considering the metamodel", async () => { 
+            const CONSIDER_MM = false;
+            let mm_type = MM_TARGET_TYPE;
+            const typeValueMap = { [SOURCE_TYPE]: FILE_CONTENTS }
+
+            // Call the target object
+            let selectConversionResult =  await platform.selectConversionFunctionConvertMetamodel(mm_type, MM_FILE_CONTENTS, [CONVERSION_FUNCTION_ID, X_FUNCTION_ID], CONSIDER_MM, PARAM_NAME, typeValueMap)
+
+            // Check the expected results
+            expect(selectConversionResult).toEqual(CONVERSION_FUNCTION_ID);
+        })
+
+        it("returns null if a conversion is not possible without considering the metamodel", async () => { 
+            const CONSIDER_MM = false;
+            let mm_type = MM_TARGET_TYPE;
+            const typeValueMap = { [SOURCE_TYPE]: FILE_CONTENTS }
+
+            // Call the target object
+            let selectConversionResult =  await platform.selectConversionFunctionConvertMetamodel(mm_type, MM_FILE_CONTENTS, [X_FUNCTION_ID, X_FUNCTION_ID], CONSIDER_MM, PARAM_NAME, typeValueMap)
+
+            // Check the expected results
+            expect(selectConversionResult).toEqual(null);
+        })
+
+        it("returns a function id, converts the metamodel, and adds the converted metamodel value to the typeValueMap if a conversion is possible considering the metamodel", async ()=>{ 
+            const CONSIDER_MM = true;
+            let mm_type = "test-metamodel-type";
+            const typeValueMap = { [SOURCE_TYPE]: FILE_CONTENTS }
+
+            const MM_CONVERSION_FUNCTION_ID = "metamodel-conversion-function-id";
+            const MM_CONVERTED_CONTENTS = "Test converted metamodel contents.";
+
+            const callConversionReturn = new Promise(function(resolve) {
+                resolve({data: MM_CONVERTED_CONTENTS});
+            })
+            spyOn( EducationPlatformApp.prototype, "functionRegistry_callConversion").and.returnValue(
+                callConversionReturn);
+
+            toolsManagerSpy.getConversionFunction.and.returnValues(null, MM_CONVERSION_FUNCTION_ID); // Find possible conversion on the second call
+            
+            // Call the target object
+            let selectConversionResult =  await platform.selectConversionFunctionConvertMetamodel(mm_type, MM_FILE_CONTENTS, [CONVERSION_FUNCTION_ID, X_FUNCTION_ID], CONSIDER_MM, PARAM_NAME, typeValueMap)
+
+            // Check the expected results
+            expect(platform.functionRegistry_callConversion).toHaveBeenCalledWith(
+                MM_CONVERSION_FUNCTION_ID, { [mm_type]: MM_FILE_CONTENTS}, PARAM_NAME
+            );
+
+            expect(typeValueMap[MM_TARGET_TYPE]).toEqual(MM_CONVERTED_CONTENTS);
+
+            expect(selectConversionResult).toEqual(CONVERSION_FUNCTION_ID);
+        })
+
+        it("returns null if no conversion is available considering the metamodel", async () => { 
+            const CONSIDER_MM = true;
+            let mm_type = "test-metamodel-type";
+            const typeValueMap = { [SOURCE_TYPE]: FILE_CONTENTS }
+
+            spyOn( EducationPlatformApp.prototype, "functionRegistry_callConversion");
+
+            toolsManagerSpy.getConversionFunction.and.returnValues(null, null); // Do not find possible conversion
+
+            // Call the target object
+            let selectConversionResult =  await platform.selectConversionFunctionConvertMetamodel(mm_type, MM_FILE_CONTENTS, [CONVERSION_FUNCTION_ID, X_FUNCTION_ID], CONSIDER_MM, PARAM_NAME, typeValueMap)
+
+            // Check the expected results
+            expect(platform.functionRegistry_callConversion).not.toHaveBeenCalled();
+
+            expect(typeValueMap[MM_TARGET_TYPE]).toEqual(undefined);
+
+            expect(selectConversionResult).toEqual(null);
+        })
+    })
+
+
+
+    describe("selectConversionFunctionConvertMetamodel()", () => { 
+        let platform;
+
+        const SOURCE_TYPE =  "test-source-type";
+        const FILE_CONTENTS = "Test file contents.";
+        const MM_FILE_CONTENTS = "Test metamodel file contents."
+        const MM_TARGET_TYPE = "test-metamodel-target-type";
+        const PARAM_NAME = "test";
+
+        const CONVERSION_FUNCTION_ID = "conversion-function-id";
+        const X_FUNCTION_ID = "x-function-id"; // Not interested
+
+        let toolsManagerSpy;
+        
+        beforeEach( () => { 
+            // Setup    
+            spyOn( EducationPlatformApp.prototype, "errorNotification");
+
+            platform = new EducationPlatformApp();
+
+            //    platform - toolsManager
+            toolsManagerSpy = jasmine.createSpyObj(['getActionFunction', 'getConversionFunction']);
+
+            toolsManagerSpy.getActionFunction.and.callFake( (functionId) => {        
+                let actionFunctionConfig;
+
+                switch (functionId){
+                    case CONVERSION_FUNCTION_ID:
+                        actionFunctionConfig = {
+                            parameters: [
+                                {name: "input", type: SOURCE_TYPE, instanceOf: "metamodel"},
+                                {name: "metamodel", type: MM_TARGET_TYPE}
+                            ]
+                        };
+                        break;
+
+                     case X_FUNCTION_ID:
+                        actionFunctionConfig = {
+                            parameters: [
+                                {name: "input", type: SOURCE_TYPE, instanceOf: "metamodel"},
+                                {name: "metamodel", type: "X"}
+                            ]
+                        }
+                            break;
+                    default:
+                        actionFunctionConfig = null;
+                }
+
+                return new ActionFunction(actionFunctionConfig)
+            })
+            platform.toolsManager = toolsManagerSpy;
+            
+        })
+
+        it("returns a function id if a conversion is possible without considering the metamodel", async () => { 
+            const CONSIDER_MM = false;
+            let mm_type = MM_TARGET_TYPE;
+            const typeValueMap = { [SOURCE_TYPE]: FILE_CONTENTS }
+
+            // Call the target object
+            let selectConversionResult =  await platform.selectConversionFunctionConvertMetamodel(mm_type, MM_FILE_CONTENTS, [CONVERSION_FUNCTION_ID, X_FUNCTION_ID], CONSIDER_MM, PARAM_NAME, typeValueMap)
+
+            // Check the expected results
+            expect(selectConversionResult).toEqual(CONVERSION_FUNCTION_ID);
+        })
+
+        it("returns null if a conversion is not possible without considering the metamodel", async () => { 
+            const CONSIDER_MM = false;
+            let mm_type = MM_TARGET_TYPE;
+            const typeValueMap = { [SOURCE_TYPE]: FILE_CONTENTS }
+
+            // Call the target object
+            let selectConversionResult =  await platform.selectConversionFunctionConvertMetamodel(mm_type, MM_FILE_CONTENTS, [X_FUNCTION_ID, X_FUNCTION_ID], CONSIDER_MM, PARAM_NAME, typeValueMap)
+
+            // Check the expected results
+            expect(selectConversionResult).toEqual(null);
+        })
+
+        it("returns a function id, converts the metamodel, and adds the converted metamodel value to the typeValueMap if a conversion is possible considering the metamodel", async ()=>{ 
+            const CONSIDER_MM = true;
+            let mm_type = "test-metamodel-type";
+            const typeValueMap = { [SOURCE_TYPE]: FILE_CONTENTS }
+
+            const MM_CONVERSION_FUNCTION_ID = "metamodel-conversion-function-id";
+            const MM_CONVERTED_CONTENTS = "Test converted metamodel contents.";
+
+            const callConversionReturn = new Promise(function(resolve) {
+                resolve({data: MM_CONVERTED_CONTENTS});
+            })
+            spyOn( EducationPlatformApp.prototype, "functionRegistry_callConversion").and.returnValue(
+                callConversionReturn);
+
+            toolsManagerSpy.getConversionFunction.and.returnValues(null, MM_CONVERSION_FUNCTION_ID); // Find possible conversion on the second call
+            
+            // Call the target object
+            let selectConversionResult =  await platform.selectConversionFunctionConvertMetamodel(mm_type, MM_FILE_CONTENTS, [CONVERSION_FUNCTION_ID, X_FUNCTION_ID], CONSIDER_MM, PARAM_NAME, typeValueMap)
+
+            // Check the expected results
+            expect(platform.functionRegistry_callConversion).toHaveBeenCalledWith(
+                MM_CONVERSION_FUNCTION_ID, { [mm_type]: MM_FILE_CONTENTS}, PARAM_NAME
+            );
+
+            expect(typeValueMap[MM_TARGET_TYPE]).toEqual(MM_CONVERTED_CONTENTS);
+
+            expect(selectConversionResult).toEqual(CONVERSION_FUNCTION_ID);
+        })
+
+        it("returns null if no conversion is available considering the metamodel", async () => { 
+            const CONSIDER_MM = true;
+            let mm_type = "test-metamodel-type";
+            const typeValueMap = { [SOURCE_TYPE]: FILE_CONTENTS }
+
+            spyOn( EducationPlatformApp.prototype, "functionRegistry_callConversion");
+
+            toolsManagerSpy.getConversionFunction.and.returnValues(null, null); // Do not find possible conversion
+
+            // Call the target object
+            let selectConversionResult =  await platform.selectConversionFunctionConvertMetamodel(mm_type, MM_FILE_CONTENTS, [CONVERSION_FUNCTION_ID, X_FUNCTION_ID], CONSIDER_MM, PARAM_NAME, typeValueMap)
+
+            // Check the expected results
+            expect(platform.functionRegistry_callConversion).not.toHaveBeenCalled();
+
+            expect(typeValueMap[MM_TARGET_TYPE]).toEqual(undefined);
+
+            expect(selectConversionResult).toEqual(null);
+        })
+    })
+
+
 
     describe("notification()", () => {
         let platform;

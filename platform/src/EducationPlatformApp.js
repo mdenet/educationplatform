@@ -607,7 +607,7 @@ class EducationPlatformApp {
      * @returns {string} the id of a conversion function to use, null if none found.
      */
     async selectConversionFunctionConvertMetamodel(metamodelType, metamodelValue, conversionFunctions, convertMetamodel, parameterName, typeValueMap){
-        let conversionFunctionId;
+        let conversionFunctionId = null;
         let functionsToCheck = [];
 
         if (Array.isArray(conversionFunctions)){
