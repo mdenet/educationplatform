@@ -3,13 +3,13 @@
 /*global $ -- jquery is externally imported*/
 
 export var TOKEN_SERVER_URL = "test://ts.url";
-import {EducationPlatform} from"../../src/EducationPlatform.js";
+import {EducationPlatform} from "../../src/EducationPlatform.js";
 import { ActionFunction } from "../../src/ActionFunction.js";
 import { Panel } from "../../src/Panel.js";
 
 describe("EducationPlatform", () => {
 
-    describe("runAction", () => {
+    describe("runAction()", () => {
 
         const PANEL_ID = "panel-1";
         const PANEL_CONTENTS = "panel-1's contents";
@@ -36,7 +36,7 @@ describe("EducationPlatform", () => {
             spyOn(panel1, "getType").and.returnValue(PANEL_TYPE);
             
             //    activity manager
-            resolvedActivity= {
+            resolvedActivity = {
                 source: {
                     ref: {
                         buttons: [{id: BUTTON_ID, actionfunction: ACTION_FUNCTION_ID}, {id: "b2"}],
@@ -50,26 +50,26 @@ describe("EducationPlatform", () => {
                     }
                 }
             };
-            let activityManagerSpy= jasmine.createSpyObj(['getActionForCurrentActivity','findPanel']);
+            let activityManagerSpy = jasmine.createSpyObj(['getActionForCurrentActivity','findPanel']);
             activityManagerSpy.getActionForCurrentActivity.and.returnValue(resolvedActivity);
             activityManagerSpy.findPanel.and.returnValue(panel1);
 
-            platform.activityManager= activityManagerSpy;
+            platform.activityManager = activityManagerSpy;
 
             //    tools manager
-            let toolsManagerSpy =  jasmine.createSpyObj(['getActionFunction']);
+            let toolsManagerSpy = jasmine.createSpyObj(['getActionFunction']);
             toolsManagerSpy.getActionFunction.and.returnValue(new ActionFunction({
                 parameters: [
                     {name: "language", type: "text"}
                 ]
             }));
-            platform.toolsManager= toolsManagerSpy;
+            platform.toolsManager = toolsManagerSpy;
             
             //    platform - invoke action function
             invokeReturnedPromise = new Promise(function(resolve) {
                 resolve(true);
             })
-            spyInvokeActionFunction = spyOn(EducationPlatform.prototype , "invokeActionFunction").and.returnValue(invokeReturnedPromise);
+            spyInvokeActionFunction = spyOn(EducationPlatform.prototype, "invokeActionFunction").and.returnValue(invokeReturnedPromise);
 
             //    platform - handle response
             spyOn(EducationPlatform.prototype, "handleResponseActionFunction");
@@ -93,7 +93,7 @@ describe("EducationPlatform", () => {
             expect(platform.invokeActionFunction).toHaveBeenCalledWith(ACTION_FUNCTION_ID, expectedParamMap);
         })
 
-        it("call handleResponseActionFunction with the current action and the invoked function's result promise", () => {
+        it("calls handleResponseActionFunction with the current action and the invoked function's result promise", () => {
             // Call the target object
             platform.runAction(PANEL_ID, BUTTON_ID);
     
@@ -125,17 +125,17 @@ describe("EducationPlatform", () => {
     })
 
 
-    describe( "invokeActionFunction", ()=>{
+    describe( "invokeActionFunction()", ()=>{
         const ACTION_FUNCTION_ID = "function-test";
         const TOOL_LANGUAGE = "lang";
 
         const PARAM1_NAME = "param1";
         const PARAM1_VALUE = "panel-1's contents";
-        const PARAM1_CONVERTED_VALUE= "param1's converted contents";
+        const PARAM1_CONVERTED_VALUE = "param1's converted contents";
 
         const PARAM2_NAME = "param2";
         const PARAM2_VALUE = "param2's contents";
-        const PARAM2_CONVERTED_VALUE= "param2's converted contents";
+        const PARAM2_CONVERTED_VALUE = "param2's converted contents";
 
         // types the test action functions are exepecting
         const ACTION_FUNCTION_PARAM1_TYPE = "type1";
@@ -149,7 +149,7 @@ describe("EducationPlatform", () => {
             platform = new EducationPlatform();
 
             //    platform - toolsmanager
-            toolsManagerSpy= jasmine.createSpyObj(['functionRegistry_resolve']);
+            toolsManagerSpy = jasmine.createSpyObj(['functionRegistry_resolve']);
             
             toolsManagerSpy.functionRegistry_resolve.and.returnValue(
                 new ActionFunction({
@@ -160,10 +160,10 @@ describe("EducationPlatform", () => {
                 })
             );
             
-            platform.toolsManager= toolsManagerSpy;
+            platform.toolsManager = toolsManagerSpy;
              
             //    platform - functionRegistry_call
-            spyOn( EducationPlatform.prototype, "functionRegistry_call").and.returnValue( 
+            spyOn (EducationPlatform.prototype, "functionRegistry_call").and.returnValue ( 
                 new Promise(function(resolve) {
                     resolve(true);
                 })
@@ -321,7 +321,7 @@ describe("EducationPlatform", () => {
     })
 
 
-    describe("notification", () => {
+    describe("notification()", () => {
         let platform;
 
         const NOTIFICATION_TITLE = "ABC123";
@@ -352,12 +352,12 @@ describe("EducationPlatform", () => {
         })
     })
 
-    describe("longNotification", () => {
+    describe("longNotification()", () => {
         
         const NOTIFICATION_TEXT = "ABC123";
         const NOTIFICATION_MESSAGE = "may take a few seconds to complete";
 
-        it("calls notification with the given text", () => {
+        it("calls notification() with the given text", () => {
             // Setup
             spyOn(EducationPlatform.prototype, "notification");
             const platform = new EducationPlatform();
@@ -370,7 +370,7 @@ describe("EducationPlatform", () => {
         })
     })
 
-    describe("successNotification", () => {
+    describe("successNotification()", () => {
         
         const NOTIFICATION_TEXT = "ABC123";
         const NOTIFICATION_TITLE = "Success";
@@ -388,7 +388,7 @@ describe("EducationPlatform", () => {
         })
     })
 
-    describe("errorNotification", () => {
+    describe("errorNotification()", () => {
         
         const NOTIFICATION_TEXT = "ABC123";
         const NOTIFICATION_TITLE = "Error";
