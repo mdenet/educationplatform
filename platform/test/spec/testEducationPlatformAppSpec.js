@@ -650,6 +650,80 @@ describe("EducationPlatformApp", () => {
         })
     })
 
+    describe("jsonRequestConversion()", () => {
+        const TOOL_URL = "test://t1.url/toolfunction";
+        const CONVERSION_FUNCTION_ID = "test-function-id";
+        const PARAMETER_NAME = "testParameter1";
+        const TYPE_MODEL = "type-model";
+        const TYPE_METAMODEL = "type-metamodel";
+        const MODEL_CONTENTS = "Parameter 1 model value";
+        const METAMODEL_CONTENTS = "Parameter 2 metamodel value";
+
+        const TYPE_MAP_INPUT = {
+            [TYPE_MODEL]: MODEL_CONTENTS,
+            [TYPE_METAMODEL]: METAMODEL_CONTENTS
+        };
+
+        const CONVERSION_PARAM_IN = "input";
+        const CONVERSION_PARAM_MM = "metamodel";
+        const CONVERTED_MODEL = "Converted model contents.";
+        const TOOL_RESPONSE = `{"output": "${CONVERTED_MODEL}"}`;
+
+        let platform;
+
+
+        beforeEach(()=>{
+            // Setup
+            jasmine.Ajax.install();
+
+            platform = new EducationPlatform();
+
+            //    xhr
+            jasmine.Ajax.stubRequest(TOOL_URL).andReturn({
+                "responseText": TOOL_RESPONSE,
+                "status": 200
+            });
+
+            //    platform - toolsManager
+            let toolsManagerSpy =  jasmine.createSpyObj(['getActionFunction']);
+            toolsManagerSpy.getActionFunction.and.returnValue(new ActionFunction({
+                parameters: [
+                    {name: CONVERSION_PARAM_IN, type: TYPE_MODEL, instanceOf: "metamodel"},
+                    {name: CONVERSION_PARAM_MM, type: TYPE_METAMODEL}
+                ],
+                path: TOOL_URL
+            }));
+            platform.toolsManager= toolsManagerSpy;
+        })
+
+        afterEach(function() {
+            jasmine.Ajax.uninstall();
+        });  
+
+        it("sends a request to the tool service url", async () => {
+            const EXPECTED_REQUEST = {
+                [CONVERSION_PARAM_IN]: MODEL_CONTENTS,
+                [CONVERSION_PARAM_MM]: METAMODEL_CONTENTS
+            }
+
+            // Call the target object
+            platform.functionRegistry_callConversion(CONVERSION_FUNCTION_ID, TYPE_MAP_INPUT, PARAMETER_NAME);
+
+            // Check the expected results
+            const request = jasmine.Ajax.requests.mostRecent();
+            expect(request.data()).toEqual( EXPECTED_REQUEST );
+        })
+
+        it("returns the converted result via a promise", async () => {
+            const EXPECTED_RESPONSE = { name: PARAMETER_NAME, data: CONVERTED_MODEL }; // Format given by utility jsonRequestConversion() 
+
+            // Call the target object
+            const conversionResponse = platform.functionRegistry_callConversion(CONVERSION_FUNCTION_ID, TYPE_MAP_INPUT, PARAMETER_NAME);
+
+            // Check the expected results
+            await expectAsync(conversionResponse).toBeResolvedTo(EXPECTED_RESPONSE);
+        })
+    })
 
     describe("selectConversionFunctionConvertMetamodel()", () => { 
         let platform;
