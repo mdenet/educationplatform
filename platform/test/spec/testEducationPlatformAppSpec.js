@@ -3,11 +3,11 @@
 /*global $ -- jquery is externally imported*/
 
 export var TOKEN_SERVER_URL = "test://ts.url";
-import {EducationPlatform} from "../../src/EducationPlatform.js";
+import {EducationPlatformApp} from "../../src/EducationPlatformApp.js";
 import { ActionFunction } from "../../src/ActionFunction.js";
 import { Panel } from "../../src/Panel.js";
 
-describe("EducationPlatform", () => {
+describe("EducationPlatformApp", () => {
 
     describe("runAction()", () => {
 
@@ -27,7 +27,7 @@ describe("EducationPlatform", () => {
         beforeEach(()=>{
 
             // Setup
-            platform = new EducationPlatform();
+            platform = new EducationPlatformApp();
 
             //    platform - panels
             const panel1 = new Panel(PANEL_ID);
@@ -69,14 +69,14 @@ describe("EducationPlatform", () => {
             invokeReturnedPromise = new Promise(function(resolve) {
                 resolve(true);
             })
-            spyInvokeActionFunction = spyOn(EducationPlatform.prototype, "invokeActionFunction").and.returnValue(invokeReturnedPromise);
+            spyInvokeActionFunction = spyOn(EducationPlatformApp.prototype, "invokeActionFunction").and.returnValue(invokeReturnedPromise);
 
             //    platform - handle response
-            spyOn(EducationPlatform.prototype, "handleResponseActionFunction");
+            spyOn(EducationPlatformApp.prototype, "handleResponseActionFunction");
 
             //    platform - notifications
-            spyOn(EducationPlatform.prototype, "longNotification");
-            spyOn(EducationPlatform.prototype, "errorNotification");
+            spyOn(EducationPlatformApp.prototype, "longNotification");
+            spyOn(EducationPlatformApp.prototype, "errorNotification");
         })
 
         it("populates the language parameter", () => {
@@ -158,7 +158,7 @@ describe("EducationPlatform", () => {
     
         beforeEach(() => {
             // Setup    
-            platform = new EducationPlatform();
+            platform = new EducationPlatformApp();
 
             //    platform - toolsmanager
             toolsManagerSpy = jasmine.createSpyObj(['functionRegistry_resolve']);
@@ -175,7 +175,7 @@ describe("EducationPlatform", () => {
             platform.toolsManager = toolsManagerSpy;
              
             //    platform - functionRegistry_call
-            spyOn (EducationPlatform.prototype, "functionRegistry_call").and.returnValue ( 
+            spyOn (EducationPlatformApp.prototype, "functionRegistry_call").and.returnValue ( 
                 new Promise(function(resolve) {
                     resolve(ACTION_FUNCTION_RESULT);
                 })
@@ -224,7 +224,7 @@ describe("EducationPlatform", () => {
                  ["language", {type: "text", value: TOOL_LANGUAGE }] ]
             )
             
-            spyOn( EducationPlatform.prototype, "convert").and.returnValue(
+            spyOn( EducationPlatformApp.prototype, "convert").and.returnValue(
                 new Promise(function(resolve) {
                     resolve( {name: PARAM1_NAME, data: PARAM1_CONVERTED_VALUE} );
                 })
@@ -265,13 +265,13 @@ describe("EducationPlatform", () => {
             );
             
             //    platform - conversion function spies
-            spyOn( EducationPlatform.prototype, "convertIncludingMetamodel").and.returnValue(
+            spyOn( EducationPlatformApp.prototype, "convertIncludingMetamodel").and.returnValue(
                 new Promise(function(resolve) {
                     resolve( {name: PARAM1_NAME, data: PARAM1_CONVERTED_VALUE} );
                 })
             );
 
-            spyOn( EducationPlatform.prototype, "convert").and.returnValue(
+            spyOn( EducationPlatformApp.prototype, "convert").and.returnValue(
                 new Promise(function(resolve) {
                     resolve( {name: PARAM2_NAME, data: PARAM2_CONVERTED_VALUE} );
                 })
@@ -341,7 +341,7 @@ describe("EducationPlatform", () => {
 
         beforeEach(()=>{
             // Setup
-            platform = new EducationPlatform();
+            platform = new EducationPlatformApp();
             
         })
 
@@ -371,8 +371,8 @@ describe("EducationPlatform", () => {
 
         it("calls notification() with the given text", () => {
             // Setup
-            spyOn(EducationPlatform.prototype, "notification");
-            const platform = new EducationPlatform();
+            spyOn(EducationPlatformApp.prototype, "notification");
+            const platform = new EducationPlatformApp();
 
             // Call the target object
             platform.longNotification(NOTIFICATION_TEXT);
@@ -389,8 +389,8 @@ describe("EducationPlatform", () => {
 
         it("calls notification with the given text", () => {
             // Setup
-            spyOn(EducationPlatform.prototype, "notification");
-            const platform = new EducationPlatform();
+            spyOn(EducationPlatformApp.prototype, "notification");
+            const platform = new EducationPlatformApp();
 
             // Call the target object
             platform.successNotification(NOTIFICATION_TEXT);
@@ -407,8 +407,8 @@ describe("EducationPlatform", () => {
 
         it("calls notification with the given text", () => {
             // Setup
-            spyOn(EducationPlatform.prototype, "notification");
-            const platform = new EducationPlatform();
+            spyOn(EducationPlatformApp.prototype, "notification");
+            const platform = new EducationPlatformApp();
 
             // Call the target object
             platform.errorNotification(NOTIFICATION_TEXT);

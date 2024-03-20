@@ -1,11 +1,11 @@
 
 /*global TOKEN_SERVER_URL -- is set by environment variable*/
-import { EducationPlatform } from "./EducationPlatform.js";
+import { EducationPlatformApp } from "./EducationPlatformApp.js";
 
 const TOKEN_HANDLER_URL = TOKEN_SERVER_URL || "http://127.0.0.1:10000";
 let urlParameters = new URLSearchParams(window.location.search);  
 
-var platform = new EducationPlatform();
+var platform = new EducationPlatformApp();
 platform.initialize(urlParameters, TOKEN_HANDLER_URL);
 
 // Some functions and variables are accessed  
