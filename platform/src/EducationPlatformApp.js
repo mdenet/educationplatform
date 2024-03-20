@@ -37,7 +37,7 @@ import { jsonRequest, jsonRequestConversion, ARRAY_ANY_ELEMENT, urlParamPrivateR
 
 const COMMON_UTILITY_URL = utility.getWindowLocationHref().replace( utility.getWindowLocationSearch(), "" ) + "common/utility.json";
 
-class EducationPlatform {
+class EducationPlatformApp {
     outputType;
     outputLanguage;
     activity;
@@ -1066,4 +1066,4 @@ class EducationPlatform {
     }
 }
 
-export {EducationPlatform}
+export {EducationPlatformApp}

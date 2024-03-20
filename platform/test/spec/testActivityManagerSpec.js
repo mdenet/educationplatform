@@ -112,7 +112,7 @@ describe("ActivityManager", () => {
         const ACTIVITY_ID = "activity-1";
         const PANEL1_ID = "panel-1";
         const PANEL2_ID = "panel-2";
-        const PANEL_DEINITION_ID = "paneldef-t1";
+        const PANEL_DEFINITION_ID = "paneldef-t1";
 
         it("causes the activity file to be fetched from its URL using the fileHandler", () => {
             expect(FileHandler.prototype.fetchFile).toHaveBeenCalledWith(ACTIVITY_URL, false);
@@ -126,7 +126,7 @@ describe("ActivityManager", () => {
             expect(am.activityId).toEqual(ACTIVITY_ID);
         })
 
-        it("no config errors empty configErrors propererty", () => {
+        it("no config errors empty configErrors property", () => {
             expect(am.configErrors).toHaveSize(0);
         })
 
@@ -172,8 +172,8 @@ describe("ActivityManager", () => {
         })
 
         it("the panel definitions the current activity references are unresolved", () => {
-            expect (am.activities[ACTIVITY_ID].panels[0].ref).toEqual(PANEL_DEINITION_ID);
-            expect (am.activities[ACTIVITY_ID].panels[1].ref).toEqual(PANEL_DEINITION_ID);
+            expect (am.activities[ACTIVITY_ID].panels[0].ref).toEqual(PANEL_DEFINITION_ID);
+            expect (am.activities[ACTIVITY_ID].panels[1].ref).toEqual(PANEL_DEFINITION_ID);
         })
     })
 
