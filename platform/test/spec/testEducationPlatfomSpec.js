@@ -79,6 +79,17 @@ describe("EducationPlatform", () => {
             spyOn(EducationPlatform.prototype, "errorNotification");
         })
 
+        it("populates the language parameter", () => {
+            const expectedLanguageEntry = ["language", {type: "text", value: PANEL_LANGUAGE}];
+
+            // Call the target object
+            platform.runAction(PANEL_ID, BUTTON_ID);
+
+            // Check the expected results
+            expect(platform.invokeActionFunction).toHaveBeenCalledWith( 
+                jasmine.anything(), jasmine.mapContaining( new Map([expectedLanguageEntry]) ) 
+            );
+        })
         
         it("calls invokeActionFunction with the action functions parameters and their values", () => {
             const expectedParamMap = new Map (
