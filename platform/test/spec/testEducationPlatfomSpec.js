@@ -151,6 +151,7 @@ describe("EducationPlatform", () => {
         // types the test action functions are exepecting
         const ACTION_FUNCTION_PARAM1_TYPE = "type1";
         const ACTION_FUNCTION_PARAM2_TYPE = "type2";
+        const ACTION_FUNCTION_RESULT= "Test function result";
 
         let platform;
         let toolsManagerSpy;
@@ -176,12 +177,12 @@ describe("EducationPlatform", () => {
             //    platform - functionRegistry_call
             spyOn (EducationPlatform.prototype, "functionRegistry_call").and.returnValue ( 
                 new Promise(function(resolve) {
-                    resolve(true);
+                    resolve(ACTION_FUNCTION_RESULT);
                 })
             );
         })
 
-        it("returns a promise immediately after being called", async () => {
+        it("returns the result via a promise", async () => {
             const PARAM1_TYPE = ACTION_FUNCTION_PARAM1_TYPE;
 
             const parameterMap = new Map (
@@ -192,10 +193,10 @@ describe("EducationPlatform", () => {
             // Call the target object
             const returnedResult = platform.invokeActionFunction(ACTION_FUNCTION_ID, parameterMap);
 
-            await expectAsync(returnedResult).toBePending();
+            await expectAsync(returnedResult).toBeResolvedTo(ACTION_FUNCTION_RESULT);
         })
 
-        it("calls functionRegistry_call with the given parameter values for matching types and returns a promise", async () => {
+        it("calls functionRegistry_call with the given parameter values for matching types", async () => {
             const PARAM1_TYPE = ACTION_FUNCTION_PARAM1_TYPE;
 
             const parameterMap = new Map (
