@@ -491,11 +491,7 @@ class EducationPlatformApp {
 
                     const panelConfig = parameterMap.get(param.name); 
 
-                    if (panelConfig == undefined){
-                        // Set unused parameters in the request to undefined as the epsilon backend function expects them all. 
-                        actionRequestData[param.name] = "undefined";
-
-                    } else {
+                    if (panelConfig != undefined){
                         let parameterData = values.find(val => (val.name === param.name) );
 
                         actionRequestData[param.name] =  parameterData.data;
