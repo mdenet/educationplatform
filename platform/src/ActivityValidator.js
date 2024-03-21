@@ -213,4 +213,4 @@ class ActivityValidator {
 
 }
 
-export {ActivityValidator};
+export {ActivityValidator, ERROR_CATEGORY, errorFileType};
