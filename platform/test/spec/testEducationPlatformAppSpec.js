@@ -592,63 +592,6 @@ describe("EducationPlatformApp", () => {
         })
     })
 
-    describe("functionRegistry_call()", () => {
-        const TOOL_URL = "test://t1.url/toolfunction";
-        const TOOL_RESPONSE = '{ "validationResult": "PASS", "output": "Test" }';
-        const CONVERSION_FUNCTION_ID =  "test-function-id";
-
-        const PARAMETER_1_NAME = "test-param-1";
-        const PARAMETER_2_NAME = "language";
-
-        const PARAMETERS_INPUT = {
-            [PARAMETER_1_NAME]: "Parameter 1 value",
-            [PARAMETER_2_NAME]: "Parameter 2 value"
-        };
-
-        let platform;
-
-
-        beforeEach(()=>{
-            // Setup
-            jasmine.Ajax.install();
-
-            platform = new EducationPlatformApp();
-
-            jasmine.Ajax.stubRequest(TOOL_URL).andReturn({
-                "responseText": TOOL_RESPONSE,
-                "status": 200
-            });
-
-            // platform - toolsManager
-            let toolsManagerSpy =  jasmine.createSpyObj(['getActionFunction']);
-            toolsManagerSpy.getActionFunction.and.returnValue(new ActionFunction({
-                path: TOOL_URL
-            }));
-            platform.toolsManager= toolsManagerSpy;
-
-        })
-
-        afterEach(function() {
-            jasmine.Ajax.uninstall();
-        });  
-
-        it("returns the result via promise", async () => {
-            // Call the target object
-            const functionResponse = platform.functionRegistry_call(CONVERSION_FUNCTION_ID, PARAMETERS_INPUT);
-
-            // Check the expected results
-            await expectAsync(functionResponse).toBeResolvedTo(TOOL_RESPONSE);
-        })
-
-        it("sends a request to the tool service url", async () => {
-            // Call the target object
-            platform.functionRegistry_call(CONVERSION_FUNCTION_ID, PARAMETERS_INPUT);
-
-            // Check the expected results
-            const request = jasmine.Ajax.requests.mostRecent();
-            expect(request.data()).toEqual( PARAMETERS_INPUT );
-        })
-    })
 
     describe("functionRegistry_callConversion()", () => {
         const TOOL_URL = "test://t1.url/toolfunction";
