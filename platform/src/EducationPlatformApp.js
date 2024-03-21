@@ -276,7 +276,7 @@ class EducationPlatformApp {
             this.outputLanguage = this.activity.outputLanguage;
         }
         
-        // Create panels for the given activites
+        // Create panels for the given activities
         for ( let apanel of this.activity.panels ){
 
             var newPanel = this.createPanelForDefinitionId(apanel);
@@ -480,7 +480,7 @@ class EducationPlatformApp {
             }
         }
 
-        // Invoke the actionFunction on compeletion of any conversions
+        // Invoke the actionFunction on completion of any conversions
         let actionFunctionPromise = new Promise( (resolve, reject) => {
 
             Promise.all( parameterPromises ).then( (values) => { 
@@ -523,12 +523,12 @@ class EducationPlatformApp {
      * @param {string} sourceType 
      * @param {string} targetType
      * @param {string} parameterName name of the parameter for request
-     * @returns {Promise} promise for the converted paramter value
+     * @returns {Promise} promise for the converted parameter value
      */
     convert(sourceValue, sourceType, targetType, parameterName){
         
         let parameterPromise;
-        let typesPanelValuesMap = {}; // Types have to be distinct for mapping to the conversion function's paramters
+        let typesPanelValuesMap = {}; // Types have to be distinct for mapping to the conversion function's parameters
         typesPanelValuesMap[sourceType]=  sourceValue;
 
         let conversionFunctionId = this.functionRegistry_find( Object.keys(typesPanelValuesMap), targetType );
@@ -558,11 +558,11 @@ class EducationPlatformApp {
      * @param {string} metamodelType
      * @param {string} targetType
      * @param {string} parameterName name of the parameter for request
-     * @returns {Promise} promise for the converted paramter value
+     * @returns {Promise} promise for the converted parameter value
      */
     async convertIncludingMetamodel(sourceValue, sourceType, metamodelValue, metamodelType, targetType, parameterName){
         let parameterPromise;
-        let typesPanelValuesMap = {}; // Types have to be distinct for mapping to the conversion function's paramters
+        let typesPanelValuesMap = {}; // Types have to be distinct for mapping to the conversion function's parameters
         typesPanelValuesMap[sourceType]=  sourceValue;
 
         let conversionFunctionId;
@@ -602,13 +602,17 @@ class EducationPlatformApp {
      * @param {string[]} conversionFunctions list of conversion function ids to check 
      * @param {boolean} convertMetamodel when true try to convert the metamodel using a remote tool service conversion function
      *                                    available to the ToolsManager.
-     * @param {string} parameterName the name of the parameter to use when convering the metamodel. 
+     * @param {string} parameterName the name of the parameter to use when converting the metamodel. 
      * @param {string[]} typeValueMap the type values map the metamodel input value is added to if a conversion function is found
      * @returns {string} the id of a conversion function to use, null if none found.
      */
     async selectConversionFunctionConvertMetamodel(metamodelType, metamodelValue, conversionFunctions, convertMetamodel, parameterName, typeValueMap){
-        let conversionFunctionId;
-        let functionsToCheck = [...conversionFunctions]
+        let conversionFunctionId = null;
+        let functionsToCheck = [];
+
+        if (Array.isArray(conversionFunctions)){
+            functionsToCheck = [...conversionFunctions];
+        }
         
         while ( conversionFunctionId==null && functionsToCheck.length > 0){
             let functionId = functionsToCheck.pop();
@@ -661,7 +665,7 @@ class EducationPlatformApp {
      *   TODO: To be moved to the FunctionRegistry issue #40
      * 
      * @param {string} functionId the id of the action function
-     * @param {Object} typeValuesMap an object mapping action functions paramter types as keys to input values
+     * @param {Object} typeValuesMap an object mapping action functions parameter types as keys to input values
      * @param {string} parameterName name of the parameter
      * @returns Promise for the translated data
      * 
@@ -699,7 +703,7 @@ class EducationPlatformApp {
      * Requests the conversion function from the remote tool service
      * 
      * @param {Object} parameters 
-     * @param {ActionFunction} converstionFunction
+     * @param {ActionFunction} conversionFunction
      * @param {String} parameterName name of the parameter
      * @returns Promise for the translated data
      */
@@ -1017,7 +1021,7 @@ class EducationPlatformApp {
 
     /**
      * Poll for editor to become available. 
-     * @param {String} statusUrl - the url for cheking the status of the editor panel.
+     * @param {String} statusUrl - the url for checking the status of the editor panel.
      * @param {String} editorInstanceUrl - the editor instance's url. 
      * @param {String} editorPanelId - the id of the editor panel.
      * @param {String} editorActivityId - TODO remove as this can be found using editorPanelId to save having to specify in config.
