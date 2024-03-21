@@ -612,7 +612,7 @@ describe("EducationPlatformApp", () => {
             // Setup
             jasmine.Ajax.install();
 
-            platform = new EducationPlatform();
+            platform = new EducationPlatformApp();
 
             jasmine.Ajax.stubRequest(TOOL_URL).andReturn({
                 "responseText": TOOL_RESPONSE,
@@ -676,7 +676,7 @@ describe("EducationPlatformApp", () => {
             // Setup
             jasmine.Ajax.install();
 
-            platform = new EducationPlatform();
+            platform = new EducationPlatformApp();
 
             //    xhr
             jasmine.Ajax.stubRequest(TOOL_URL).andReturn({
