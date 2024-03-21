@@ -296,9 +296,7 @@ describe("EducationPlatformApp", () => {
             expect(platform.functionRegistry_call).toHaveBeenCalledWith(ACTION_FUNCTION_ID, EXPECTED_PARAM_VALUES);
         })
         
-        it("sends request to a conversion function's url with unused parameters set to undefined", async () => {
-            /* This behaviour was to ensure compatibility with java google cloud function based
-             * Epsilon playground pre Micronaut that required all parameters to be provided. */
+        it("sends requests to a conversion function's url without unused parameters", async () => {
             const PARAM1_TYPE = ACTION_FUNCTION_PARAM1_TYPE;
 
             const parameterMap = new Map (
@@ -323,7 +321,6 @@ describe("EducationPlatformApp", () => {
             // Check the expected results
             const EXPECTED_PARAM_VALUES = {
                 [PARAM1_NAME]: PARAM1_VALUE,
-                [PARAM2_NAME]: "undefined",
                 "language": TOOL_LANGUAGE
             }
             
