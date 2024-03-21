@@ -650,7 +650,7 @@ describe("EducationPlatformApp", () => {
         })
     })
 
-    describe("jsonRequestConversion()", () => {
+    describe("functionRegistry_callConversion()", () => {
         const TOOL_URL = "test://t1.url/toolfunction";
         const CONVERSION_FUNCTION_ID = "test-function-id";
         const PARAMETER_NAME = "testParameter1";
