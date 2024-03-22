@@ -137,67 +137,6 @@ describe("EducationPlatformApp", () => {
     })
 
 
-    describe("convert()", () => { 
-        let platform;
-        let findConversionSpy;
-
-        const FILE_CONTENTS = "Test file contents.";
-        const SOURCE_TYPE = "test-source-type";
-        const TARGET_TYPE = "test-target-type";
-        const PARAM_NAME = "test";
-        const callConversionReturn = new Promise(function(resolve) {
-            resolve(true);
-        })
-
-        const CONVERSION_FUNCTION_ID = "conversion-function-id";
-
-        beforeEach(()=>{ 
-            // Setup    
-            findConversionSpy = spyOn( EducationPlatformApp.prototype, "functionRegistry_find").
-            and.returnValue(CONVERSION_FUNCTION_ID);
-
-            spyOn( EducationPlatformApp.prototype, "functionRegistry_callConversion").and.returnValue(
-                callConversionReturn);
-
-            spyOn( EducationPlatformApp.prototype, "errorNotification");
-
-            platform = new EducationPlatformApp();
-
-        })
-
-        it("calls functionRegistry_callConversion on a conversion function being available", ()=>{ 
-            // Call the target object
-            platform.convert(FILE_CONTENTS, SOURCE_TYPE, TARGET_TYPE, PARAM_NAME);
-
-            // Check the expected results
-            expect(platform.functionRegistry_callConversion).toHaveBeenCalledWith(
-                CONVERSION_FUNCTION_ID, { [SOURCE_TYPE]: FILE_CONTENTS } , PARAM_NAME
-            );
-
-            expect(platform.errorNotification).not.toHaveBeenCalled();
-        })
-
-        it("returns a promise on a conversion function being available", ()=> {
-            // Call the target object
-            const convertResult = platform.convert(FILE_CONTENTS, SOURCE_TYPE, TARGET_TYPE, PARAM_NAME);
-
-            // Check the expected results
-            expect(convertResult).toEqual(callConversionReturn);
-        })
-
-        it("returns null and provides an error notification on a conversion function not being available", ()=> { 
-            findConversionSpy.and.returnValue(null);
-
-            // Call the target object
-            const convertResult = platform.convert(FILE_CONTENTS, SOURCE_TYPE, TARGET_TYPE, PARAM_NAME);
-
-            // Check the expected results
-            expect(convertResult).toEqual(null);
-            expect(platform.errorNotification).toHaveBeenCalledWith(jasmine.stringMatching("(N|n)o conversion function"))
-        })
-
-    })
-
     describe("convertIncludingMetamodel()", () => { 
         let platform;
         let findConversionSpy;
