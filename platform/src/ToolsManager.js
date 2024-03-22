@@ -366,7 +366,7 @@ class ToolManager {
             }
         }
 
-        // Invoke the actionFunction on compeletion of any conversions
+        // Invoke the actionFunction on completion of any conversions
         let actionFunctionPromise = new Promise((resolve, reject) => {
 
             Promise.all( parameterPromises ).then( (values) => { 
@@ -377,11 +377,7 @@ class ToolManager {
 
                     const panelConfig = parameterMap.get(param.name); 
 
-                    if (panelConfig == undefined){
-                        // Set unused parameters in the request to undefined as the epsilon backend function expects them all. 
-                        actionRequestData[param.name] = "undefined";
-
-                    } else {
+                    if (panelConfig != undefined){
                         let parameterData = values.find(val => (val.name === param.name) );
 
                         actionRequestData[param.name] =  parameterData.data;
@@ -409,7 +405,7 @@ class ToolManager {
      * @param {string} sourceType 
      * @param {string} targetType
      * @param {string} parameterName name of the parameter for request
-     * @returns {Promise} promise for the converted paramter value
+     * @returns {Promise} promise for the converted parameter value
      */
     convert(sourceValue, sourceType, targetType, parameterName){
         
@@ -445,11 +441,11 @@ class ToolManager {
      * @param {string} metamodelType
      * @param {string} targetType
      * @param {string} parameterName name of the parameter for request
-     * @returns {Promise} promise for the converted paramter value
+     * @returns {Promise} promise for the converted parameter value
      */
     async convertIncludingMetamodel(sourceValue, sourceType, metamodelValue, metamodelType, targetType, parameterName){
         let parameterPromise;
-        let typesPanelValuesMap = {}; // Types have to be distinct for mapping to the conversion function's paramters
+        let typesPanelValuesMap = {}; // Types have to be distinct for mapping to the conversion function's parameters
         typesPanelValuesMap[sourceType]=  sourceValue;
 
         let conversionFunctionId;
@@ -490,13 +486,17 @@ class ToolManager {
      * @param {string[]} conversionFunctions list of conversion function ids to check 
      * @param {boolean} convertMetamodel when true try to convert the metamodel using a remote tool service conversion function
      *                                    available to the ToolsManager.
-     * @param {string} parameterName the name of the parameter to use when convering the metamodel. 
+     * @param {string} parameterName the name of the parameter to use when converting the metamodel. 
      * @param {string[]} typeValueMap the type values map the metamodel input value is added to if a conversion function is found
      * @returns {string} the id of a conversion function to use, null if none found.
      */
     async selectConversionFunctionConvertMetamodel(metamodelType, metamodelValue, conversionFunctions, convertMetamodel, parameterName, typeValueMap){
-        let conversionFunctionId;
-        let functionsToCheck = [...conversionFunctions]
+        let conversionFunctionId = null;
+        let functionsToCheck = [];
+
+        if (Array.isArray(conversionFunctions)){
+            functionsToCheck = [...conversionFunctions];
+        }
         
         while ( conversionFunctionId==null && functionsToCheck.length > 0){
             let functionId = functionsToCheck.pop();

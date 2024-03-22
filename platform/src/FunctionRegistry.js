@@ -72,7 +72,7 @@ toolsManager;
      * Requests the conversion function from the remote tool service
      * 
      * @param {Object} parameters 
-     * @param {ActionFunction} converstionFunction
+     * @param {ActionFunction} conversionFunction
      * @param {String} parameterName name of the parameter
      * @returns Promise for the translated data
      */
@@ -103,7 +103,7 @@ toolsManager;
      * Prepares the input parameters and requests the type translation for the given function id 
      * 
      * @param {string} functionId the id of the action function
-     * @param {Object} typeValuesMap an object mapping action functions paramter types as keys to input values
+     * @param {Object} typeValuesMap an object mapping action functions parameter types as keys to input values
      * @param {string} parameterName name of the parameter
      * @returns Promise for the translated data
      * 
