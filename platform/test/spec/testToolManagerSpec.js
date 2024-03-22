@@ -557,4 +557,73 @@ describe("ToolManager", () => {
 
     })
 
+
+    describe("convertIncludingMetamodel()", () => { 
+        let tm;
+        let findConversionSpy;
+
+        const FILE_CONTENTS = "Test file contents.";
+        const SOURCE_TYPE = "test-source-type";
+        const TARGET_TYPE = "test-target-type";
+        const MM_FILE_CONTENTS = "Test metamodel file contents."
+        const MM_TYPE = "test-metamodel-type";
+        const PARAM_NAME = "test";
+        const callConversionReturn = new Promise(function(resolve) {
+            resolve(true);
+        })
+
+        const CONVERSION_FUNCTION_ID = "conversion-function-id";
+
+        beforeEach(()=>{ 
+            // Setup    
+            findConversionSpy = spyOn( FunctionRegistry.prototype, "findPartial").
+            and.returnValue([CONVERSION_FUNCTION_ID]);
+
+            spyOn( FunctionRegistry.prototype, "callConversion").and.returnValue(
+                callConversionReturn);
+
+            //    platform - toolsManager   
+            spyOn(ToolManager.prototype, "getActionFunction").and.returnValue(new ActionFunction({
+                parameters: [
+                    {name: "input", type: SOURCE_TYPE, instanceOf: "metamodel"},
+                    {name: "metamodel", type: MM_TYPE}
+                ]
+            }));
+
+            const educationPlatformSpy =  jasmine.createSpyObj(['errorNotification']);
+
+            tm = new ToolManager(educationPlatformSpy.errorNotification);
+        })
+
+        it("calls functionRegister.callConversion() on a conversion function being available", async ()=> { 
+            // Call the target object
+            await tm.convertIncludingMetamodel(FILE_CONTENTS, SOURCE_TYPE, MM_FILE_CONTENTS, MM_TYPE, TARGET_TYPE, PARAM_NAME);
+
+            // Check the expected results
+            expect(tm.functionRegister.callConversion).toHaveBeenCalledWith(
+                CONVERSION_FUNCTION_ID, {[SOURCE_TYPE]: FILE_CONTENTS, [MM_TYPE]: MM_FILE_CONTENTS } , PARAM_NAME
+            );
+
+            expect(tm.errorNotification).not.toHaveBeenCalled();
+        })
+
+        it("returns a promise on a conversion function being available", async () => {
+            // Call the target object
+            const convertResult = tm.convertIncludingMetamodel(FILE_CONTENTS, SOURCE_TYPE, MM_FILE_CONTENTS, MM_TYPE, TARGET_TYPE, PARAM_NAME);
+
+            // Check the expected results
+            await expectAsync(convertResult).toBePending();
+        })
+
+        it("returns null and provides an error notification on a conversion function not being available", async () => { 
+            findConversionSpy.and.returnValue(null);
+
+            // Call the target object
+            const convertResult = await tm.convertIncludingMetamodel(FILE_CONTENTS, SOURCE_TYPE, MM_FILE_CONTENTS, MM_TYPE, TARGET_TYPE, PARAM_NAME);
+
+            // Check the expected results
+            expect(convertResult).toEqual(null);
+            expect(tm.errorNotification).toHaveBeenCalledWith(jasmine.stringMatching("(N|n)o conversion function"))
+        })
+    })
 })
