@@ -58,20 +58,20 @@ describe("EducationPlatformApp", () => {
             platform.activityManager = activityManagerSpy;
 
             //    tools manager
-            let toolsManagerSpy = jasmine.createSpyObj(['getActionFunction']);
+            let toolsManagerSpy = jasmine.createSpyObj(['getActionFunction', 'invokeActionFunction']);
             toolsManagerSpy.getActionFunction.and.returnValue(new ActionFunction({
                 parameters: [
                     {name: "language", type: "text"}
                 ]
             }));
-            platform.toolsManager = toolsManagerSpy;
-            
-            //    platform - invoke action function
+
             invokeReturnedPromise = new Promise(function(resolve) {
                 resolve(true);
             })
-            spyInvokeActionFunction = spyOn(EducationPlatformApp.prototype, "invokeActionFunction").and.returnValue(invokeReturnedPromise);
-
+            spyInvokeActionFunction = toolsManagerSpy.invokeActionFunction.and.returnValue(invokeReturnedPromise);
+            
+            platform.toolsManager = toolsManagerSpy;
+            
             //    platform - handle response
             spyOn(EducationPlatformApp.prototype, "handleResponseActionFunction");
 
@@ -87,7 +87,7 @@ describe("EducationPlatformApp", () => {
             platform.runAction(PANEL_ID, BUTTON_ID);
 
             // Check the expected results
-            expect(platform.invokeActionFunction).toHaveBeenCalledWith( 
+            expect(platform.toolsManager.invokeActionFunction).toHaveBeenCalledWith( 
                 jasmine.anything(), jasmine.mapContaining( new Map([expectedLanguageEntry]) ) 
             );
         })
@@ -102,7 +102,7 @@ describe("EducationPlatformApp", () => {
             platform.runAction(PANEL_ID, BUTTON_ID);
 
             // Check the expected results
-            expect(platform.invokeActionFunction).toHaveBeenCalledWith(ACTION_FUNCTION_ID, expectedParamMap);
+            expect(platform.toolsManager.invokeActionFunction).toHaveBeenCalledWith(ACTION_FUNCTION_ID, expectedParamMap);
         })
 
         it("calls handleResponseActionFunction with the current action and the invoked function's result promise", () => {
