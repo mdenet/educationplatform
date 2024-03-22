@@ -369,4 +369,130 @@ describe("ToolManager", () => {
         })
 
     })
+
+
+    describe("selectConversionFunctionConvertMetamodel()", () => { 
+        let tm;
+
+        const SOURCE_TYPE =  "test-source-type";
+        const FILE_CONTENTS = "Test file contents.";
+        const MM_FILE_CONTENTS = "Test metamodel file contents."
+        const MM_TARGET_TYPE = "test-metamodel-target-type";
+        const PARAM_NAME = "test";
+
+        const CONVERSION_FUNCTION_ID = "conversion-function-id";
+        const X_FUNCTION_ID = "x-function-id"; // Not interested
+
+        let functionRegistrySpy_find;
+        
+        beforeEach( () => { 
+            // Setup    
+            tm = new ToolManager();
+
+            //    platform - toolsManager
+            functionRegistrySpy_find = spyOn(FunctionRegistry.prototype, "find");
+
+            spyOn(ToolManager.prototype, "getActionFunction").and.callFake( (functionId) => {        
+                let actionFunctionConfig;
+
+                switch (functionId){
+                    case CONVERSION_FUNCTION_ID:
+                        actionFunctionConfig = {
+                            parameters: [
+                                {name: "input", type: SOURCE_TYPE, instanceOf: "metamodel"},
+                                {name: "metamodel", type: MM_TARGET_TYPE}
+                            ]
+                        };
+                        break;
+
+                     case X_FUNCTION_ID:
+                        actionFunctionConfig = {
+                            parameters: [
+                                {name: "input", type: SOURCE_TYPE, instanceOf: "metamodel"},
+                                {name: "metamodel", type: "X"}
+                            ]
+                        }
+                            break;
+                    default:
+                        actionFunctionConfig = null;
+                }
+
+                return new ActionFunction(actionFunctionConfig)
+            })
+        })
+
+        it("returns a function id if a conversion is possible without considering the metamodel", async () => { 
+            const CONSIDER_MM = false;
+            let mm_type = MM_TARGET_TYPE;
+            const typeValueMap = { [SOURCE_TYPE]: FILE_CONTENTS }
+
+            // Call the target object
+            let selectConversionResult =  await tm.selectConversionFunctionConvertMetamodel(mm_type, MM_FILE_CONTENTS, [CONVERSION_FUNCTION_ID, X_FUNCTION_ID], CONSIDER_MM, PARAM_NAME, typeValueMap)
+
+            // Check the expected results
+            expect(selectConversionResult).toEqual(CONVERSION_FUNCTION_ID);
+        })
+
+        it("returns null if a conversion is not possible without considering the metamodel", async () => { 
+            const CONSIDER_MM = false;
+            let mm_type = MM_TARGET_TYPE;
+            const typeValueMap = { [SOURCE_TYPE]: FILE_CONTENTS }
+
+            // Call the target object
+            let selectConversionResult =  await tm.selectConversionFunctionConvertMetamodel(mm_type, MM_FILE_CONTENTS, [X_FUNCTION_ID, X_FUNCTION_ID], CONSIDER_MM, PARAM_NAME, typeValueMap)
+
+            // Check the expected results
+            expect(selectConversionResult).toEqual(null);
+        })
+
+        it("returns a function id, converts the metamodel, and adds the converted metamodel value to the typeValueMap if a conversion is possible considering the metamodel", async ()=>{ 
+            const CONSIDER_MM = true;
+            let mm_type = "test-metamodel-type";
+            const typeValueMap = { [SOURCE_TYPE]: FILE_CONTENTS }
+
+            const MM_CONVERSION_FUNCTION_ID = "metamodel-conversion-function-id";
+            const MM_CONVERTED_CONTENTS = "Test converted metamodel contents.";
+
+            const callConversionReturn = new Promise(function(resolve) {
+                resolve({data: MM_CONVERTED_CONTENTS});
+            })
+            spyOn( FunctionRegistry.prototype, "callConversion").and.returnValue(
+                callConversionReturn);
+
+            functionRegistrySpy_find.and.returnValues(null, MM_CONVERSION_FUNCTION_ID); // Find possible conversion on the second call
+            
+            // Call the target object
+            let selectConversionResult =  await tm.selectConversionFunctionConvertMetamodel(mm_type, MM_FILE_CONTENTS, [CONVERSION_FUNCTION_ID, X_FUNCTION_ID], CONSIDER_MM, PARAM_NAME, typeValueMap)
+
+            // Check the expected results
+            expect(tm.functionRegister.callConversion).toHaveBeenCalledWith(
+                MM_CONVERSION_FUNCTION_ID, { [mm_type]: MM_FILE_CONTENTS}, PARAM_NAME
+            );
+
+            expect(typeValueMap[MM_TARGET_TYPE]).toEqual(MM_CONVERTED_CONTENTS);
+
+            expect(selectConversionResult).toEqual(CONVERSION_FUNCTION_ID);
+        })
+
+        it("returns null if no conversion is available considering the metamodel", async () => { 
+            const CONSIDER_MM = true;
+            let mm_type = "test-metamodel-type";
+            const typeValueMap = { [SOURCE_TYPE]: FILE_CONTENTS }
+
+            spyOn( FunctionRegistry.prototype, "callConversion");
+
+            functionRegistrySpy_find.and.returnValues(null, null); // Do not find possible conversion
+
+            // Call the target object
+            let selectConversionResult =  await tm.selectConversionFunctionConvertMetamodel(mm_type, MM_FILE_CONTENTS, [CONVERSION_FUNCTION_ID, X_FUNCTION_ID], CONSIDER_MM, PARAM_NAME, typeValueMap)
+
+            // Check the expected results
+            expect(tm.functionRegister.callConversion).not.toHaveBeenCalled();
+
+            expect(typeValueMap[MM_TARGET_TYPE]).toEqual(undefined);
+
+            expect(selectConversionResult).toEqual(null);
+        })
+    })
+
 })
