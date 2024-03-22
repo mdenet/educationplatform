@@ -36,6 +36,7 @@ import { jsonRequest, urlParamPrivateRepo, utility } from './Utility.js';
 
 
 const COMMON_UTILITY_URL = utility.getWindowLocationHref().replace( utility.getWindowLocationSearch(), "" ) + "common/utility.json";
+const ACTION_FUNCTION_LANGUAGE_TYPE = "text";
 
 class EducationPlatformApp {
     outputType;
@@ -584,7 +585,6 @@ class EducationPlatformApp {
             //Buttons defined by tool
             buttonConfig= action.source.ref.buttons.find( btn => btn.id == sourceButton );
         }  
-        const toolActionFunction = this.toolsManager.getActionFunction( buttonConfig.actionfunction ); // TODO tidy up by resolving tool references
 
         // Create map containing panel values
         let parameterMap = new Map();
@@ -611,7 +611,7 @@ class EducationPlatformApp {
 
         // Add the platform language parameter
         let languageParam = {};
-        languageParam.type = toolActionFunction.getParameterType("language");
+        languageParam.type = ACTION_FUNCTION_LANGUAGE_TYPE;
         languageParam.value = action.source.ref.language; // Source panel language
         parameterMap.set("language", languageParam);
 
