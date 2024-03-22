@@ -205,7 +205,7 @@ describe("ToolManager", () => {
             // Setup    
             tm = new ToolManager();
 
-            //    platform - toolsmanager
+            //    toolsmanager - functionRegister
             functionRegistrySpy_resolve = spyOn(FunctionRegistry.prototype, "resolve").and.returnValue(
                 new ActionFunction({
                     parameters: [
@@ -215,7 +215,6 @@ describe("ToolManager", () => {
                 })
             );
              
-            //    platform - functionRegistry_call
             spyOn (FunctionRegistry.prototype, "call").and.returnValue ( 
                 new Promise(function(resolve) {
                     resolve(ACTION_FUNCTION_RESULT);
@@ -294,7 +293,7 @@ describe("ToolManager", () => {
                  ["language", {type: "text", value: TOOL_LANGUAGE }] ]
             )
 
-            //    platform - toolsManager
+            //    toolsmanager - functionRegister
             functionRegistrySpy_resolve.and.returnValue(
                 new ActionFunction({
                     parameters: [
@@ -305,7 +304,7 @@ describe("ToolManager", () => {
                 })
             );
             
-            //    platform - conversion function spies
+            //    toolsmanager - conversion function spies
             spyOn( ToolManager.prototype, "convertIncludingMetamodel").and.returnValue(
                 new Promise(function(resolve) {
                     resolve( {name: PARAM1_NAME, data: PARAM1_CONVERTED_VALUE} );
@@ -345,7 +344,7 @@ describe("ToolManager", () => {
                  ["language", {type: "text", value: TOOL_LANGUAGE }] ]
             )
 
-            //    platform - toolsManager
+            //    toolsmanager - functionRegister
             functionRegistrySpy_resolve.and.returnValue(
                 new ActionFunction({
                     parameters: [
@@ -389,7 +388,7 @@ describe("ToolManager", () => {
             // Setup    
             tm = new ToolManager();
 
-            //    platform - toolsManager
+            //    toolsmanager - functionRegister
             functionRegistrySpy_find = spyOn(FunctionRegistry.prototype, "find");
 
             spyOn(ToolManager.prototype, "getActionFunction").and.callFake( (functionId) => {        
@@ -582,7 +581,7 @@ describe("ToolManager", () => {
             spyOn( FunctionRegistry.prototype, "callConversion").and.returnValue(
                 callConversionReturn);
 
-            //    platform - toolsManager   
+            //    toolsmanager - get action function spy 
             spyOn(ToolManager.prototype, "getActionFunction").and.returnValue(new ActionFunction({
                 parameters: [
                     {name: "input", type: SOURCE_TYPE, instanceOf: "metamodel"},

@@ -73,7 +73,7 @@ describe("FunctionRegistry", () => {
                 "status": 200
             });
 
-            // platform - toolsManager
+            // toolsmanager - get action function spy
             let toolsManagerSpy =  jasmine.createSpyObj(['getActionFunction']);
             toolsManagerSpy.getActionFunction.and.returnValue(new ActionFunction({
                 path: TOOL_URL
@@ -137,7 +137,7 @@ describe("FunctionRegistry", () => {
                 "status": 200
             });
 
-            //    platform - toolsManager
+            // toolsmanager - get action function spy
             let toolsManagerSpy =  jasmine.createSpyObj(['getActionFunction']);
             toolsManagerSpy.getActionFunction.and.returnValue(new ActionFunction({
                 parameters: [
