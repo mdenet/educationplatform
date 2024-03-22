@@ -17,8 +17,8 @@ class ToolManager {
      * @param {function(String)} errorNotifier - the function to call to display an error
      */
     constructor(errorNotifier){
-        this.configValidator= new ToolConfigValidator();
-        this.functionRegister= new FunctionRegistry(this);
+        this.configValidator = new ToolConfigValidator();
+        this.functionRegister = new FunctionRegistry(this);
         this.errorNotification = errorNotifier;
     }
 

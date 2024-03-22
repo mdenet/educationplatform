@@ -6,7 +6,7 @@ import { ActionFunction } from "../../src/ActionFunction.js";
 
 describe("FunctionRegistry", () => {
 
-    it("a registered function can be found", () => {
+    it("can find a registered function", () => {
     
         let registry = new FunctionRegistry();
 
