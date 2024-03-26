@@ -1,3 +1,5 @@
+/*global describe, it, expect --  functions provided by Jasmine */
+
 import {ActionFunction} from "../../src/ActionFunction.js"
 
 describe("ActionFunction", () => {
@@ -14,31 +16,32 @@ describe("ActionFunction", () => {
         ' }' 
     );                             
     
-    
-    it("object creation - id", () => {
-    
-        let actionFunction = new ActionFunction(testActionFunctionConfig);
+    describe("constructor()", () => {
+        it("sets the created ActionFunction's id from a given config object", () => {
+        
+            let actionFunction = new ActionFunction(testActionFunctionConfig);
 
-        let id = actionFunction.getId(); 
+            let id = actionFunction.getId(); 
 
-        expect(id).toBe("af-id");    
+            expect(id).toBe("af-id");    
+        })
     })
 
-    it("instance of a parameter name returns the the corresponding id", () => {
-        let actionFunction = new ActionFunction(testActionFunctionConfig);
+    describe("getInstanceOfParamName()", () => {
+        it("returns the instanceOf parameter name for the given parameter if it is an instance of a metamodel", () => {
+            let actionFunction = new ActionFunction(testActionFunctionConfig);
 
-        let foundParamName = actionFunction.getInstanceOfParamName("af-param3");
+            let foundParamName = actionFunction.getInstanceOfParamName("af-param3");
 
-        expect(foundParamName).toBe("af-param1")
+            expect(foundParamName).toEqual("af-param1")
+        })
+
+        it("returns null if the given parameter is not an instance of a metamodel", () => {
+            let actionFunction = new ActionFunction(testActionFunctionConfig);
+
+            let foundParamName = actionFunction.getInstanceOfParamName("af-param2");
+
+            expect(foundParamName).toEqual(null)
+        })
     })
-
-    //TODO make type an object
-    xit("instance of a the return type returns the the corresponding id", () => {
-        let actionFunction = new ActionFunction(testActionFunctionConfig);
-
-        let foundParamName = actionFunction.getInstanceOfParamName();
-
-        expect(foundParamName).toBe("af-param1")
-    })
-
 })
