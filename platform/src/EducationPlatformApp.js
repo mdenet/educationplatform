@@ -424,41 +424,6 @@ class EducationPlatformApp {
     }
 
    
-
-
-
-    /**
-     * Converts a source value to a target type using the available conversion functions
-     * 
-     *   TODO: To be moved to the ToolManager issue #40
-     * 
-     * @param {string} sourceValue 
-     * @param {string} sourceType 
-     * @param {string} targetType
-     * @param {string} parameterName name of the parameter for request
-     * @returns {Promise} promise for the converted parameter value
-     */
-    convert(sourceValue, sourceType, targetType, parameterName){
-        
-        let parameterPromise;
-        let typesPanelValuesMap = {}; // Types have to be distinct for mapping to the conversion function's parameters
-        typesPanelValuesMap[sourceType]=  sourceValue;
-
-        let conversionFunctionId = this.functionRegistry_find( Object.keys(typesPanelValuesMap), targetType );
-
-        if (conversionFunctionId != null){
-            //There is a matching conversion function
-            parameterPromise = this.functionRegistry_callConversion(conversionFunctionId, typesPanelValuesMap, parameterName);
-            
-        } else {
-            parameterPromise = null;
-            this.errorNotification("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
-        }
-
-        return parameterPromise;
-    }
-
-
     /**
      * Handle the response from the remote tool service
      * 
