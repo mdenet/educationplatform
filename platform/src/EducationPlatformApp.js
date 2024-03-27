@@ -33,6 +33,7 @@ import { Preloader } from './Preloader.js';
 import { Layout } from './Layout.js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
 import { jsonRequest, urlParamPrivateRepo, utility } from './Utility.js';
+import { ErrorHandler } from './ErrorHandler.js';
 
 
 const COMMON_UTILITY_URL = utility.getWindowLocationHref().replace( utility.getWindowLocationSearch(), "" ) + "common/utility.json";
@@ -45,6 +46,7 @@ class EducationPlatformApp {
     preloader;
     panels;
 
+    errorHandler;
     fileHandler;
     activityManager;
     toolsManager;
@@ -52,6 +54,7 @@ class EducationPlatformApp {
     constructor() {
         this.outputType = "text";
         this.outputLanguage = "text";
+        this.errorHandler = new ErrorHandler(this.errorNotification.bind(this));
         this.preloader = new Preloader();
         this.panels = [];
     }
@@ -152,7 +155,7 @@ class EducationPlatformApp {
 
         if (errors.length==0){
             // An activity configuration has been provided
-            this.toolsManager = new ToolsManager(this.errorNotification);
+            this.toolsManager = new ToolsManager(this.errorHandler.notify.bind(this.errorHandler));
             this.activityManager = new ActivityManager( (this.toolsManager.getPanelDefinition).bind(this.toolsManager), this.fileHandler );
             this.activityManager.initializeActivities();
             errors = errors.concat(this.activityManager.getConfigErrors());
@@ -555,8 +558,10 @@ class EducationPlatformApp {
                     }
                 }
 
-            }
-        });
+            } 
+        }).catch( (err) => {
+            this.errorHandler.notify("There was an error translating action function parameter types.", err);
+        } );
 
     }
 
@@ -621,10 +626,6 @@ class EducationPlatformApp {
 
         // Call backend conversion and service functions
         let actionResultPromise = this.toolsManager.invokeActionFunction(buttonConfig.actionfunction, parameterMap);
-
-        actionResultPromise.catch( () => {
-            this.errorNotification("There was an error translating action function parameter types.");
-        } );
 
         this.handleResponseActionFunction(action , actionResultPromise);
     
@@ -740,7 +741,7 @@ class EducationPlatformApp {
             this.successNotification("The activity panel contents have been saved.");
         
         }).catch(() => {
-            this.errorNotification("An error occurred while trying to save the panel contents.");
+            this.errorHandler.notify("An error occurred while trying to save the panel contents.");
         });
     }
 
