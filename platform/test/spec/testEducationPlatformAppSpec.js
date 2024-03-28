@@ -140,6 +140,9 @@ describe("EducationPlatformApp", () => {
                 reject(new TypeError("test type error"));
             })
 
+            window.onerror = () => {}; /* Disable notifications for unknown errors so that the uncaught exceptions 
+                                          that this test triggers do not cause random failures */
+
             // Call the target object
             platform.handleResponseActionFunction({}, invokeReturnedPromiseError);
     

@@ -132,7 +132,7 @@ class ActivityManager {
         try {
             let file = this.fileHandler.fetchFile( this.activitiesUrl , urlParamPrivateRepo() );
             fileContent = file.content;
-        } catch (e) {
+        } catch (err) {
             errors.push( new EducationPlatformError(`The activity configuration file was not accessible at: ${this.activitiesUrl}. 
                                                     Check the activity file is available at the given url and you have the correct access rights.`) );
         }

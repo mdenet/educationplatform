@@ -526,7 +526,11 @@ class EducationPlatformApp {
             } 
         }).catch( (err) => {
             this.errorHandler.notify("There was an error translating action function parameter types.", err);
-        } );
+
+            if (!(err instanceof EducationPlatformError)) {
+                throw err;
+            }
+        });
 
     }
 
@@ -705,8 +709,13 @@ class EducationPlatformApp {
         Promise.all(fileStorePromises).then( () => {
             this.successNotification("The activity panel contents have been saved.");
         
-        }).catch(() => {
-            this.errorHandler.notify("An error occurred while trying to save the panel contents.");
+        }).catch( (err) => {
+            this.errorHandler.notify("An error occurred while trying to save the panel contents.", err);
+
+            if (!(err instanceof EducationPlatformError)) {
+                throw err;
+            }
+            this.errorHandler.notify();
         });
     }
 
