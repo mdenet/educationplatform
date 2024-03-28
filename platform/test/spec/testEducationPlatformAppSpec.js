@@ -1,4 +1,4 @@
-/*global describe, it, expect, spyOn, beforeEach, afterEach --  functions provided by Jasmine */
+/*global describe, it, expect, spyOn, beforeEach, afterEach, expectAsync --  functions provided by Jasmine */
 /*global jasmine --  object provided by Jasmine */
 /*global $ -- jquery is externally imported*/
 
@@ -6,6 +6,7 @@ export var TOKEN_SERVER_URL = "test://ts.url";
 import {EducationPlatformApp} from "../../src/EducationPlatformApp.js";
 import { ActionFunction } from "../../src/ActionFunction.js";
 import { Panel } from "../../src/Panel.js";
+import { ErrorHandler } from "../../src/ErrorHandler.js";
 import "jasmine-ajax";
 
 describe("EducationPlatformApp", () => {
@@ -23,7 +24,6 @@ describe("EducationPlatformApp", () => {
         let platform;
         let invokeReturnedPromise;
         let resolvedActivity;
-        let spyInvokeActionFunction;
 
         beforeEach(()=>{
 
@@ -68,7 +68,7 @@ describe("EducationPlatformApp", () => {
             invokeReturnedPromise = new Promise(function(resolve) {
                 resolve(true);
             })
-            spyInvokeActionFunction = toolsManagerSpy.invokeActionFunction.and.returnValue(invokeReturnedPromise);
+            toolsManagerSpy.invokeActionFunction.and.returnValue(invokeReturnedPromise);
             
             platform.toolsManager = toolsManagerSpy;
             
@@ -121,18 +121,32 @@ describe("EducationPlatformApp", () => {
             expect(platform.longNotification).toHaveBeenCalledWith(jasmine.stringMatching('(E|e)xecuting'));
             expect(platform.errorNotification).not.toHaveBeenCalled();
         })
+    })
+
+
+    describe("handleResponseActionFunction()", () => {
+        let platform;
+
+        beforeEach(()=>{
+            // Setup
+            platform = new EducationPlatformApp();
+
+            //    platform - notifications
+            spyOn(ErrorHandler.prototype, "notify");
+        })
 
         it("provides an error notification on unsuccessful function invocation result", async () => {
             const invokeReturnedPromiseError = new Promise(function(resolve, reject) {
                 reject(new TypeError("test type error"));
             })
-            spyInvokeActionFunction.and.returnValue(invokeReturnedPromiseError);
 
             // Call the target object
-            await platform.runAction(PANEL_ID, BUTTON_ID);
+            platform.handleResponseActionFunction({}, invokeReturnedPromiseError);
     
             // Check the expected results
-            expect(platform.errorNotification).toHaveBeenCalledWith(jasmine.stringMatching('error.*translating.*types'));
+            await expectAsync(invokeReturnedPromiseError).toBeRejected().then( () => {
+                expect(platform.errorHandler.notify).toHaveBeenCalledWith(jasmine.stringMatching('error.*translating.*types'), jasmine.any(Error));
+            })
         })
     })
 
