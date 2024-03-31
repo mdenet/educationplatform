@@ -8,6 +8,7 @@ import { ActionFunction } from "../../src/ActionFunction.js";
 import { Panel } from "../../src/Panel.js";
 import { ErrorHandler } from "../../src/ErrorHandler.js";
 import "jasmine-ajax";
+import { EducationPlatformError } from "../../src/EducationPlatformError.js";
 
 describe("EducationPlatformApp", () => {
 
@@ -22,6 +23,7 @@ describe("EducationPlatformApp", () => {
         const PANEL_LANGUAGE = "lang";
 
         let platform;
+        let activityManagerSpy;
         let invokeReturnedPromise;
         let resolvedActivity;
 
@@ -51,7 +53,7 @@ describe("EducationPlatformApp", () => {
                     }
                 }
             };
-            let activityManagerSpy = jasmine.createSpyObj(['getActionForCurrentActivity','findPanel']);
+            activityManagerSpy = jasmine.createSpyObj(['getActionForCurrentActivity','findPanel']);
             activityManagerSpy.getActionForCurrentActivity.and.returnValue(resolvedActivity);
             activityManagerSpy.findPanel.and.returnValue(panel1);
 
@@ -78,6 +80,7 @@ describe("EducationPlatformApp", () => {
             //    platform - notifications
             spyOn(EducationPlatformApp.prototype, "longNotification");
             spyOn(EducationPlatformApp.prototype, "errorNotification");
+            spyOn(ErrorHandler.prototype, "notify");
         })
 
         it("populates the language parameter", () => {
@@ -120,6 +123,21 @@ describe("EducationPlatformApp", () => {
             // Check the expected results
             expect(platform.longNotification).toHaveBeenCalledWith(jasmine.stringMatching('(E|e)xecuting'));
             expect(platform.errorNotification).not.toHaveBeenCalled();
+        })
+
+        it("raises an error when an action does not exist for a given panel using ErrorHandler notify", () => {
+            const INVALID_BUTTON_ID = "X";
+            activityManagerSpy.getActionForCurrentActivity.and.returnValue(null);
+
+            // Call the target object
+            platform.runAction(PANEL_ID, INVALID_BUTTON_ID);
+
+            // Check the expected results
+            const expectedError = jasmine.objectContaining({ 
+                message: jasmine.stringMatching(`(C|c)annot.*find.*action.*${PANEL_ID}.*${INVALID_BUTTON_ID}`)
+            });
+
+            expect(platform.errorHandler.notify).toHaveBeenCalledWith(jasmine.stringMatching('(F|f)ailed.*invoke.*action'), expectedError);
         })
     })
 

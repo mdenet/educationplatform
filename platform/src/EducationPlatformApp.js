@@ -550,55 +550,63 @@ class EducationPlatformApp {
 
         // Get the action
         var action = this.activityManager.getActionForCurrentActivity(source, sourceButton);
-        
-        let buttonConfig;
-        if(action.source.buttons){
-            //Buttons defined by activity
-            buttonConfig=  action.source.buttons.find( btn => btn.id == sourceButton );
+       
+        if (!action){
+            let err = new EducationPlatformError(`Cannot find action given panel '${source}' and button '${sourceButton}'`);
+            this.errorHandler.notify("Failed to invoke action.", err);
+
         } else {
-            //Buttons defined by tool
-            buttonConfig= action.source.ref.buttons.find( btn => btn.id == sourceButton );
-        }  
-
-        // Create map containing panel values
-        let parameterMap = new Map();
-
-        for (let paramName of Object.keys(action.parameters)){
-
-            let param = {};
-            const panelId = action.parameters[paramName].id;
+            // Action found so try and invoke
+            let buttonConfig;
             
-            if (panelId) { 
-                const panel = this.activityManager.findPanel(panelId, this.panels);
-                param.type = panel.getType();
-                param.value = panel.getValue();
-
+            if(action.source.buttons){
+                //Buttons defined by activity
+                buttonConfig=  action.source.buttons.find( btn => btn.id == sourceButton );
             } else {
-                // No panel with ID so it use as the parameter value
-                const parameterValue = action.parameters[paramName];
-                param.type = 'text';
-                param.value = parameterValue;
+                //Buttons defined by tool
+                buttonConfig= action.source.ref.buttons.find( btn => btn.id == sourceButton );
+            }  
+
+            // Create map containing panel values
+            let parameterMap = new Map();
+
+            for (let paramName of Object.keys(action.parameters)){
+
+                let param = {};
+                const panelId = action.parameters[paramName].id;
+                
+                if (panelId) { 
+                    const panel = this.activityManager.findPanel(panelId, this.panels);
+                    param.type = panel.getType();
+                    param.value = panel.getValue();
+
+                } else {
+                    // No panel with ID so it use as the parameter value
+                    const parameterValue = action.parameters[paramName];
+                    param.type = 'text';
+                    param.value = parameterValue;
+                }
+
+                parameterMap.set(paramName, param);
             }
 
-            parameterMap.set(paramName, param);
+            // Add the platform language parameter
+            let languageParam = {};
+            languageParam.type = ACTION_FUNCTION_LANGUAGE_TYPE;
+            languageParam.value = action.source.ref.language; // Source panel language
+            parameterMap.set("language", languageParam);
+
+                // TODO support output and language 
+                //actionRequestData.outputType = outputType;
+                //actionRequestData.outputLanguage = outputLanguage;
+
+            // Call backend conversion and service functions
+            let actionResultPromise = this.toolsManager.invokeActionFunction(buttonConfig.actionfunction, parameterMap);
+
+            this.handleResponseActionFunction(action , actionResultPromise);
+        
+            this.longNotification("Executing program");
         }
-
-        // Add the platform language parameter
-        let languageParam = {};
-        languageParam.type = ACTION_FUNCTION_LANGUAGE_TYPE;
-        languageParam.value = action.source.ref.language; // Source panel language
-        parameterMap.set("language", languageParam);
-
-            // TODO support output and language 
-            //actionRequestData.outputType = outputType;
-            //actionRequestData.outputLanguage = outputLanguage;
-
-        // Call backend conversion and service functions
-        let actionResultPromise = this.toolsManager.invokeActionFunction(buttonConfig.actionfunction, parameterMap);
-
-        this.handleResponseActionFunction(action , actionResultPromise);
-    
-        this.longNotification("Executing program");
     }
 
 
