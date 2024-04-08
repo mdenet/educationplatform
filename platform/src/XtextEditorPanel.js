@@ -25,7 +25,8 @@ class XtextEditorPanel extends Panel {
                 enableCors: true,
                 syntaxDefinition: modeName,
                 parent: editorContainer,
-                xtextLang: extension
+                xtextLang: extension,
+                sendFullText: true
             });
         });
 

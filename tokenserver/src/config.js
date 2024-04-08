@@ -16,8 +16,8 @@ export const config = {
 
     cookieOptions: {
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'strict',
         path: '/'
     },
 
