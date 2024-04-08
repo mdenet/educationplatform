@@ -557,10 +557,10 @@ class EducationPlatformApp {
             
             if(action.source.buttons){
                 //Buttons defined by activity
-                buttonConfig=  action.source.buttons.find( btn => btn.id == sourceButton );
+                buttonConfig = action.source.buttons.find (btn => btn.id == sourceButton);
             } else {
                 //Buttons defined by tool
-                buttonConfig= action.source.ref.buttons.find( btn => btn.id == sourceButton );
+                buttonConfig = action.source.ref.buttons.find (btn => btn.id == sourceButton);
             }  
 
             // Create map containing panel values
