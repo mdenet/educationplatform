@@ -8,7 +8,6 @@ import { ActionFunction } from "../../src/ActionFunction.js";
 import { Panel } from "../../src/Panel.js";
 import { ErrorHandler } from "../../src/ErrorHandler.js";
 import "jasmine-ajax";
-import { EducationPlatformError } from "../../src/EducationPlatformError.js";
 
 describe("EducationPlatformApp", () => {
 
