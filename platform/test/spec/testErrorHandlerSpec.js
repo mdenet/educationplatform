@@ -1,8 +1,9 @@
-/*global describe, it, beforeEach, expect --  functions provided by Jasmine */
+/*global describe, it, beforeEach, expect, spyOn --  functions provided by Jasmine */
 /*global jasmine --  object provided by Jasmine */
 
 import { EducationPlatformError } from "../../src/EducationPlatformError.js";
 import {ErrorHandler} from "../../src/ErrorHandler.js"
+import { PlaygroundUtility } from "../../src/PlaygroundUtility.js";
 
 describe("ErrorHandler", () => {
 
@@ -10,18 +11,10 @@ describe("ErrorHandler", () => {
     let notifierSpy;
 
     beforeEach(()=>{
-        notifierSpy = jasmine.createSpy("notifier");
+        notifierSpy = spyOn(PlaygroundUtility,"errorNotification");
     })
 
     describe("constructor()", () => {
-        it("initialises displayError with the given notifier function", () =>{
-            // Call the target object
-            const eh = new ErrorHandler(notifierSpy);
-
-            // Check the expected results
-            expect(eh.displayError).toBe(notifierSpy);
-        });
-
         it("initialises window.onError with function that calls notify", () =>{
             const error = new EducationPlatformError("Error Information");
 
@@ -35,7 +28,7 @@ describe("ErrorHandler", () => {
     })
 
     describe("notify()", () => {
-        it("calls notifier function with error information", () =>{
+        it("calls errorNotification() with error information", () =>{
 
             const MESSAGE = "Test Message";
             const error = new EducationPlatformError("Error Information");

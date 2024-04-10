@@ -54,7 +54,7 @@ class EducationPlatformApp {
     constructor() {
         this.outputType = "text";
         this.outputLanguage = "text";
-        this.errorHandler = new ErrorHandler(this.errorNotification.bind(this));
+        this.errorHandler = new ErrorHandler();
         this.preloader = new Preloader();
         this.panels = [];
     }
@@ -459,7 +459,7 @@ class EducationPlatformApp {
                 
                 if (response.editorUrl) {
                     // Language workbench
-                    this.longNotification("Building editor");
+                    PlaygroundUtility.longNotification("Building editor");
                     this.checkEditorReady( response.editorStatusUrl, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole);
                     
 
@@ -601,7 +601,7 @@ class EducationPlatformApp {
 
             this.handleResponseActionFunction(action , actionResultPromise);
         
-            this.longNotification("Executing program");
+            PlaygroundUtility.longNotification("Executing program");
         }
     }
 
@@ -613,26 +613,7 @@ class EducationPlatformApp {
             this.toggle(parentElement.id);
         }
     }
-
-
-    notification(title, message, cls="light"){
-        const crossIcon = "<div class=\"default-icon-cross\" style=\"float:right\"></div>"
-        Metro.notify.create(crossIcon + "<b>"  + title + "</b>" + "<br>" + message + "<br>", null, {keepOpen: true, cls: cls, width: 300});
-    }
-
-    longNotification(title, cls="light") {
-        this.notification(title + "...", "This may take a few seconds to complete if the back end is not warmed up.", cls);
-    }
-
-    successNotification(message, cls="light") {
-        this.notification("Success:", message, cls);
-    }
-
-    errorNotification(message) {
-        console.log("ERROR: " + message);
-        this.notification("Error:", message, "bg-red fg-white");
-    }
-
+    
 
     toggle(elementId, onEmpty) {
         var element = document.getElementById(elementId);
@@ -711,7 +692,7 @@ class EducationPlatformApp {
         }
         
         Promise.all(fileStorePromises).then( () => {
-            this.successNotification("The activity panel contents have been saved.");
+            PlaygroundUtility.successNotification("The activity panel contents have been saved.");
         
         }).catch( (err) => {
             this.errorHandler.notify("An error occurred while trying to save the panel contents.", err);
@@ -743,7 +724,7 @@ class EducationPlatformApp {
                 sessionStorage.removeItem(editorPanelId);
                 this.activityManager.setActivityVisibility(editorActivityId, false);
                 Metro.notify.killAll();
-                this.notification("Build Failed", result.error, "ribbed-lightAmber");
+                PlaygroundUtility.notification("Build Failed", result.error, "ribbed-lightAmber");
 
             } else if (!result.editorReady){
                 await new Promise(resolve => setTimeout(resolve, 2000));
@@ -755,12 +736,12 @@ class EducationPlatformApp {
                 sessionStorage.setItem( editorPanelId , editorInstanceUrl );
                 this.activityManager.setActivityVisibility(editorActivityId, true);
                 Metro.notify.killAll();
-                this.successNotification("Building complete.");
+                PlaygroundUtility.successNotification("Building complete.");
             }
 
         } else {
             console.log("ERROR: The editor response could not be checked: " + statusUrl);
-            this.errorNotification("Failed to start the editor.");
+            PlaygroundUtility.errorNotification("Failed to start the editor.");
         }
     }
 }

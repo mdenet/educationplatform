@@ -1,6 +1,5 @@
-/*global describe, it, expect, spyOn, beforeEach, afterEach, expectAsync --  functions provided by Jasmine */
+/*global describe, it, expect, spyOn, beforeEach, expectAsync --  functions provided by Jasmine */
 /*global jasmine --  object provided by Jasmine */
-/*global $ -- jquery is externally imported*/
 
 export var TOKEN_SERVER_URL = "test://ts.url";
 import {EducationPlatformApp} from "../../src/EducationPlatformApp.js";
@@ -8,6 +7,7 @@ import { ActionFunction } from "../../src/ActionFunction.js";
 import { Panel } from "../../src/Panel.js";
 import { ErrorHandler } from "../../src/ErrorHandler.js";
 import "jasmine-ajax";
+import { PlaygroundUtility } from "../../src/PlaygroundUtility.js";
 
 describe("EducationPlatformApp", () => {
 
@@ -77,8 +77,8 @@ describe("EducationPlatformApp", () => {
             spyOn(EducationPlatformApp.prototype, "handleResponseActionFunction");
 
             //    platform - notifications
-            spyOn(EducationPlatformApp.prototype, "longNotification");
-            spyOn(EducationPlatformApp.prototype, "errorNotification");
+            spyOn(PlaygroundUtility, "longNotification");
+            spyOn(PlaygroundUtility, "errorNotification");
             spyOn(ErrorHandler.prototype, "notify");
         })
 
@@ -120,8 +120,8 @@ describe("EducationPlatformApp", () => {
             platform.runAction(PANEL_ID, BUTTON_ID);
     
             // Check the expected results
-            expect(platform.longNotification).toHaveBeenCalledWith(jasmine.stringMatching('(E|e)xecuting'));
-            expect(platform.errorNotification).not.toHaveBeenCalled();
+            expect(PlaygroundUtility.longNotification).toHaveBeenCalledWith(jasmine.stringMatching('(E|e)xecuting'));
+            expect(PlaygroundUtility.errorNotification).not.toHaveBeenCalled();
         })
 
         it("raises an error when an action does not exist for a given panel using ErrorHandler notify", () => {
@@ -169,91 +169,4 @@ describe("EducationPlatformApp", () => {
             })
         })
     })
-
-
-    describe("notification()", () => {
-        let platform;
-
-        const NOTIFICATION_TITLE = "ABC123";
-        const NOTIFICATION_MESSAGE = "DEF456";
-
-        beforeEach(()=>{
-            // Setup
-            platform = new EducationPlatformApp();
-            
-        })
-
-        it("displays a message with given title and text", () => {
-        
-            // Call the target object
-            platform.notification(NOTIFICATION_TITLE, NOTIFICATION_MESSAGE);
-    
-            // Check the expected results
-            const documentMessages = $(".notify-message");
-
-            expect(documentMessages).toHaveSize(1);
-
-            expect(documentMessages.text()).toContain(NOTIFICATION_TITLE);
-            expect(documentMessages.text()).toContain(NOTIFICATION_MESSAGE);
-        })
-
-        afterEach( () => {
-            $(".notify-message").remove();
-        })
-    })
-
-    describe("longNotification()", () => {
-        
-        const NOTIFICATION_TEXT = "ABC123";
-        const NOTIFICATION_MESSAGE = "may take a few seconds to complete";
-
-        it("calls notification() with the given text", () => {
-            // Setup
-            spyOn(EducationPlatformApp.prototype, "notification");
-            const platform = new EducationPlatformApp();
-
-            // Call the target object
-            platform.longNotification(NOTIFICATION_TEXT);
-    
-            // Check the expected results
-            expect(platform.notification).toHaveBeenCalledWith(jasmine.stringMatching(NOTIFICATION_TEXT), jasmine.stringMatching(NOTIFICATION_MESSAGE), jasmine.anything());
-        })
-    })
-
-    describe("successNotification()", () => {
-        
-        const NOTIFICATION_TEXT = "ABC123";
-        const NOTIFICATION_TITLE = "Success";
-
-        it("calls notification with the given text", () => {
-            // Setup
-            spyOn(EducationPlatformApp.prototype, "notification");
-            const platform = new EducationPlatformApp();
-
-            // Call the target object
-            platform.successNotification(NOTIFICATION_TEXT);
-    
-            // Check the expected results
-            expect(platform.notification).toHaveBeenCalledWith(jasmine.stringMatching(NOTIFICATION_TITLE), jasmine.stringMatching(NOTIFICATION_TEXT), jasmine.anything());
-        })
-    })
-
-    describe("errorNotification()", () => {
-        
-        const NOTIFICATION_TEXT = "ABC123";
-        const NOTIFICATION_TITLE = "Error";
-
-        it("calls notification with the given text", () => {
-            // Setup
-            spyOn(EducationPlatformApp.prototype, "notification");
-            const platform = new EducationPlatformApp();
-
-            // Call the target object
-            platform.errorNotification(NOTIFICATION_TEXT);
-    
-            // Check the expected results
-            expect(platform.notification).toHaveBeenCalledWith(jasmine.stringMatching(NOTIFICATION_TITLE), jasmine.stringMatching(NOTIFICATION_TEXT), jasmine.anything());
-        })
-    })
-
 })

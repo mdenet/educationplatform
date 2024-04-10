@@ -1,15 +1,8 @@
 import { EducationPlatformError } from "./EducationPlatformError";
-
+import { PlaygroundUtility } from "./PlaygroundUtility";
 class ErrorHandler {
 
-    displayError;
-
-    /**
-     * @param {Function} notifier - The function to use for displaying error messages. 
-     */
-    constructor(notifier){
-
-        this.displayError = notifier;
+    constructor(){
 
         window.onerror = (event, source, lineno, colno, err) => {
             
@@ -47,7 +40,7 @@ class ErrorHandler {
             }
         }
 
-        this.displayError(displayMessage);
+        PlaygroundUtility.errorNotification(displayMessage);
     }
     
 }
