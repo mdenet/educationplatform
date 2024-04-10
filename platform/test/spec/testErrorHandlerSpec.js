@@ -19,7 +19,7 @@ describe("ErrorHandler", () => {
             const error = new EducationPlatformError("Error Information");
 
             // Call the target object
-            new ErrorHandler(notifierSpy);
+            new ErrorHandler();
             window.onerror("testEvent,","testSource", undefined, undefined, error );
 
             // Check the expected results
@@ -32,7 +32,7 @@ describe("ErrorHandler", () => {
 
             const MESSAGE = "Test Message";
             const error = new EducationPlatformError("Error Information");
-            const eh = new ErrorHandler(notifierSpy);
+            const eh = new ErrorHandler();
 
             // Call the target object
             eh.notify(MESSAGE, error);
