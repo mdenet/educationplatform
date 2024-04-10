@@ -1,6 +1,7 @@
 
 /*global TOKEN_SERVER_URL -- is set by environment variable*/
 import { EducationPlatformApp } from "./EducationPlatformApp.js";
+import { PlaygroundUtility } from "./PlaygroundUtility.js";
 
 const TOKEN_HANDLER_URL = TOKEN_SERVER_URL || "http://127.0.0.1:10000";
 let urlParameters = new URLSearchParams(window.location.search);  
@@ -19,5 +20,5 @@ window.savePanelContents = platform.savePanelContents.bind(platform);
 window.toggle = platform.toggle.bind(platform);
 window.togglePanelById = platform.togglePanelById.bind(platform);
 //window.renderDiagram = renderDiagram;
-window.longNotification = platform.longNotification.bind(platform);
+window.longNotification = PlaygroundUtility.longNotification;
 window.getPanelTitle = platform.getPanelTitle.bind(platform);

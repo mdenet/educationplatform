@@ -59,11 +59,13 @@ class ToolManager {
 
             try{
                 xhr.send();
-            } catch (e) {
-                if (e instanceof DOMException){
+            } catch (err) {
+                if (err instanceof DOMException){
                     errors.push( new EducationPlatformError(`A tool configuration file was not accessible at: ${toolUrl.url}. 
                                                             Check the tool's url given in the activity file is correct and the tool 
                                                             service is still available.`) );
+                } else {
+                    throw err;
                 }
             }
 

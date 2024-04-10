@@ -33,6 +33,7 @@ import { Preloader } from './Preloader.js';
 import { Layout } from './Layout.js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
 import { jsonRequest, urlParamPrivateRepo, utility } from './Utility.js';
+import { ErrorHandler } from './ErrorHandler.js';
 
 
 const COMMON_UTILITY_URL = utility.getWindowLocationHref().replace( utility.getWindowLocationSearch(), "" ) + "common/utility.json";
@@ -45,6 +46,7 @@ class EducationPlatformApp {
     preloader;
     panels;
 
+    errorHandler;
     fileHandler;
     activityManager;
     toolsManager;
@@ -52,6 +54,7 @@ class EducationPlatformApp {
     constructor() {
         this.outputType = "text";
         this.outputLanguage = "text";
+        this.errorHandler = new ErrorHandler();
         this.preloader = new Preloader();
         this.panels = [];
     }
@@ -152,7 +155,7 @@ class EducationPlatformApp {
 
         if (errors.length==0){
             // An activity configuration has been provided
-            this.toolsManager = new ToolsManager(this.errorNotification);
+            this.toolsManager = new ToolsManager(this.errorHandler.notify.bind(this.errorHandler));
             this.activityManager = new ActivityManager( (this.toolsManager.getPanelDefinition).bind(this.toolsManager), this.fileHandler );
             this.activityManager.initializeActivities();
             errors = errors.concat(this.activityManager.getConfigErrors());
@@ -421,41 +424,6 @@ class EducationPlatformApp {
     }
 
    
-
-
-
-    /**
-     * Converts a source value to a target type using the available conversion functions
-     * 
-     *   TODO: To be moved to the ToolManager issue #40
-     * 
-     * @param {string} sourceValue 
-     * @param {string} sourceType 
-     * @param {string} targetType
-     * @param {string} parameterName name of the parameter for request
-     * @returns {Promise} promise for the converted parameter value
-     */
-    convert(sourceValue, sourceType, targetType, parameterName){
-        
-        let parameterPromise;
-        let typesPanelValuesMap = {}; // Types have to be distinct for mapping to the conversion function's parameters
-        typesPanelValuesMap[sourceType]=  sourceValue;
-
-        let conversionFunctionId = this.functionRegistry_find( Object.keys(typesPanelValuesMap), targetType );
-
-        if (conversionFunctionId != null){
-            //There is a matching conversion function
-            parameterPromise = this.functionRegistry_callConversion(conversionFunctionId, typesPanelValuesMap, parameterName);
-            
-        } else {
-            parameterPromise = null;
-            this.errorNotification("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
-        }
-
-        return parameterPromise;
-    }
-
-
     /**
      * Handle the response from the remote tool service
      * 
@@ -491,7 +459,7 @@ class EducationPlatformApp {
                 
                 if (response.editorUrl) {
                     // Language workbench
-                    this.longNotification("Building editor");
+                    PlaygroundUtility.longNotification("Building editor");
                     this.checkEditorReady( response.editorStatusUrl, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole);
                     
 
@@ -555,7 +523,9 @@ class EducationPlatformApp {
                     }
                 }
 
-            }
+            } 
+        }).catch( (err) => {
+            this.errorHandler.notify("There was an error translating action function parameter types.", err);
         });
 
     }
@@ -576,59 +546,63 @@ class EducationPlatformApp {
 
         // Get the action
         var action = this.activityManager.getActionForCurrentActivity(source, sourceButton);
-        
-        let buttonConfig;
-        if(action.source.buttons){
-            //Buttons defined by activity
-            buttonConfig=  action.source.buttons.find( btn => btn.id == sourceButton );
+       
+        if (!action){
+            let err = new EducationPlatformError(`Cannot find action given panel '${source}' and button '${sourceButton}'`);
+            this.errorHandler.notify("Failed to invoke action.", err);
+
         } else {
-            //Buttons defined by tool
-            buttonConfig= action.source.ref.buttons.find( btn => btn.id == sourceButton );
-        }  
-
-        // Create map containing panel values
-        let parameterMap = new Map();
-
-        for (let paramName of Object.keys(action.parameters)){
-
-            let param = {};
-            const panelId = action.parameters[paramName].id;
+            // Action found so try and invoke
+            let buttonConfig;
             
-            if (panelId) { 
-                const panel = this.activityManager.findPanel(panelId, this.panels);
-                param.type = panel.getType();
-                param.value = panel.getValue();
-
+            if(action.source.buttons){
+                //Buttons defined by activity
+                buttonConfig = action.source.buttons.find (btn => btn.id == sourceButton);
             } else {
-                // No panel with ID so it use as the parameter value
-                const parameterValue = action.parameters[paramName];
-                param.type = 'text';
-                param.value = parameterValue;
+                //Buttons defined by tool
+                buttonConfig = action.source.ref.buttons.find (btn => btn.id == sourceButton);
+            }  
+
+            // Create map containing panel values
+            let parameterMap = new Map();
+
+            for (let paramName of Object.keys(action.parameters)){
+
+                let param = {};
+                const panelId = action.parameters[paramName].id;
+                
+                if (panelId) { 
+                    const panel = this.activityManager.findPanel(panelId, this.panels);
+                    param.type = panel.getType();
+                    param.value = panel.getValue();
+
+                } else {
+                    // No panel with ID so it use as the parameter value
+                    const parameterValue = action.parameters[paramName];
+                    param.type = 'text';
+                    param.value = parameterValue;
+                }
+
+                parameterMap.set(paramName, param);
             }
 
-            parameterMap.set(paramName, param);
+            // Add the platform language parameter
+            let languageParam = {};
+            languageParam.type = ACTION_FUNCTION_LANGUAGE_TYPE;
+            languageParam.value = action.source.ref.language; // Source panel language
+            parameterMap.set("language", languageParam);
+
+                // TODO support output and language 
+                //actionRequestData.outputType = outputType;
+                //actionRequestData.outputLanguage = outputLanguage;
+
+            // Call backend conversion and service functions
+            let actionResultPromise = this.toolsManager.invokeActionFunction(buttonConfig.actionfunction, parameterMap);
+
+            this.handleResponseActionFunction(action , actionResultPromise);
+        
+            PlaygroundUtility.longNotification("Executing program");
         }
-
-        // Add the platform language parameter
-        let languageParam = {};
-        languageParam.type = ACTION_FUNCTION_LANGUAGE_TYPE;
-        languageParam.value = action.source.ref.language; // Source panel language
-        parameterMap.set("language", languageParam);
-
-            // TODO support output and language 
-            //actionRequestData.outputType = outputType;
-            //actionRequestData.outputLanguage = outputLanguage;
-
-        // Call backend conversion and service functions
-        let actionResultPromise = this.toolsManager.invokeActionFunction(buttonConfig.actionfunction, parameterMap);
-
-        actionResultPromise.catch( () => {
-            this.errorNotification("There was an error translating action function parameter types.");
-        } );
-
-        this.handleResponseActionFunction(action , actionResultPromise);
-    
-        this.longNotification("Executing program");
     }
 
 
@@ -639,26 +613,7 @@ class EducationPlatformApp {
             this.toggle(parentElement.id);
         }
     }
-
-
-    notification(title, message, cls="light"){
-        const crossIcon = "<div class=\"default-icon-cross\" style=\"float:right\"></div>"
-        Metro.notify.create(crossIcon + "<b>"  + title + "</b>" + "<br>" + message + "<br>", null, {keepOpen: true, cls: cls, width: 300});
-    }
-
-    longNotification(title, cls="light") {
-        this.notification(title + "...", "This may take a few seconds to complete if the back end is not warmed up.", cls);
-    }
-
-    successNotification(message, cls="light") {
-        this.notification("Success:", message, cls);
-    }
-
-    errorNotification(message) {
-        console.log("ERROR: " + message);
-        this.notification("Error:", message, "bg-red fg-white");
-    }
-
+    
 
     toggle(elementId, onEmpty) {
         var element = document.getElementById(elementId);
@@ -737,10 +692,10 @@ class EducationPlatformApp {
         }
         
         Promise.all(fileStorePromises).then( () => {
-            this.successNotification("The activity panel contents have been saved.");
+            PlaygroundUtility.successNotification("The activity panel contents have been saved.");
         
-        }).catch(() => {
-            this.errorNotification("An error occurred while trying to save the panel contents.");
+        }).catch( (err) => {
+            this.errorHandler.notify("An error occurred while trying to save the panel contents.", err);
         });
     }
 
@@ -769,7 +724,7 @@ class EducationPlatformApp {
                 sessionStorage.removeItem(editorPanelId);
                 this.activityManager.setActivityVisibility(editorActivityId, false);
                 Metro.notify.killAll();
-                this.notification("Build Failed", result.error, "ribbed-lightAmber");
+                PlaygroundUtility.notification("Build Failed", result.error, "ribbed-lightAmber");
 
             } else if (!result.editorReady){
                 await new Promise(resolve => setTimeout(resolve, 2000));
@@ -781,12 +736,12 @@ class EducationPlatformApp {
                 sessionStorage.setItem( editorPanelId , editorInstanceUrl );
                 this.activityManager.setActivityVisibility(editorActivityId, true);
                 Metro.notify.killAll();
-                this.successNotification("Building complete.");
+                PlaygroundUtility.successNotification("Building complete.");
             }
 
         } else {
             console.log("ERROR: The editor response could not be checked: " + statusUrl);
-            this.errorNotification("Failed to start the editor.");
+            PlaygroundUtility.errorNotification("Failed to start the editor.");
         }
     }
 }

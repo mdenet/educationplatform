@@ -200,9 +200,11 @@ export function parseConfigFile(contents, extension="yml"){
                 console.log("Cannot parse unsupported configuration file type '" + extension + "'.");
                 configObject = null;
         }
-    } catch(e){
-        if (e instanceof YAMLParseError || e instanceof SyntaxError){
-            configObject = e;
+    } catch(err){
+        if (err instanceof YAMLParseError || err instanceof SyntaxError){
+            configObject = err;
+        } else {
+            throw err;
         }
     }
 
