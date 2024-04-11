@@ -89,7 +89,13 @@ class Layout {
 
             // Create the splitters for the row
             let splitProportions = ("10, ".repeat(numberOfRows)); // Add a proportion per splitter
-            verticalSplitters.push ( Layout.createVerticalSplitter( panelsToLayout.map( pn => pn.getElement() ), splitProportions) );
+
+            if (panelsToLayout.length > 1) {
+                verticalSplitters.push( Layout.createVerticalSplitter( panelsToLayout.map( pn => pn.getElement() ), splitProportions) );
+            } else {
+                // No splitter required for a single panel
+                verticalSplitters.push( panelsToLayout[0].getElement() );
+            }
         }
         
         if (numberOfColumns > 1) {

@@ -532,11 +532,11 @@ class EducationPlatformApp {
 
 
     fit() {
-        
         var splitter = document.getElementById("splitter");
-        splitter.style.minHeight = window.innerHeight + "px";
-        splitter.style.maxHeight = window.innerHeight + "px";
-
+        if (splitter){
+            splitter.style.minHeight = window.innerHeight + "px";
+            splitter.style.maxHeight = window.innerHeight + "px";
+        }
         this.panels.forEach(panel => panel.fit());
         this.preloader.hide();
     }
