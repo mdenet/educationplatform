@@ -15,7 +15,7 @@ class Layout {
         var splitter;
 
         if ( panels.length == 1 ) {
-            splitter = Layout.createVerticalSplitter([panels[0].getElement()]);
+            splitter = panels[0].getElement(); // only the element to add
 
         } else if ( panels.length == 2  ) {
             splitter = Layout.createVerticalSplitter([panels[0].getElement(), panels[1].getElement()], "50, 50" );
@@ -36,7 +36,7 @@ class Layout {
 
             // Odd number of panels so add the last element
             if (panelsToLayout.length==1){
-                verticalSplitters.push( Layout.createVerticalSplitter([panelsToLayout.pop().getElement()]) );
+                verticalSplitters.push(panelsToLayout.pop().getElement());
             }
 
             splitter = Layout.createHorizontalSplitter( verticalSplitters, splitProportions);   
