@@ -1,3 +1,4 @@
+const PANEL_HOLDER_ID = "navview-content-panels";
 
 class Layout {
 
@@ -9,43 +10,48 @@ class Layout {
      */
     createFromPanels(rootId, panels){
 
+        if (panels == null || panels.length < 1){
+             // Nothing to do
+            return;
+        }
+
         var root = document.getElementById(rootId);
         root.innerHTML = "";
 
-        var splitter;
+        var panelHolderElement;
 
         if ( panels.length == 1 ) {
-            splitter = Layout.createVerticalSplitter([panels[0].getElement()]);
+            panelHolderElement = panels[0].getElement(); // only the element to add
 
         } else if ( panels.length == 2  ) {
-            splitter = Layout.createVerticalSplitter([panels[0].getElement(), panels[1].getElement()], "50, 50" );
+                panelHolderElement = Layout.createVerticalSplitter([panels[0].getElement(), panels[1].getElement()], "50, 50" );
 
         } else {
-            var panelsToLayout = [...panels];            
+            // Three or more panels
+            var panelsToLayout = [...panels];
             var numberOfVerticalSplitters= Math.floor(panels.length / 2 );
             var verticalSplitters = [];
             var splitProportions =  ("10, ".repeat(numberOfVerticalSplitters)).slice(0, -2);
 
             // Layout pairs of panels
             for ( let sNo = 0; sNo < numberOfVerticalSplitters; sNo++) {
-                verticalSplitters.push( 
-                    // Appearance:                                Top               ,                  Bottom 
+                verticalSplitters.push(
+                    // Appearance:                                Top               ,                  Bottom
                     Layout.createVerticalSplitter([panelsToLayout.pop().getElement(), panelsToLayout.pop().getElement()] ) 
-                ); 
+                );
             }
 
             // Odd number of panels so add the last element
             if (panelsToLayout.length==1){
-                verticalSplitters.push( Layout.createVerticalSplitter([panelsToLayout.pop().getElement()]) );
+                verticalSplitters.push(panelsToLayout.pop().getElement());
             }
 
-            splitter = Layout.createHorizontalSplitter( verticalSplitters, splitProportions);   
+            panelHolderElement = Layout.createHorizontalSplitter( verticalSplitters, splitProportions);
         }
 
-        splitter.setAttribute("class", "h-100");
-        splitter.setAttribute("id", "splitter");
-        splitter.setAttribute("style", "min-height:800px");
-        root.appendChild(splitter);
+        Layout.addPanelHolderAttributes(panelHolderElement);
+
+        root.appendChild(panelHolderElement);
     }
 
 
@@ -62,8 +68,7 @@ class Layout {
         root.innerHTML = "";
 
         let verticalSplitters=[];
-        let splitter;
-
+        let panelHolderElement;
 
         // Get the number of rows and columns
         let numberOfRows = layout.length;
@@ -89,23 +94,37 @@ class Layout {
 
             // Create the splitters for the row
             let splitProportions = ("10, ".repeat(numberOfRows)); // Add a proportion per splitter
-            verticalSplitters.push ( Layout.createVerticalSplitter( panelsToLayout.map( pn => pn.getElement() ), splitProportions) );
+
+            if (panelsToLayout.length > 1) {
+                verticalSplitters.push( Layout.createVerticalSplitter( panelsToLayout.map( pn => pn.getElement() ), splitProportions) );
+            } else {
+                // No splitter required for a single panel
+                verticalSplitters.push( panelsToLayout[0].getElement() );
+            }
         }
         
         if (numberOfColumns > 1) {
             let splitProportions =  ("10, ".repeat(verticalSplitters.length)); // Add a proportion per splitter
-            splitter = Layout.createHorizontalSplitter( verticalSplitters, splitProportions ); 
+            panelHolderElement = Layout.createHorizontalSplitter( verticalSplitters, splitProportions );
 
         } else {
             // No splitter for single columns
-            splitter = Layout.createVerticalSplitter( verticalSplitters) ;
+            panelHolderElement = verticalSplitters[0];
         } 
 
-        splitter.setAttribute("class", "h-100");
-        splitter.setAttribute("id", "splitter");
-        splitter.setAttribute("style", "min-height:800px");
+        Layout.addPanelHolderAttributes(panelHolderElement);
         
-        root.appendChild(splitter);
+        root.appendChild(panelHolderElement);
+    }
+
+    /**
+     * Add the panel holder attributes to the given element.
+     * @param {HTMLElement} holderElement - The HTML element to add the attributes to
+     */
+    static addPanelHolderAttributes(holderElement){
+        holderElement.setAttribute("class", "h-100");
+        holderElement.setAttribute("id", PANEL_HOLDER_ID);
+        holderElement.setAttribute("style", "min-height:800px");
     }
 
     static createHorizontalSplitter(components, split = "50, 50") {
@@ -131,4 +150,4 @@ class Layout {
 
 }
 
-export { Layout };
+export { Layout, PANEL_HOLDER_ID };

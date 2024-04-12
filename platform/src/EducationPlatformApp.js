@@ -30,7 +30,7 @@ import { CompositePanel } from './CompositePanel.js';
 import { Button } from './Button.js';
 
 import { Preloader } from './Preloader.js';
-import { Layout } from './Layout.js';
+import { Layout, PANEL_HOLDER_ID } from './Layout.js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
 import { jsonRequest, urlParamPrivateRepo, utility } from './Utility.js';
 import { ErrorHandler } from './ErrorHandler.js';
@@ -532,11 +532,11 @@ class EducationPlatformApp {
 
 
     fit() {
-        
-        var splitter = document.getElementById("splitter");
-        splitter.style.minHeight = window.innerHeight + "px";
-        splitter.style.maxHeight = window.innerHeight + "px";
-
+        var splitter = document.getElementById(PANEL_HOLDER_ID);
+        if (splitter){
+            splitter.style.minHeight = window.innerHeight + "px";
+            splitter.style.maxHeight = window.innerHeight + "px";
+        }
         this.panels.forEach(panel => panel.fit());
         this.preloader.hide();
     }
