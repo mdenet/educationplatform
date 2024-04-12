@@ -23,31 +23,30 @@ class Layout {
         if ( panels.length == 1 ) {
             panelHolderElement = panels[0].getElement(); // only the element to add
 
-        } else {
-            if ( panels.length == 2  ) {
+        } else if ( panels.length == 2  ) {
                 panelHolderElement = Layout.createVerticalSplitter([panels[0].getElement(), panels[1].getElement()], "50, 50" );
 
-            } else {
-                var panelsToLayout = [...panels];
-                var numberOfVerticalSplitters= Math.floor(panels.length / 2 );
-                var verticalSplitters = [];
-                var splitProportions =  ("10, ".repeat(numberOfVerticalSplitters)).slice(0, -2);
+        } else {
+            // Three or more panels
+            var panelsToLayout = [...panels];
+            var numberOfVerticalSplitters= Math.floor(panels.length / 2 );
+            var verticalSplitters = [];
+            var splitProportions =  ("10, ".repeat(numberOfVerticalSplitters)).slice(0, -2);
 
-                // Layout pairs of panels
-                for ( let sNo = 0; sNo < numberOfVerticalSplitters; sNo++) {
-                    verticalSplitters.push(
-                        // Appearance:                                Top               ,                  Bottom
-                        Layout.createVerticalSplitter([panelsToLayout.pop().getElement(), panelsToLayout.pop().getElement()] ) 
-                    );
-                }
-
-                // Odd number of panels so add the last element
-                if (panelsToLayout.length==1){
-                    verticalSplitters.push(panelsToLayout.pop().getElement());
-                }
-
-                panelHolderElement = Layout.createHorizontalSplitter( verticalSplitters, splitProportions);
+            // Layout pairs of panels
+            for ( let sNo = 0; sNo < numberOfVerticalSplitters; sNo++) {
+                verticalSplitters.push(
+                    // Appearance:                                Top               ,                  Bottom
+                    Layout.createVerticalSplitter([panelsToLayout.pop().getElement(), panelsToLayout.pop().getElement()] ) 
+                );
             }
+
+            // Odd number of panels so add the last element
+            if (panelsToLayout.length==1){
+                verticalSplitters.push(panelsToLayout.pop().getElement());
+            }
+
+            panelHolderElement = Layout.createHorizontalSplitter( verticalSplitters, splitProportions);
         }
 
         Layout.addPanelHolderAttributes(panelHolderElement);
