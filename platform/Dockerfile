@@ -13,7 +13,7 @@ COPY package*.json ./
 COPY platform/ ./platform/
 
 # Refer to readme.md for a complete list of supported environment varibles
-ARG TOKEN_SERVER_URL=https://mdenet-ep.sites.er.kcl.ac.uk
+ARG TOKEN_SERVER_URL=https://ep.mde-network.org
 ARG FEEDBACK_SURVEY_URL=https://forms.office.com/Pages/ResponsePage.aspx?id=FM9wg_MWFky4PHJAcWVDVraRChPUQ-ZGrubhv7wZFeNUM0M4VVQ4SU9MRFVWUUFJSldWU05CUUNCWC4u
 
 RUN npm ci --workspace=platform\
