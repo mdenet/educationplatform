@@ -35,7 +35,7 @@ class ToolManager {
                     toolUrl.url = url;
                 }
                 else{
-                    url_port = this.getPort(url);
+                    let url_port = this.getPort(url);
                     if (url_port != null){
                         let path = this.fetchPathByPort(url_port);
 
