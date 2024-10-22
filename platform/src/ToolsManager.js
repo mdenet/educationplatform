@@ -31,7 +31,7 @@ class ToolManager {
                 
                 let toolUrl = new Object();
                 toolUrl.id = ""; // Populate when tool is fetched
-                if (isValidUrl(url)){
+                if (this.isValidUrl(url)){
                     toolUrl.url = url;
                 }
                 else{
@@ -80,7 +80,7 @@ class ToolManager {
      */
     fetchPathByPort(port) {
         let port_path_xhr = new XMLHttpRequest();
-        port_path_xhr.open("GET", 'https://mdenet-dev.sites.er.kcl.ac.uk/services/discovery/api/get_path/' + urlPort.split(':')[1], false);
+        port_path_xhr.open("GET", 'https://mdenet-dev.sites.er.kcl.ac.uk/services/discovery/api/get_path/' + port, false);
         port_path_xhr.send();
 
         if(port_path_xhr.status == 200){
@@ -96,6 +96,9 @@ class ToolManager {
      * @returns bool
      */
     isValidUrl(url) {
+        if (url.startsWith('{{BASE-URL}}') || url.indexOf('{{BASE-URL}}') >= 0){
+            return false;
+        }
         return url.match(new RegExp(/((http|https):\/\/)*([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/)) != null;
     }
 
