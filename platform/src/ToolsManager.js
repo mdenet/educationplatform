@@ -42,6 +42,7 @@ class ToolManager {
 
                         if(path != null){
                             let base_url = utility.getBaseURL();
+                            path = path.endsWith('/') ? path : path + '/';
                             toolUrl.url = base_url + path + url_tail;
                         }
                     }
