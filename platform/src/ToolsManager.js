@@ -64,11 +64,12 @@ class ToolManager {
      * @return integer|null
      */
     getPort(url_placeholder) {
+        var url_placeholder_regexp = url_placeholder.match(new RegExp(/{{BASE-URL}}:*[0-9]*/));
         if (
-            url_placeholder.match(new RegExp(/{{BASE-URL}}:*[0-9]*/)) != null &&
+            url_placeholder_regexp != null &&
             url_placeholder.indexOf(':') > 0
             ){
-            return url_placeholder.split(':')[1];
+            return url_placeholder_regexp[0].split(':')[1];
         }
 
         return null;
