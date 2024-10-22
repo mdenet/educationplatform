@@ -35,13 +35,14 @@ class ToolManager {
                     toolUrl.url = url;
                 }
                 else{
+                    let url_tail = url.split('/')[1];
                     let url_port = this.getPort(url);
                     if (url_port != null){
                         let path = this.fetchPathByPort(url_port);
 
                         if(path != null){
                             let base_url = utility.getBaseURL();
-                            toolUrl.url = base_url + path;
+                            toolUrl.url = base_url + path + url_tail;
                         }
                     }
                     else{
