@@ -1,4 +1,4 @@
-import { parseConfigFile, ARRAY_ANY_ELEMENT } from "./Utility.js";
+import { parseConfigFile, ARRAY_ANY_ELEMENT, utility } from "./Utility.js";
 import { FunctionRegistry } from "../src/FunctionRegistry.js"
 import { ActionFunction } from "./ActionFunction.js";
 import { ToolConfigValidator } from "./ToolConfigValidator.js";
@@ -31,8 +31,24 @@ class ToolManager {
                 
                 let toolUrl = new Object();
                 toolUrl.id = ""; // Populate when tool is fetched
-                toolUrl.url = url;
+                if (isValidUrl(url)){
+                    toolUrl.url = url;
+                }
+                else{
+                    url_port = this.getPort(url);
+                    if (url_port != null){
+                        let path = this.fetchPathByPort(url_port);
 
+                        if(path != null){
+                            let base_url = utility.getBaseURL();
+                            toolUrl.url = base_url + path;
+                        }
+                    }
+                    else{
+                        toolUrl.url = url;
+                    }
+                }
+                
                 this.toolsUrls.push(toolUrl);
             }
 
@@ -41,6 +57,46 @@ class ToolManager {
             this.createClassesFromConfig();
             
         }
+    }
+
+    /**
+     * Checks whether url_placeholder has a port attached to it and if so, it returns the port
+     * @return integer|null
+     */
+    getPort(url_placeholder) {
+        if (
+            url_placeholder.match(new RegExp(/{{BASE-URL}}:*[0-9]*/)) != null &&
+            url_placeholder.indexOf(':') > 0
+            ){
+            return url_placeholder.split(':')[1];
+        }
+
+        return null;
+    };
+
+    /**
+     * Communicates with the discovery service to fetch the relevant path by the service port.
+     * @returns string|null
+     */
+    fetchPathByPort(port) {
+        let port_path_xhr = new XMLHttpRequest();
+        port_path_xhr.open("GET", 'https://mdenet-dev.sites.er.kcl.ac.uk/services/discovery/api/get_path/' + urlPort.split(':')[1], false);
+        port_path_xhr.send();
+
+        if(port_path_xhr.status == 200){
+            return port_path_xhr.responseText; 
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks whether url is a valid url or not 
+     * Valid URLs can begin with http or https optionally, and can consit of FQDN or IP addresses.
+     * @returns bool
+     */
+    isValidUrl(url) {
+        return url.match(new RegExp(/((http|https):\/\/)*([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/)) != null;
     }
 
     
