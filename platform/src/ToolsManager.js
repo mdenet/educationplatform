@@ -132,9 +132,25 @@ class ToolManager {
             }
 
             if (xhr.status === 200) {    
-                // Rewrite URLs in tool config
-                let baseURL = toolUrl.url.substring(0, toolUrl.url.lastIndexOf("/")); // remove the name of the json file (including the trailing slash)
-                let toolConfig = xhr.responseText.replaceAll("{{BASE-URL}}", baseURL);
+
+                var toolConfig;
+                let response_text =  xhr.responseText;
+                let response_text_regexp = response_text.match(new RegExp(/{{BASE-URL}}:[0-9]*/));
+                if (response_text_regexp != null){
+                    // There is a reference to another endpoint, so base URL must be set accordingly (There is a {{BASE-URL}} placeholder plus a port).
+                    var base_url = utility.getBaseURL();
+                    let url_port = response_text_regexp[0];
+                    let path = this.fetchPathByPort(this.getPort(url_port));
+                    
+                    toolConfig = response_text.replaceAll(url_port, base_url + path);
+                }
+                else{
+                    // Rewrite URLs in tool config
+                    let baseURL = toolUrl.url.substring(0, toolUrl.url.lastIndexOf("/")); // remove the name of the json file (including the trailing slash)
+                    toolConfig = xhr.responseText.replaceAll("{{BASE-URL}}", baseURL);
+                }
+
+
 
                 // Now parse tool config
                 let validatedConfig = this.parseAndValidateToolConfig(toolConfig);
