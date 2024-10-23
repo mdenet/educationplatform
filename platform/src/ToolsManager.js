@@ -83,7 +83,7 @@ class ToolManager {
      */
     fetchPathByPort(port) {
         let port_path_xhr = new XMLHttpRequest();
-        port_path_xhr.open("GET", 'https://mdenet-dev.sites.er.kcl.ac.uk/services/discovery/api/get_path/' + port, false);
+        port_path_xhr.open("GET", utility.getBaseURL() + '/services/discovery/api/get_path/' + port, false);
         port_path_xhr.send();
 
         if(port_path_xhr.status == 200){
