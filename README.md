@@ -34,9 +34,10 @@ npm run start --workspace=tokenserver
 npm run start --workspace=platform
 ```
 
-This starts two web servers 
+This starts three web servers:
  1.  the main platform [http://127.0.0.1:8080](http://127.0.0.1:8080)
  2.  the token server for github authentication [http://127.0.0.1:10000](http://127.0.0.1:10000) 
+ 3.  the discovery service on http://127.0.0.1:3000 which holds a dictionary of all the container ports in the ecosystem and the relevant URL paths needed for running the educationplatform and relevant tools on one server.
 
 
 ### Specifying the activities
