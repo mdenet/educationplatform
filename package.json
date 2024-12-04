@@ -3,8 +3,7 @@
   "name": "MDENet-Education-Platform",
   "workspaces": [
     "platform",
-    "tokenserver",
-    "discovery-service"
+    "tokenserver"
   ],
   "overrides": { 
     "socket.io-parser": ">=4.2.3",
