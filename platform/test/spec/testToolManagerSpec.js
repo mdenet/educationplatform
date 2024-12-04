@@ -60,6 +60,72 @@ describe("ToolManager", () => {
             expect(XMLHttpRequest.prototype.open).toHaveBeenCalledWith("GET", TOOL_URLS[0],false);
         })
 
+        it("getPort - detects and returns port in a URL placeholder and port combination", () => {
+            let baseURLWithPort = '{{BASE-URL}}:12345'
+            expect(tm.getPort(baseURLWithPort)).toEqual('12345')
+
+            let baseURLOnly = '{{BASE-URL}}' 
+            expect(tm.getPort(baseURLOnly)).toBeNull()
+        })
+
+        it("fetchPathByPort - fetch paths by a port number", () => {
+
+            let port = 8080;
+            expect(tm.fetchPathByPort(port)).toEqual('/')
+
+            let incorrectPort = ''
+            expect(tm.fetchPathByPort(incorrectPort)).toBeNull()
+        })
+
+        it("isValidUrl - test validity of urls", () => {
+            var url = 'http://www.abc.cde'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'http://www.abc.cde/'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'www.abc.cde'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'http://www.abc.cde/some-path'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'http://127.0.0.1'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'http://127.0.0.1/'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'http://127.0.0.1:8080'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'http://127.0.0.1:8080/some-path'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = '127.0.0.1'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'somestring'
+            expect(tm.isValidUrl(url)).toBe(false)
+
+            url = ''
+            expect(tm.isValidUrl(url)).toBe(false)
+        })
+
+        it("isUrlPlaceHolder - check if a string is a url placeholder", () => {
+            var url = "{{BASE-URL}}"
+            expect(tm.isUrlPlaceHolder(url)).toBe(true)
+
+            var url = "{{BASE-URL}}:123"
+            expect(tm.isUrlPlaceHolder(url)).toBe(true)
+
+            var url = "{{ID-panel-turtles}}"
+            expect(tm.isUrlPlaceHolder(url)).toBe(true)
+
+            var url = "http://127.0.0.1/"
+            expect(tm.isUrlPlaceHolder(url)).toBe(false)
+        })
+
         it("parses and stores the tool configuration", () => {
             jasmine.Ajax.stubRequest('test://t1.url/tool-config.json').andReturn({
                 "responseText": TOOL_1PANELDEF_1FUNCTION,
