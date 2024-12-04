@@ -32,9 +32,11 @@ class ToolManager {
                 let toolUrl = new Object();
                 toolUrl.id = ""; // Populate when tool is fetched
                 if (this.isValidUrl(url)){
+                    // the url variable is hardcoded in the activity file, so no need for re-writing
                     toolUrl.url = url;
                 }
-                else{
+                else if (this.isUrlPlaceHolder(url)){
+                    // the url variable is a placeholder, so it needs to be re-written with the correct path
                     let url_tail = url.split('/')[1];
                     let url_port = this.getPort(url);
                     if (url_port != null){
@@ -49,6 +51,10 @@ class ToolManager {
                     else{
                         toolUrl.url = url;
                     }
+                }
+                else{
+                    // something is wrong
+                    this.configErrors.push(new EducationPlatformError(`${url} is not a valid URL or a valid URL placeholder.`))
                 }
                 
                 this.toolsUrls.push(toolUrl);
@@ -78,19 +84,39 @@ class ToolManager {
     };
 
     /**
-     * Communicates with the discovery service to fetch the relevant path by the service port.
+     * Fetches the relevant path by the service port.
      * @returns string|null
      */
     fetchPathByPort(port) {
-        let port_path_xhr = new XMLHttpRequest();
-        port_path_xhr.open("GET", utility.getBaseURL() + '/services/discovery/api/get_path/' + port, false);
-        port_path_xhr.send();
 
-        if(port_path_xhr.status == 200){
-            return port_path_xhr.responseText; 
-        }
+        var port_to_path_dict = {
+            8080 : '/',
+            10000 : '/mdenet-auth',
+            8069 : '/tools/conversion/',
+            8070: '/tools/epsilon/services',
+            8071: '/tools/emfatic',
+            8072: '/tools/ocl/',
+            8073: '/tools/emf/',
+            8074: '/tools/xtext/',
+            9000: '/tools/xtext/services/xtext',
+            10001: '/tools/xtext/project/'
+          };
+        
+          if (!isNaN(parseInt(port)) && port_to_path_dict.hasOwnProperty(port)) {
+            return port_to_path_dict[port];
+          }
 
         return null;
+    }
+
+    /**
+     * 
+     */
+    isUrlPlaceHolder(urlPlaceholder) {
+        return (urlPlaceholder.startsWith('{{BASE-URL}}') || 
+                urlPlaceholder.indexOf('{{BASE-URL}}') >= 0 ||
+                urlPlaceholder.startsWith('{{ID-')
+            )  
     }
 
     /**
@@ -99,9 +125,6 @@ class ToolManager {
      * @returns bool
      */
     isValidUrl(url) {
-        if (url.startsWith('{{BASE-URL}}') || url.indexOf('{{BASE-URL}}') >= 0){
-            return false;
-        }
         return url.match(new RegExp(/((http|https):\/\/)*([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/)) != null;
     }
 
