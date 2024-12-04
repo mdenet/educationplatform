@@ -228,13 +228,7 @@ export function getWindowLocationHref(){
 }
 
 export function getBaseURL(){
-    let window_href = getWindowLocationHref();
-    let window_href_regexp = window_href.match(new RegExp(/[a-z]\/[a-z]*[0-9]*/));
-    if (window_href_regexp != null){
-        return window_href.substring(0, window_href_regexp.index + 1);
-    }
-
-    return window_href;
+    window.location.origin;
 }
 
 /**
