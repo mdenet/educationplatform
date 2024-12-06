@@ -228,7 +228,7 @@ export function getWindowLocationHref(){
 }
 
 export function getBaseURL(){
-    window.location.origin;
+    return window.location.origin;
 }
 
 /**
