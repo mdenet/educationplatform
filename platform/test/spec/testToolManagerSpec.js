@@ -145,7 +145,15 @@ describe("ToolManager", () => {
             for (let key of EXPECTED_TOOL_KEYS){
                 expect( storedToolKeys.find(n => n===key ) ).toEqual(key);
             }
-        })
+        });
+
+        it("rewrites tool urls", () => {
+            var toolConfigWithPlaceholder = "somestring   {{BASE-URL}}somestring somestring {{BASE-URL}}:8070";
+            var toolConfigWithUrls = "somestring   http://toolurl somestring somestring http://toolurl:8080";
+
+            expect(tm.rewriteUrl('http://toolurl.tld', 'http://toolurl.tld/toolpath', toolConfigWithPlaceholder)).toEqual("somestring   http://toolurl.tldsomestring somestring http://toolurl.tld/tools/epsilon/services");
+            expect(tm.rewriteUrl('http://toolurl.tld', 'http://toolurl.tld', toolConfigWithUrls)).toEqual("somestring   http://toolurl somestring somestring http://toolurl:8080");
+        });
     })
 
     describe("panel definitions", () => {
