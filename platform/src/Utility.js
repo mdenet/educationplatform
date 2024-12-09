@@ -227,6 +227,10 @@ export function getWindowLocationHref(){
     return window.location.href;
 }
 
+/**
+ * Gets the base url - window.location.origin
+ * @returns 
+ */
 export function getBaseURL(){
     return window.location.origin;
 }
