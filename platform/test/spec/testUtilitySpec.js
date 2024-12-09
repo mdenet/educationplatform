@@ -1,4 +1,4 @@
-import {arrayEquals, parseConfigFile} from "../../src/Utility"
+import {arrayEquals, parseConfigFile, getBaseURL} from "../../src/Utility"
 
 describe("Utility", () => {
 
