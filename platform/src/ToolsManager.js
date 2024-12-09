@@ -81,7 +81,7 @@ class ToolManager {
         }
 
         return null;
-    };
+    }
 
     /**
      * Fetches the relevant path by the service port.
@@ -102,7 +102,7 @@ class ToolManager {
             10001: '/tools/xtext/project/'
           };
         
-          if (!isNaN(parseInt(port)) && port_to_path_dict.hasOwnProperty(port)) {
+          if (!isNaN(parseInt(port)) && Object.prototype.hasOwnProperty.call(port_to_path_dict, prop)) {
             return port_to_path_dict[port];
           }
 
@@ -125,7 +125,7 @@ class ToolManager {
      * @returns bool
      */
     isValidUrl(url) {
-        return url.match(new RegExp(/((http|https):\/\/)*([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/)) != null;
+        return url.match(new RegExp("/((http|https):\/\/)*([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/")) != null;
     }
 
     
@@ -210,7 +210,7 @@ class ToolManager {
             // No port comes with the remaining placeholders, replace it with the tool reletive URL
 
             var tool_base_url = toolUrl.substring(0, toolUrl.lastIndexOf("/")); // remove the name of the json file (including the trailing slash)
-                    toolConfig = toolConfig.replaceAll("{{BASE-URL}}", tool_base_url);
+            toolConfig = toolConfig.replaceAll("{{BASE-URL}}", tool_base_url);
 
         }
 
