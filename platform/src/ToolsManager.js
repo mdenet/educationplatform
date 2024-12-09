@@ -31,11 +31,7 @@ class ToolManager {
                 
                 let toolUrl = new Object();
                 toolUrl.id = ""; // Populate when tool is fetched
-                if (this.isValidUrl(url)){
-                    // the url variable is hardcoded in the activity file, so no need for re-writing
-                    toolUrl.url = url;
-                }
-                else if (this.isUrlPlaceHolder(url)){
+                if (this.isUrlPlaceHolder(url)){
                     // the url variable is a placeholder, so it needs to be re-written with the correct path
                     let url_tail = url.split('/')[1];
                     let url_port = this.getPort(url);
@@ -51,6 +47,10 @@ class ToolManager {
                     else{
                         toolUrl.url = url;
                     }
+                }
+                else if (this.isValidUrl(url)){
+                    // the url variable is hardcoded in the activity file, so no need for re-writing
+                    toolUrl.url = url;
                 }
                 else{
                     // something is wrong
@@ -156,24 +156,9 @@ class ToolManager {
 
             if (xhr.status === 200) {    
 
-                var toolConfig;
                 let response_text =  xhr.responseText;
-                let response_text_regexp = response_text.match(new RegExp(/{{BASE-URL}}:[0-9]*/));
-                if (response_text_regexp != null){
-                    // There is a reference to another endpoint, so base URL must be set accordingly (There is a {{BASE-URL}} placeholder plus a port).
-                    var base_url = utility.getBaseURL();
-                    let url_port = response_text_regexp[0];
-                    let path = this.fetchPathByPort(this.getPort(url_port));
-                    
-                    toolConfig = response_text.replaceAll(url_port, base_url + path);
-                }
-                else{
-                    // Rewrite URLs in tool config
-                    let baseURL = toolUrl.url.substring(0, toolUrl.url.lastIndexOf("/")); // remove the name of the json file (including the trailing slash)
-                    toolConfig = xhr.responseText.replaceAll("{{BASE-URL}}", baseURL);
-                }
 
-
+                var toolConfig = this.rewriteUrl(utility.getBaseURL(), toolUrl.url, response_text);
 
                 // Now parse tool config
                 let validatedConfig = this.parseAndValidateToolConfig(toolConfig);
@@ -199,6 +184,36 @@ class ToolManager {
         }
 
         return errors;
+    }
+
+    /**
+     * Reads toocl config text and replaces {{BASE-URL}} placeholders with the tool URL
+     * @returns string
+     */
+    rewriteUrl(base_url, toolUrl, tool_config_string) {
+        let tool_config_regexp = tool_config_string.match(new RegExp(/{{BASE-URL}}(:[0-9]+)?/g));
+        var toolConfig = tool_config_string;
+
+        if (tool_config_regexp != null){
+            // There are references to another endpoint, so base URL must be set accordingly (There is a {{BASE-URL}} placeholder plus a port).
+            var base_url_placeholders = new Set(tool_config_regexp); // Remove duplicates
+            var tool_base_url = toolUrl.substring(0, toolUrl.lastIndexOf("/")); // remove the name of the json file (including the trailing slash)
+            
+            for (const url_placeholder of base_url_placeholders.values()) {
+                let url_port = url_placeholder;
+                let port = this.getPort(url_port);
+                if (port != null){
+                    let path = this.fetchPathByPort(port);
+                    toolConfig = toolConfig.replaceAll(url_port, base_url + path);
+                }
+                else{
+                    // No port comes with the placeholder, replace it with the tool reletive URL
+                    toolConfig = toolConfig.replaceAll("{{BASE-URL}}", tool_base_url);
+                }
+            }
+        }
+
+        return toolConfig;
     }
 
     /**
