@@ -102,7 +102,7 @@ class ToolManager {
             10001: '/tools/xtext/project/'
           };
         
-          if (!isNaN(parseInt(port)) && Object.prototype.hasOwnProperty.call(port_to_path_dict, prop)) {
+          if (!isNaN(parseInt(port)) && Object.prototype.hasOwnProperty.call(port_to_path_dict, port)) {
             return port_to_path_dict[port];
           }
 
