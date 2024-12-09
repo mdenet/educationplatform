@@ -197,7 +197,6 @@ class ToolManager {
         if (tool_config_regexp != null){
             // There are references to another endpoint, so base URL must be set accordingly (There is a {{BASE-URL}} placeholder plus a port).
             var base_url_placeholders = new Set(tool_config_regexp); // Remove duplicates
-            var tool_base_url = toolUrl.substring(0, toolUrl.lastIndexOf("/")); // remove the name of the json file (including the trailing slash)
             
             for (const url_placeholder of base_url_placeholders.values()) {
                 let url_port = url_placeholder;
@@ -206,11 +205,13 @@ class ToolManager {
                     let path = this.fetchPathByPort(port);
                     toolConfig = toolConfig.replaceAll(url_port, base_url + path);
                 }
-                else{
-                    // No port comes with the placeholder, replace it with the tool reletive URL
-                    toolConfig = toolConfig.replaceAll("{{BASE-URL}}", tool_base_url);
-                }
             }
+
+            // No port comes with the remaining placeholders, replace it with the tool reletive URL
+
+            var tool_base_url = toolUrl.substring(0, toolUrl.lastIndexOf("/")); // remove the name of the json file (including the trailing slash)
+                    toolConfig = toolConfig.replaceAll("{{BASE-URL}}", tool_base_url);
+
         }
 
         return toolConfig;
