@@ -110,7 +110,8 @@ class ToolManager {
     }
 
     /**
-     * 
+     * Checks whether a string is a url placeholder in the form of {{BASE-URL}} or {{ID-***}} or not
+     * @returns bool
      */
     isUrlPlaceHolder(urlPlaceholder) {
         return (urlPlaceholder.startsWith('{{BASE-URL}}') || 
