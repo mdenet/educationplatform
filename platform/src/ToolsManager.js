@@ -207,7 +207,7 @@ class ToolManager {
                 }
             }
 
-            // No port comes with the remaining placeholders, replace it with the tool reletive URL
+            // No port comes with the remaining placeholders, replace it with the tool relative URL
 
             var tool_base_url = toolUrl.substring(0, toolUrl.lastIndexOf("/")); // remove the name of the json file (including the trailing slash)
             toolConfig = toolConfig.replaceAll("{{BASE-URL}}", tool_base_url);
