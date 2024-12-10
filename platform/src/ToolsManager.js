@@ -125,7 +125,7 @@ class ToolManager {
      * @returns bool
      */
     isValidUrl(url) {
-        return url.match(new RegExp(/((http|https):\/\/)*([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/)) != null;
+        return url.match(new RegExp(/((http|https):\/\/)*([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])/)) != null;
     }
 
     
