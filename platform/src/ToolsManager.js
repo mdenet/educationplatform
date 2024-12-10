@@ -195,7 +195,7 @@ class ToolManager {
         var toolConfig = tool_config_string;
 
         if (tool_config_regexp != null){
-            // There are references to another endpoint, so base URL must be set accordingly (There is a {{BASE-URL}} placeholder plus a port).
+            // There are references to another endpoint, so base URL must be set accordingly (There is a {{BASE-URL}} placeholder plus an optional port).
             var base_url_placeholders = new Set(tool_config_regexp); // Remove duplicates
             
             for (const url_placeholder of base_url_placeholders.values()) {
