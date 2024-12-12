@@ -31,10 +31,19 @@ class ToolManager {
                 
                 let toolUrl = new Object();
                 toolUrl.id = ""; // Populate when tool is fetched
-                if (this.isUrlPlaceHolder(url)){
+                if(this.isIDPlaceHolder(url)){
+                    // url is in the form of {{ID-...}}, no modification needed
+                    toolUrl.url = url;
+                }
+                else if (this.isBaseUrlPlaceHolder(url)){
                     // the url variable is a placeholder, so it needs to be re-written with the correct path
-                    let url_tail = url.split('/')[1];
+                    var url_tail = '';
                     let url_port = this.getPort(url);
+
+                    if(url.indexOf('/') > 0){
+                        url_tail = url.split('/')[1];
+                    }
+
                     if (url_port != null){
                         let path = this.fetchPathByPort(url_port);
 
@@ -63,7 +72,6 @@ class ToolManager {
             this.configErrors = this.configErrors.concat( this.fetchTools() );
             this.registerToolFunctions();
             this.createClassesFromConfig();
-            
         }
     }
 
@@ -110,14 +118,23 @@ class ToolManager {
     }
 
     /**
-     * Checks whether a string is a url placeholder in the form of {{BASE-URL}} or {{ID-***}} or not
+     * Checks whether a string is a url placeholder in the form of {{BASE-URL}} or not
      * @returns bool
      */
-    isUrlPlaceHolder(urlPlaceholder) {
+    isBaseUrlPlaceHolder(urlPlaceholder) {
         return (urlPlaceholder.startsWith('{{BASE-URL}}') || 
-                urlPlaceholder.indexOf('{{BASE-URL}}') >= 0 ||
-                urlPlaceholder.startsWith('{{ID-')
-            )  
+                urlPlaceholder.indexOf('{{BASE-URL}}') >= 0
+        )  
+    }
+
+    /**
+     * Checks whether a string is an ID placeholder in the form of {{ID-***}} or not
+     * @return bool
+     */
+    isIDPlaceHolder(IDPlaceholder) {
+        return (IDPlaceholder.startsWith('{{ID-') ||
+                IDPlaceholder.indexOf('{{ID-') >= 0
+        ) 
     }
 
     /**

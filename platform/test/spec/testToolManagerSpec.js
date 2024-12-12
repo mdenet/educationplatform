@@ -112,18 +112,32 @@ describe("ToolManager", () => {
             expect(tm.isValidUrl(url)).toBe(false)
         })
 
-        it("isUrlPlaceHolder - check if a string is a url placeholder", () => {
+        it("isBaseUrlPlaceHolder - check if a string is a url placeholder", () => {
             var url = "{{BASE-URL}}"
-            expect(tm.isUrlPlaceHolder(url)).toBe(true)
+            expect(tm.isBaseUrlPlaceHolder(url)).toBe(true)
 
             var url = "{{BASE-URL}}:123"
-            expect(tm.isUrlPlaceHolder(url)).toBe(true)
+            expect(tm.isBaseUrlPlaceHolder(url)).toBe(true)
 
             var url = "{{ID-panel-turtles}}"
-            expect(tm.isUrlPlaceHolder(url)).toBe(true)
+            expect(tm.isBaseUrlPlaceHolder(url)).toBe(false)
 
             var url = "http://127.0.0.1/"
-            expect(tm.isUrlPlaceHolder(url)).toBe(false)
+            expect(tm.isBaseUrlPlaceHolder(url)).toBe(false)
+        })
+
+        it("isIDPlaceHolder - check if a string is an ID placeholder", () => {
+            var placeholder = "{{ID-panel-turtles}}"
+            expect(tm.isIDPlaceHolder(placeholder)).toBe(true)
+
+            var placeholder = "{{ID-panel-turtles}}:123"
+            expect(tm.isIDPlaceHolder(placeholder)).toBe(true)
+
+            var placeholder = "http://127.0.0.1/"
+            expect(tm.isIDPlaceHolder(placeholder)).toBe(false)
+
+            var placeholder = "{{BASE-URL}}"
+            expect(tm.isIDPlaceHolder(placeholder)).toBe(false)
         })
 
         it("parses and stores the tool configuration", () => {
