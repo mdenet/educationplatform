@@ -228,6 +228,14 @@ export function getWindowLocationHref(){
 }
 
 /**
+ * Gets the base url - window.location.origin
+ * @returns 
+ */
+export function getBaseURL(){
+    return window.location.origin;
+}
+
+/**
  * Sets the current url - window.location.href.
  * @newUrl {string} the url to navigate to
  */
@@ -247,5 +255,6 @@ export const utility = {
     parseConfigFile,
     getWindowLocationSearch,
     getWindowLocationHref,
+    getBaseURL,
     setWindowLocationHref
 }

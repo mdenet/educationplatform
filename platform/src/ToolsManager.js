@@ -1,4 +1,4 @@
-import { parseConfigFile, ARRAY_ANY_ELEMENT } from "./Utility.js";
+import { parseConfigFile, ARRAY_ANY_ELEMENT, utility } from "./Utility.js";
 import { FunctionRegistry } from "../src/FunctionRegistry.js"
 import { ActionFunction } from "./ActionFunction.js";
 import { ToolConfigValidator } from "./ToolConfigValidator.js";
@@ -31,16 +31,119 @@ class ToolManager {
                 
                 let toolUrl = new Object();
                 toolUrl.id = ""; // Populate when tool is fetched
-                toolUrl.url = url;
+                if(this.isIDPlaceHolder(url)){
+                    // url is in the form of {{ID-...}}, no modification needed
+                    toolUrl.url = url;
+                }
+                else if (this.isBaseUrlPlaceHolder(url)){
+                    // the url variable is a placeholder, so it needs to be re-written with the correct path
+                    var url_tail = '';
+                    let url_port = this.getPort(url);
 
+                    if(url.indexOf('/') > 0){
+                        url_tail = url.split('/')[1];
+                    }
+
+                    if (url_port != null){
+                        let path = this.fetchPathByPort(url_port);
+
+                        if(path != null){
+                            let base_url = utility.getBaseURL();
+                            path = path.endsWith('/') ? path : path + '/';
+                            toolUrl.url = base_url + path + url_tail;
+                        }
+                    }
+                    else{
+                        toolUrl.url = url;
+                    }
+                }
+                else if (this.isValidUrl(url)){
+                    // the url variable is hardcoded in the activity file, so no need for re-writing
+                    toolUrl.url = url;
+                }
+                else{
+                    // something is wrong
+                    this.configErrors.push(new EducationPlatformError(`${url} is not a valid URL or a valid URL placeholder.`))
+                }
+                
                 this.toolsUrls.push(toolUrl);
             }
 
             this.configErrors = this.configErrors.concat( this.fetchTools() );
             this.registerToolFunctions();
             this.createClassesFromConfig();
-            
         }
+    }
+
+    /**
+     * Checks whether url_placeholder has a port attached to it and if so, it returns the port
+     * @return integer|null
+     */
+    getPort(url_placeholder) {
+        var url_placeholder_regexp = url_placeholder.match(new RegExp(/{{BASE-URL}}:*[0-9]*/));
+        if (
+            url_placeholder_regexp != null &&
+            url_placeholder.indexOf(':') > 0
+            ){
+            return url_placeholder_regexp[0].split(':')[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * Fetches the relevant path by the service port.
+     * @returns string|null
+     */
+    fetchPathByPort(port) {
+
+        var port_to_path_dict = {
+            8080 : '/',
+            10000 : '/mdenet-auth',
+            8069 : '/tools/conversion/',
+            8070: '/tools/epsilon/services',
+            8071: '/tools/emfatic',
+            8072: '/tools/ocl/',
+            8073: '/tools/emf/',
+            8074: '/tools/xtext/',
+            9000: '/tools/xtext/services/xtext',
+            10001: '/tools/xtext/project/'
+          };
+        
+          if (!isNaN(parseInt(port)) && Object.prototype.hasOwnProperty.call(port_to_path_dict, port)) {
+            return port_to_path_dict[port];
+          }
+
+        return null;
+    }
+
+    /**
+     * Checks whether a string is a url placeholder in the form of {{BASE-URL}} or not
+     * @returns bool
+     */
+    isBaseUrlPlaceHolder(urlPlaceholder) {
+        return (urlPlaceholder.startsWith('{{BASE-URL}}') || 
+                urlPlaceholder.indexOf('{{BASE-URL}}') >= 0
+        )  
+    }
+
+    /**
+     * Checks whether a string is an ID placeholder in the form of {{ID-***}} or not
+     * @return bool
+     */
+    isIDPlaceHolder(IDPlaceholder) {
+        return (IDPlaceholder.startsWith('{{ID-') ||
+                IDPlaceholder.indexOf('{{ID-') >= 0
+        ) 
+    }
+
+    /**
+     * Checks whether url is a valid url or not 
+     * Valid URLs can begin with http or https optionally, and can consit of FQDN or IP addresses.
+     * @returns bool
+     */
+    isValidUrl(url) {
+        return url.match(new RegExp(/((http|https):\/\/)*([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])/)) != null;
     }
 
     
@@ -70,9 +173,10 @@ class ToolManager {
             }
 
             if (xhr.status === 200) {    
-                // Rewrite URLs in tool config
-                let baseURL = toolUrl.url.substring(0, toolUrl.url.lastIndexOf("/")); // remove the name of the json file (including the trailing slash)
-                let toolConfig = xhr.responseText.replaceAll("{{BASE-URL}}", baseURL);
+
+                let response_text =  xhr.responseText;
+
+                var toolConfig = this.rewriteUrl(utility.getBaseURL(), toolUrl.url, response_text);
 
                 // Now parse tool config
                 let validatedConfig = this.parseAndValidateToolConfig(toolConfig);
@@ -98,6 +202,37 @@ class ToolManager {
         }
 
         return errors;
+    }
+
+    /**
+     * Reads toocl config text and replaces {{BASE-URL}} placeholders with the tool URL
+     * @returns string
+     */
+    rewriteUrl(base_url, toolUrl, tool_config_string) {
+        let tool_config_regexp = tool_config_string.match(new RegExp(/{{BASE-URL}}(:[0-9]+)?/g));
+        var toolConfig = tool_config_string;
+
+        if (tool_config_regexp != null){
+            // There are references to another endpoint, so base URL must be set accordingly (There is a {{BASE-URL}} placeholder plus an optional port).
+            var base_url_placeholders = new Set(tool_config_regexp); // Remove duplicates
+            
+            for (const url_placeholder of base_url_placeholders.values()) {
+                let url_port = url_placeholder;
+                let port = this.getPort(url_port);
+                if (port != null){
+                    let path = this.fetchPathByPort(port);
+                    toolConfig = toolConfig.replaceAll(url_port, base_url + path);
+                }
+            }
+
+            // No port comes with the remaining placeholders, replace it with the tool relative URL
+
+            var tool_base_url = toolUrl.substring(0, toolUrl.lastIndexOf("/")); // remove the name of the json file (including the trailing slash)
+            toolConfig = toolConfig.replaceAll("{{BASE-URL}}", tool_base_url);
+
+        }
+
+        return toolConfig;
     }
 
     /**

@@ -60,6 +60,86 @@ describe("ToolManager", () => {
             expect(XMLHttpRequest.prototype.open).toHaveBeenCalledWith("GET", TOOL_URLS[0],false);
         })
 
+        it("getPort - detects and returns port in a URL placeholder and port combination", () => {
+            let baseURLWithPort = '{{BASE-URL}}:12345'
+            expect(tm.getPort(baseURLWithPort)).toEqual('12345')
+
+            let baseURLOnly = '{{BASE-URL}}' 
+            expect(tm.getPort(baseURLOnly)).toBeNull()
+        })
+
+        it("fetchPathByPort - fetch paths by a port number", () => {
+
+            let port = 8080;
+            expect(tm.fetchPathByPort(port)).toEqual('/')
+
+            let incorrectPort = ''
+            expect(tm.fetchPathByPort(incorrectPort)).toBeNull()
+        })
+
+        it("isValidUrl - test validity of urls", () => {
+            var url = 'http://www.abc.cde'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'http://www.abc.cde/'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'www.abc.cde'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'http://www.abc.cde/some-path'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'http://127.0.0.1'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'http://127.0.0.1/'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'http://127.0.0.1:8080'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'http://127.0.0.1:8080/some-path'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = '127.0.0.1'
+            expect(tm.isValidUrl(url)).toBe(true)
+
+            url = 'somestring'
+            expect(tm.isValidUrl(url)).toBe(false)
+
+            url = ''
+            expect(tm.isValidUrl(url)).toBe(false)
+        })
+
+        it("isBaseUrlPlaceHolder - check if a string is a url placeholder", () => {
+            var url = "{{BASE-URL}}"
+            expect(tm.isBaseUrlPlaceHolder(url)).toBe(true)
+
+            var url = "{{BASE-URL}}:123"
+            expect(tm.isBaseUrlPlaceHolder(url)).toBe(true)
+
+            var url = "{{ID-panel-turtles}}"
+            expect(tm.isBaseUrlPlaceHolder(url)).toBe(false)
+
+            var url = "http://127.0.0.1/"
+            expect(tm.isBaseUrlPlaceHolder(url)).toBe(false)
+        })
+
+        it("isIDPlaceHolder - check if a string is an ID placeholder", () => {
+            var placeholder = "{{ID-panel-turtles}}"
+            expect(tm.isIDPlaceHolder(placeholder)).toBe(true)
+
+            var placeholder = "{{ID-panel-turtles}}:123"
+            expect(tm.isIDPlaceHolder(placeholder)).toBe(true)
+
+            var placeholder = "http://127.0.0.1/"
+            expect(tm.isIDPlaceHolder(placeholder)).toBe(false)
+
+            var placeholder = "{{BASE-URL}}"
+            expect(tm.isIDPlaceHolder(placeholder)).toBe(false)
+        })
+
         it("parses and stores the tool configuration", () => {
             jasmine.Ajax.stubRequest('test://t1.url/tool-config.json').andReturn({
                 "responseText": TOOL_1PANELDEF_1FUNCTION,
@@ -79,7 +159,15 @@ describe("ToolManager", () => {
             for (let key of EXPECTED_TOOL_KEYS){
                 expect( storedToolKeys.find(n => n===key ) ).toEqual(key);
             }
-        })
+        });
+
+        it("rewrites tool urls", () => {
+            var toolConfigWithPlaceholder = "somestring   {{BASE-URL}}somestring somestring {{BASE-URL}}:8070";
+            var toolConfigWithUrls = "somestring   http://toolurl somestring somestring http://toolurl:8080";
+
+            expect(tm.rewriteUrl('http://toolurl.tld', 'http://toolurl.tld/toolpath', toolConfigWithPlaceholder)).toEqual("somestring   http://toolurl.tldsomestring somestring http://toolurl.tld/tools/epsilon/services");
+            expect(tm.rewriteUrl('http://toolurl.tld', 'http://toolurl.tld', toolConfigWithUrls)).toEqual("somestring   http://toolurl somestring somestring http://toolurl:8080");
+        });
     })
 
     describe("panel definitions", () => {

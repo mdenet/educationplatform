@@ -179,8 +179,8 @@ class EducationPlatformApp {
             }
 
             // Add Tool styles for icons 
-            for (let toolUrl of this.activityManager.getToolUrls()){
-                let toolBaseUrl = toolUrl.substring(0, toolUrl.lastIndexOf("/"));
+           for (let toolUrl of this.toolsManager.toolsUrls){
+                let toolBaseUrl = toolUrl.url.substring(0, toolUrl.url.lastIndexOf("/"));
                 var link = document.createElement("link");
                 link.setAttribute("rel", 'stylesheet');
                 link.setAttribute("href", toolBaseUrl + "/icons.css");
