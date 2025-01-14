@@ -34,7 +34,7 @@ npm run start --workspace=tokenserver
 npm run start --workspace=platform
 ```
 
-This starts three web servers:
+This starts two web servers:
  1.  the main platform [http://127.0.0.1:8080](http://127.0.0.1:8080)
  2.  the token server for github authentication [http://127.0.0.1:10000](http://127.0.0.1:10000) 
 
