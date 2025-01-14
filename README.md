@@ -34,16 +34,15 @@ npm run start --workspace=tokenserver
 npm run start --workspace=platform
 ```
 
-This starts three web servers:
+This starts two web servers:
  1.  the main platform [http://127.0.0.1:8080](http://127.0.0.1:8080)
  2.  the token server for github authentication [http://127.0.0.1:10000](http://127.0.0.1:10000) 
- 3.  the discovery service on http://127.0.0.1:3000 which holds a dictionary of all the container ports in the ecosystem and the relevant URL paths needed for running the educationplatform and relevant tools on one server.
 
 
 ### Specifying the activities
 The activities configuration file specifies the platform activities to load and must be provided using the `activities` url parameter.
 
-> http://127.0.0.1:8081?activities=[url-to-activity-config]
+> http://127.0.0.1:8080activities=[url-to-activity-config]
 
 An example of an activity file for  Epsilon tasks provided for testing [http://127.0.0.1:8080/?activities=http://127.0.0.1:8082/epsilon-example/epsilon-example_activity.json](http://127.0.0.1:8080/?activities=http://127.0.0.1:8082/epsilon-example/epsilon-example_activity.json)
 
