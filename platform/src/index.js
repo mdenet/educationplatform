@@ -4,6 +4,7 @@ import { EducationPlatformApp } from "./EducationPlatformApp.js";
 import { PlaygroundUtility } from "./PlaygroundUtility.js";
 
 const TOKEN_HANDLER_URL = TOKEN_SERVER_URL || "http://127.0.0.1:10000";
+const WS_URI = WEBSOCKETS_URI || "http://127.0.0.1:8000";
 let urlParameters = new URLSearchParams(window.location.search);  
 
 var platform = new EducationPlatformApp();
