@@ -50,6 +50,7 @@ class EducationPlatformApp {
     fileHandler;
     activityManager;
     toolsManager;
+    wsUri
 
     constructor() {
         this.outputType = "text";
@@ -59,8 +60,9 @@ class EducationPlatformApp {
         this.panels = [];
     }
 
-    initialize( urlParameters, tokenHandlerUrl ){
+    initialize( urlParameters, tokenHandlerUrl , wsUri){
         this.fileHandler = new FileHandler(tokenHandlerUrl);
+        this.wsUri = wsUri;
 
         /* 
         *  Setup the browser environment 
@@ -712,7 +714,7 @@ class EducationPlatformApp {
      * @param {Bool} editorReady - whether editor has finished building or not.
      */
     checkEditorReady(socket, editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady){
-        socket = new WebSocket(WS_URI);
+        socket = new WebSocket(this.wsUri);
         socket.onopen = function(){
             socket.send(editorID);
         };

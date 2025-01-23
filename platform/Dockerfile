@@ -13,7 +13,7 @@ COPY package*.json ./
 COPY platform/ ./platform/
 
 # Refer to readme.md for a complete list of supported environment varibles
-ARG TOKEN_SERVER_URL=http://127.0.0.1:10000
+ARG TOKEN_SERVER_URL
 ARG ES_WS_ADDRESS
 
 RUN npm ci --workspace=platform\
