@@ -1,5 +1,6 @@
 
 /*global TOKEN_SERVER_URL -- is set by environment variable*/
+/*global WEBSOCKETS_URI -- is set by environment variable*/
 import { EducationPlatformApp } from "./EducationPlatformApp.js";
 import { PlaygroundUtility } from "./PlaygroundUtility.js";
 
