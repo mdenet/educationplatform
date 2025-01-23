@@ -460,7 +460,9 @@ class EducationPlatformApp {
                 if (response.editorUrl) {
                     // Language workbench
                     PlaygroundUtility.longNotification("Building editor");
-                    this.checkEditorReady( response.editorStatusUrl, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole);
+
+                    var socket = null;
+                    this.checkEditorReady(socket, response.editorID, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole, false);
                     
 
                 } else if (responseDiagram != undefined) {
@@ -700,48 +702,48 @@ class EducationPlatformApp {
     }
 
     /**
-     * Poll for editor to become available. 
+     * Open a websockets connection to receive status updates on editor build. 
+     * @param {Object} socket - WebSocket object
      * @param {String} statusUrl - the url for checking the status of the editor panel.
      * @param {String} editorInstanceUrl - the editor instance's url. 
      * @param {String} editorPanelId - the id of the editor panel.
      * @param {String} editorActivityId - TODO remove as this can be found using editorPanelId to save having to specify in config.
      * @param {Panel} logPanel - the panel to log progress to.
+     * @param {Bool} editorReady - whether editor has finished building or not.
      */
-    async checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId, logPanel){
+    checkEditorReady(socket, editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady){
+        socket = new WebSocket(websocketsUri);
+        socket.onopen = function(){
+            socket.send(editorID);
+        };
 
-        let response  = await fetch(statusUrl);
-
-        if (response.status == 200){ 
-            const result = await response.json();
-
-            if (result.output){
-                logPanel.setValue(result.output);
-            }
-            
-            if (result.error){
-                // Unsuccessful
-                console.log("Editor failed start.");
-                sessionStorage.removeItem(editorPanelId);
-                this.activityManager.setActivityVisibility(editorActivityId, false);
-                Metro.notify.killAll();
-                PlaygroundUtility.notification("Build Failed", result.error, "ribbed-lightAmber");
-
-            } else if (!result.editorReady){
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                await this.checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId, logPanel);
-
-            } else {
-                // Successful 
-                console.log("Editor ready.");
+        socket.onmessage = function(e){
+            var resultData = JSON.parse(e.data);
+            if (resultData.output){
+                    logPanel.setValue(resultData.output);
+                }
+            if(resultData.editorReady){
+                editorReady = true;
+                socket.close();
                 sessionStorage.setItem( editorPanelId , editorInstanceUrl );
                 this.activityManager.setActivityVisibility(editorActivityId, true);
                 Metro.notify.killAll();
                 PlaygroundUtility.successNotification("Building complete.");
             }
+        }.bind(this);
 
-        } else {
-            console.log("ERROR: The editor response could not be checked: " + statusUrl);
-            PlaygroundUtility.errorNotification("Failed to start the editor.");
+        socket.onclose = function(e){
+            //reconnect now
+            if (!editorReady){
+                if(!socket || socket.readyState == 3){
+                    this.checkEditorReady(socket, editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady);
+                }
+            }
+        }.bind(this);
+
+            
+        if(!socket || socket.readyState == 3){
+            this.checkEditorReady(socket, editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady);
         }
     }
 }
