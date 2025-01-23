@@ -712,7 +712,7 @@ class EducationPlatformApp {
      * @param {Bool} editorReady - whether editor has finished building or not.
      */
     checkEditorReady(socket, editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady){
-        socket = new WebSocket(websocketsUri);
+        socket = new WebSocket(WEBSOCKETS_URI);
         socket.onopen = function(){
             socket.send(editorID);
         };
