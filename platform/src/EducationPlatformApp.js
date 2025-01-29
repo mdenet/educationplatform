@@ -459,7 +459,7 @@ class EducationPlatformApp {
                     outputConsole.setValue(response.output)  
                 }
                 
-                if (response.editorUrl) {
+                if (response.editorID) {
                     // Language workbench
                     PlaygroundUtility.longNotification("Building editor");
 
