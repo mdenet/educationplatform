@@ -463,8 +463,7 @@ class EducationPlatformApp {
                     // Language workbench
                     PlaygroundUtility.longNotification("Building editor");
 
-                    var socket = null;
-                    this.checkEditorReady(socket, response.editorID, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole, false);
+                    this.checkEditorReady(response.editorID, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole, false);
                     
 
                 } else if (responseDiagram != undefined) {
@@ -705,7 +704,6 @@ class EducationPlatformApp {
 
     /**
      * Open a websockets connection to receive status updates on editor build. 
-     * @param {Object} socket - WebSocket object
      * @param {String} statusUrl - the url for checking the status of the editor panel.
      * @param {String} editorInstanceUrl - the editor instance's url. 
      * @param {String} editorPanelId - the id of the editor panel.
@@ -713,8 +711,8 @@ class EducationPlatformApp {
      * @param {Panel} logPanel - the panel to log progress to.
      * @param {Bool} editorReady - whether editor has finished building or not.
      */
-    checkEditorReady(socket, editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady){
-        socket = new WebSocket(this.wsUri);
+    checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady){
+        var socket = new WebSocket(this.wsUri);
         socket.onopen = function(){
             socket.send(editorID);
         };
@@ -738,14 +736,14 @@ class EducationPlatformApp {
             //reconnect now
             if (!editorReady){
                 if(!socket || socket.readyState == 3){
-                    this.checkEditorReady(socket, editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady);
+                    this.checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady);
                 }
             }
         }.bind(this);
 
             
         if(!socket || socket.readyState == 3){
-            this.checkEditorReady(socket, editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady);
+            this.checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady);
         }
     }
 }
