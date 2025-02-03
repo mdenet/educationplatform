@@ -720,8 +720,8 @@ class EducationPlatformApp {
         socket.onmessage = function(e){
             var resultData = JSON.parse(e.data);
             if (resultData.output){
-                    logPanel.setValue(resultData.output);
-                }
+                logPanel.setValue(resultData.output);
+            }
             if(resultData.editorReady){
                 editorReady = true;
                 socket.close();
