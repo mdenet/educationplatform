@@ -733,7 +733,7 @@ class EducationPlatformApp {
         }.bind(this);
 
         socket.onclose = function(){
-            //reconnect now
+            //If editor is not deployed, a new connection must be established.
             if (!editorReady){
                 if(!socket || socket.readyState == 3){
                     this.checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady);
