@@ -671,8 +671,11 @@ class EducationPlatformApp {
     }
 
     savePanelContents(){
-        
-        let panelsToSave = this.panels.filter (p => p.canSave());
+        let panelsToSave = this.panels.filter(p => p.canSave());
+        if (panelsToSave.length === 0) {
+            PlaygroundUtility.warningNotification("There are no panels to save.");
+            return;
+        }
 
         let fileStorePromises = [];
 
@@ -691,7 +694,7 @@ class EducationPlatformApp {
             }
         }
         
-        Promise.all(fileStorePromises).then( () => {
+        Promise.all(fileStorePromises).then(() => {
             PlaygroundUtility.successNotification("The activity panel contents have been saved.");
         
         }).catch((err) => {

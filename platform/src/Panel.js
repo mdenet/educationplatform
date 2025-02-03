@@ -71,7 +71,7 @@ class Panel {
      * @returns true if the panel should be considered when saving contents.
      */
     canSave() {
-        return false;
+        return this.editor.session.getUndoManager().isClean() === false;
     }
 
     /**
