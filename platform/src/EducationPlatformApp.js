@@ -694,7 +694,7 @@ class EducationPlatformApp {
         Promise.all(fileStorePromises).then( () => {
             PlaygroundUtility.successNotification("The activity panel contents have been saved.");
         
-        }).catch( (err) => {
+        }).catch((err) => {
             this.errorHandler.notify("An error occurred while trying to save the panel contents.", err);
         });
     }

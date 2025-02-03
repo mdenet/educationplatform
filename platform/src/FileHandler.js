@@ -73,7 +73,6 @@ class FileHandler {
             let request = this.getPrivateFileUpdateParams(url);
         
             request.params.message = message;   
-
             request.params.sha= sha;  
             request.params.content= this.bytesToBase64( new TextEncoder().encode(newFileContent) );
 
@@ -84,7 +83,7 @@ class FileHandler {
             responsePromise = jsonRequest( request.url,  JSON.stringify(request.params), true );
 
         } else {
-            console.log("File could not be stored - not authenticated.");
+            console.error("File could not be stored - not authenticated.");
             responsePromise = null;
         }
         

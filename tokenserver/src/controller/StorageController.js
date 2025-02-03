@@ -92,10 +92,16 @@ class StorageController {
 
             let repoData = await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', request);
 
-            if (repoData.status===200 || repoData.status===201){
-                res.status(repoData.status).json({success : true});
+            if (repoData.status===200 || repoData.status===201) {
+                res.status(repoData.status).json({
+                    success: true,
+                    data: {
+                        sha: repoData.data.content.sha
+                    }
+                });
             
-            } else {
+            } 
+            else {
                 throw new GihubException(repoData.status);
             }
             
