@@ -61,7 +61,7 @@ class FileHandler {
         }
     }
 
-    storeFile(url, sha, newFileContent, message, branch){
+    storeFile(url, sha, newFileContent, message){
         
         if (message === undefined) {
             message=("MDENet Education Platform save.");
@@ -70,19 +70,18 @@ class FileHandler {
         let responsePromise;
 
         if(isAuthenticated()){
+            // collect the request parameters in the url (owner, repo, ref, path)
             let request = this.getPrivateFileUpdateParams(url);
         
+            // add remaining parameters to the request
             request.params.message = message;   
             request.params.sha= sha;  
             request.params.content= this.bytesToBase64( new TextEncoder().encode(newFileContent) );
-
-            if(branch != null){
-                request.params.branch = branch;
-            }
             
             responsePromise = jsonRequest( request.url,  JSON.stringify(request.params), true );
 
-        } else {
+        } 
+        else {
             console.error("File could not be stored - not authenticated.");
             responsePromise = null;
         }
@@ -195,7 +194,7 @@ class FileHandler {
 
         requestParams.owner = pathParts.shift();
         requestParams.repo = pathParts.shift();
-        pathParts.shift(); //requestParams.ref
+        requestParams.ref = pathParts.shift();
         requestParams.path = pathParts.join("/");
 
         return  { url: requestUrl.href, params: requestParams };

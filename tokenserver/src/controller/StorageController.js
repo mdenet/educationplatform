@@ -54,40 +54,40 @@ class StorageController {
 
     storeFile = async (req, res) => {
         let encryptedAuthCookie = req.cookies[getAuthCookieName];
-        let octokit;
+        let octokit = this.initOctokit(encryptedAuthCookie);
 
-        octokit = this.initOctokit(encryptedAuthCookie)
-
-        var paramOwner = req.body.owner;
-        var paramRepo = req.body.repo;
-        var paramPath =  req.body.path; 
-        var paramMessage = req.body.message; 
-        var paramContent = req.body.content;
-
-        var paramSha = req.body.sha; // Required when updating a file
-        var paramBranch = req.body.branch;
+        const paramOwner = req.body.owner;
+        const paramRepo = req.body.repo;
+        const paramPath =  req.body.path; 
+        const paramMessage = req.body.message; 
+        const paramContent = req.body.content;
+        const paramBranch = req.body.ref;
+        const paramSha = req.body.sha; // Required when updating a file
 
         // Committer - default authenticated user
         // Author - default authenticated user
 
-        if ( paramOwner!=null &&  paramRepo!=null &&  paramPath!=null &&  paramMessage!=null &&  paramContent!=null ) {
-            var request = {
+        
+        if (paramOwner != null && 
+            paramRepo != null && 
+            paramPath != null && 
+            paramMessage != null && 
+            paramContent != null && 
+            paramBranch != null &&
+            paramSha != null
+        ) {
+
+            const request = {
                 owner: paramOwner,
                 repo: paramRepo,
                 path: paramPath,
                 message: paramMessage,
                 content: paramContent,
+                branch: paramBranch,
+                sha: paramSha,
                 headers: {
                     'X-GitHub-Api-Version': config.githubApiVersion
                 }
-            }
-
-            if(paramSha!=null){
-                request.sha = paramSha;
-            }
-
-            if(paramBranch!=null){
-                request.branch = paramBranch;
             }
 
             let repoData = await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', request);
@@ -105,7 +105,8 @@ class StorageController {
                 throw new GihubException(repoData.status);
             }
             
-        } else {
+        } 
+        else {
             throw new InvalidRequestException();
         }
     }
