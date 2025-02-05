@@ -670,33 +670,46 @@ class EducationPlatformApp {
         }
     }
 
-    savePanelContents(){
-        
-        let panelsToSave = this.panels.filter (p => p.canSave());
-
-        let fileStorePromises = [];
-
-        // FIXME: This currently creates separate commits for each panel. We really would want one commit for all of them together...
-        for(const panel of panelsToSave){
-            
-            let storePromise = panel.save(this.fileHandler);
-            
-            if (storePromise!=null) {
-                
-                storePromise.then( () => {
-                    console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
-                });
-
-                fileStorePromises.push(storePromise);
-            }
+    savePanelContents() {
+        let panelsToSave = this.panels.filter(p => p.canSave());
+        if (panelsToSave.length === 0) {
+            PlaygroundUtility.warningNotification("There are no panels to save.");
+            return;
         }
-        
-        Promise.all(fileStorePromises).then( () => {
-            PlaygroundUtility.successNotification("The activity panel contents have been saved.");
-        
-        }).catch((err) => {
-            this.errorHandler.notify("An error occurred while trying to save the panel contents.", err);
-        });
+
+        let files = [];
+        for (const panel of panelsToSave) {
+            files.push({
+                url: panel.getFileUrl(),
+                valueSha: panel.getValueSha(),
+                newFileContent: panel.getValue()
+            });
+        }
+
+        this.fileHandler.storeFiles(files)
+            .then(response => {
+                // Returns a [ {path, sha} ] list corresponding to each file
+                let dataReturned = JSON.parse(response);
+
+                for (const panel of panelsToSave) {
+                    const filePath = panel.getFilePath();
+                    // Find the updated file that matches the panel's file path
+                    const updatedFile = dataReturned.files.find(file => file.path === filePath);
+
+                    // Update the panel with the new SHA
+                    const newSha = updatedFile.sha;
+                    panel.setValueSha(newSha);
+
+                    // Mark the editor clean if the save completed
+                    panel.getEditor().session.getUndoManager().markClean();
+
+                    console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
+                }
+                PlaygroundUtility.successNotification("The activity panel contents have been saved.");
+            })
+            .catch(error => {
+                this.errorHandler.notify("An error occurred while trying to save the panel contents.", error);
+            });
     }
 
     /**

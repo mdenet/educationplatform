@@ -41,6 +41,10 @@ class PlaygroundUtility {
         this.notification("Error:", message, "bg-red fg-white");
     }
 
+    static warningNotification(message) {
+        this.notification("Warning:", message, "bg-orange fg-white");
+    }
+
 }
 
 export { PlaygroundUtility };
