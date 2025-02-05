@@ -690,17 +690,15 @@ class EducationPlatformApp {
     savePanelContents(event) {
         event.preventDefault();
 
-        let commitMessage = this.getCommitMessage();
-
-        // If the user clicks "Cancel", stop execution
-        if (commitMessage === null) {
-            return;
-        }
-
-
         let panelsToSave = this.panels.filter(p => p.canSave());
         if (panelsToSave.length === 0) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
+            return;
+        }
+
+        let commitMessage = this.getCommitMessage();
+        // If the user clicks "Cancel", stop execution
+        if (commitMessage === null) {
             return;
         }
 
