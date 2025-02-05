@@ -677,29 +677,59 @@ class EducationPlatformApp {
             return;
         }
 
-        let fileStorePromises = [];
-
-        // FIXME: This currently creates separate commits for each panel. We really would want one commit for all of them together...
-        for(const panel of panelsToSave){
-            
-            let storePromise = panel.save(this.fileHandler);
-            
-            if (storePromise!=null) {
-                
-                storePromise.then( () => {
-                    console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
-                });
-
-                fileStorePromises.push(storePromise);
-            }
+        let files = [];
+        for (const panel of panelsToSave) {
+            files.push({
+                url: panel.getFileUrl(),
+                valueSha: panel.getValueSha(),
+                newFileContent: panel.getValue()
+            });
         }
+
+        this.fileHandler.storeFiles(files)
+            .then(response => {
+                let dataReturned = JSON.parse(response);
+
+                for (i = 0; i < panelsToSave.length; i++) {
+                    // Update the panel with the new SHA
+                    const newSha = dataReturned.files[i].sha;
+                    panelsToSave[i].setValueSha(newSha);
+
+                    // Mark the editor clean if the save completed
+                    panelsToSave[i].getEditor().session.getUndoManager().markClean();
+
+                    console.log("The contents of panel '" + panelsToSave[i].getId() + "' were saved successfully.");
+                }
+                PlaygroundUtility.successNotification("The activity panel contents have been saved.");
+            })
+            .catch(error => {
+                this.errorHandler.notify("An error occurred while trying to save the panel contents.", error);
+            });
+
+
+        // let fileStorePromises = [];
+
+        // // FIXME: This currently creates separate commits for each panel. We really would want one commit for all of them together...
+        // for(const panel of panelsToSave){
+            
+        //     let storePromise = panel.save(this.fileHandler);
+            
+        //     if (storePromise!=null) {
+                
+        //         storePromise.then( () => {
+        //             console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
+        //         });
+
+        //         fileStorePromises.push(storePromise);
+        //     }
+        // }
         
-        Promise.all(fileStorePromises).then(() => {
-            PlaygroundUtility.successNotification("The activity panel contents have been saved.");
+        // Promise.all(fileStorePromises).then(() => {
+        //     PlaygroundUtility.successNotification("The activity panel contents have been saved.");
         
-        }).catch((err) => {
-            this.errorHandler.notify("An error occurred while trying to save the panel contents.", err);
-        });
+        // }).catch((err) => {
+        //     this.errorHandler.notify("An error occurred while trying to save the panel contents.", err);
+        // });
     }
 
     /**

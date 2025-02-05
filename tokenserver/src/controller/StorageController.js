@@ -53,8 +53,9 @@ class StorageController {
     }
 
     storeFile = async (req, res) => {
-        let encryptedAuthCookie = req.cookies[getAuthCookieName];
-        let octokit = this.initOctokit(encryptedAuthCookie);
+        const encryptedAuthCookie = req.cookies[getAuthCookieName];
+        const octokit = this.initOctokit(encryptedAuthCookie);
+        const { files, message } = req.body;
 
         const paramOwner = req.body.owner;
         const paramRepo = req.body.repo;
