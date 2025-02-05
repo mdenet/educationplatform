@@ -38,7 +38,7 @@ export function arrayEquals( arrayA, arrayB, allowAnyWildcard=false ) {
  * @param {boolean} useCredentials xhr setting
  * @returns Promise to the response
  */
-export function jsonRequest(url, json, useCredentials=false){
+export function jsonRequest(url, json, useCredentials=false) {
     
     return new Promise(function (resolve, reject) {
 

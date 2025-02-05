@@ -128,7 +128,7 @@ class Panel {
         this.fileUrl = url;
     }
 
-    getPathFromUrl() {
+    getFilePath() {
         return this.getFileUrl().split("/").slice(6).join("/");
     }
 

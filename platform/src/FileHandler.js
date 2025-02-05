@@ -99,6 +99,7 @@ class FileHandler {
 
         // Prepare the request payload
         const requestUrl = new URL(this.tokenHandlerUrl);
+        requestUrl.pathname = "/mdenet-auth/github/file";
         let request = {
             files: [],
             message: message
@@ -113,14 +114,14 @@ class FileHandler {
             }
 
             // Add the remaining parameters to the request
-            fileParams.content = this.bytesToBase64(new TextEncoder().encode(file.newFileContent));
+            fileParams.content = file.newFileContent;
             fileParams.sha = file.valueSha;
 
             // Add the file to the batch request
             request.files.push(fileParams);
         }
         
-        return jsonRequest( requestUrl.href, JSON.stringify(request.params), useCredentials=true );
+        return jsonRequest( requestUrl.href, JSON.stringify(request), true );
 
         // if(isAuthenticated()){
         //     // collect the request parameters in the url (owner, repo, ref, path)

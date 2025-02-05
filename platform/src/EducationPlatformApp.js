@@ -688,17 +688,22 @@ class EducationPlatformApp {
 
         this.fileHandler.storeFiles(files)
             .then(response => {
+                // Returns a [ {path, sha} ] list corresponding to each file
                 let dataReturned = JSON.parse(response);
 
-                for (i = 0; i < panelsToSave.length; i++) {
+                for (const panel of panelsToSave) {
+                    const filePath = panel.getFilePath();
+                    // Find the updated file that matches the panel's file path
+                    const updatedFile = dataReturned.files.find(file => file.path === filePath);
+
                     // Update the panel with the new SHA
-                    const newSha = dataReturned.files[i].sha;
-                    panelsToSave[i].setValueSha(newSha);
+                    const newSha = updatedFile.sha;
+                    panel.setValueSha(newSha);
 
                     // Mark the editor clean if the save completed
-                    panelsToSave[i].getEditor().session.getUndoManager().markClean();
+                    panel.getEditor().session.getUndoManager().markClean();
 
-                    console.log("The contents of panel '" + panelsToSave[i].getId() + "' were saved successfully.");
+                    console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
                 }
                 PlaygroundUtility.successNotification("The activity panel contents have been saved.");
             })
