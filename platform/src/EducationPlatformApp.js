@@ -463,7 +463,7 @@ class EducationPlatformApp {
                     // Language workbench
                     PlaygroundUtility.longNotification("Building editor");
 
-                    this.checkEditorReady(response.editorID, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole, false);
+                    this.checkEditorReady(response.editorID, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole);
                     
 
                 } else if (responseDiagram != undefined) {
@@ -709,10 +709,10 @@ class EducationPlatformApp {
      * @param {String} editorPanelId - the id of the editor panel.
      * @param {String} editorActivityId - TODO remove as this can be found using editorPanelId to save having to specify in config.
      * @param {Panel} logPanel - the panel to log progress to.
-     * @param {Bool} editorReady - whether editor has finished building or not.
      */
-    checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady){
+    checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel){
         var socket = new WebSocket(this.wsUri);
+        var editorReady = false;
         socket.onopen = function(){
             socket.send(editorID);
         };
@@ -736,14 +736,14 @@ class EducationPlatformApp {
             //If editor is not deployed, a new connection must be established.
             if (!editorReady){
                 if(!socket || socket.readyState == 3){
-                    this.checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady);
+                    this.checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel);
                 }
             }
         }.bind(this);
 
             
         if(!socket || socket.readyState == 3){
-            this.checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel, editorReady);
+            this.checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel);
         }
     }
 }
