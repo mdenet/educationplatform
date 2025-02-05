@@ -38,6 +38,7 @@ import { ErrorHandler } from './ErrorHandler.js';
 
 const COMMON_UTILITY_URL = utility.getWindowLocationHref().replace( utility.getWindowLocationSearch(), "" ) + "common/utility.json";
 const ACTION_FUNCTION_LANGUAGE_TYPE = "text";
+const DEFAULT_COMMIT_MESSAGE = "MDENet Education Platform save.";
 
 class EducationPlatformApp {
     outputType;
@@ -670,7 +671,33 @@ class EducationPlatformApp {
         }
     }
 
-    savePanelContents() {
+    getCommitMessage() {
+        let commitMessage = prompt("Type your commit message:", DEFAULT_COMMIT_MESSAGE);
+
+        // If the user clicks "Cancel", commitMessage will be null
+        if (commitMessage === null) {
+            return null;
+        }
+
+        // Use default message if input is empty or just whitespace
+        if (commitMessage.trim() === "") {
+            commitMessage = DEFAULT_COMMIT_MESSAGE;
+        }
+
+        return commitMessage;
+    }
+
+    savePanelContents(event) {
+        event.preventDefault();
+
+        let commitMessage = this.getCommitMessage();
+
+        // If the user clicks "Cancel", stop execution
+        if (commitMessage === null) {
+            return;
+        }
+
+
         let panelsToSave = this.panels.filter(p => p.canSave());
         if (panelsToSave.length === 0) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
@@ -686,7 +713,7 @@ class EducationPlatformApp {
             });
         }
 
-        this.fileHandler.storeFiles(files)
+        this.fileHandler.storeFiles(files, commitMessage)
             .then(response => {
                 // Returns a [ {path, sha} ] list corresponding to each file
                 let dataReturned = JSON.parse(response);
