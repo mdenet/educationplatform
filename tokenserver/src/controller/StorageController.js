@@ -57,59 +57,158 @@ class StorageController {
         const octokit = this.initOctokit(encryptedAuthCookie);
         const { files, message } = req.body;
 
-        const paramOwner = req.body.owner;
-        const paramRepo = req.body.repo;
-        const paramPath =  req.body.path; 
-        const paramMessage = req.body.message; 
-        const paramContent = req.body.content;
-        const paramBranch = req.body.ref;
-        const paramSha = req.body.sha; // Required when updating a file
+        if(!files || !Array.isArray(files) || !files.length === 0 || !message) {
+            throw new InvalidRequestException();
+        }
 
-        // Committer - default authenticated user
-        // Author - default authenticated user
+        // Extract common properties from the request
+        const { owner, repo, ref: branch } = files[0];
 
-        
-        if (paramOwner != null && 
-            paramRepo != null && 
-            paramPath != null && 
-            paramMessage != null && 
-            paramContent != null && 
-            paramBranch != null &&
-            paramSha != null
-        ) {
-
-            const request = {
-                owner: paramOwner,
-                repo: paramRepo,
-                path: paramPath,
-                message: paramMessage,
-                content: paramContent,
-                branch: paramBranch,
-                sha: paramSha,
+        try {
+            // Get the latest commit SHA
+            const { data: branchData } = await octokit.request('GET /repos/{owner}/{repo}/git/refs/heads/{branch}', {
+                owner,
+                repo,
+                branch,
                 headers: {
                     'X-GitHub-Api-Version': config.githubApiVersion
                 }
-            }
+            });
+            const latestCommitSha = branchData.object.sha;
 
-            let repoData = await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', request);
+            // Get the latest commit's tree SHA 
+            const { data: commitData } = await octokit.request('GET /repos/{owner}/{repo}/git/commits/{commit_sha}', {
+                owner,
+                repo,
+                commit_sha: latestCommitSha,
+                headers: {
+                    'X-GitHub-Api-Version': config.githubApiVersion
+                }
+            });
+            const baseTreeSha = commitData.tree.sha;
 
-            if (repoData.status===200 || repoData.status===201) {
-                res.status(repoData.status).json({
-                    success: true,
-                    data: {
-                        sha: repoData.data.content.sha
-                    }
-                });
-            
-            } 
-            else {
-                throw new GihubException(repoData.status);
-            }
-            
-        } 
-        else {
-            throw new InvalidRequestException();
+            // Create a new tree with the updated files
+            const { data: treeData } = await octokit.request('POST /repos/{owner}/{repo}/git/trees', {
+                owner,
+                repo,
+                base_tree: baseTreeSha,
+                tree: files.map(file => ({
+                    path: file.path,
+                    mode: '100644',
+                    type: 'blob',
+                    content: file.content
+                })),
+                headers: {
+                    'X-GitHub-Api-Version': config.githubApiVersion
+                }
+            });
+            const newTreeSha = treeData.sha;
+
+            // Create a new commit with the new tree
+            const { data: newCommit } = await octokit.request('POST /repos/{owner}/{repo}/git/commits', {
+                owner,
+                repo,
+                message,
+                tree: newTreeSha,
+                parents: [latestCommitSha],
+                headers: {
+                    'X-GitHub-Api-Version': config.githubApiVersion
+                }
+            });
+
+            // Update the branch reference to point to the new commit
+            await octokit.request('PATCH /repos/{owner}/{repo}/git/refs/heads/{branch}', {
+                owner,
+                repo,
+                branch,
+                sha: newCommit.sha,
+                headers: {
+                    'X-GitHub-Api-Version': config.githubApiVersion
+                }
+            });
+
+            // Retrieve the tree to get the updated file SHAs
+            const { data: newTreeData } = await octokit.request('GET /repos/{owner}/{repo}/git/trees/{tree_sha}?recursive=1', {
+                owner,
+                repo,
+                tree_sha: newTreeSha,
+                headers: { 
+                    'X-GitHub-Api-Version': config.githubApiVersion 
+                }
+            });
+
+            // Match the updated file SHAs
+            const updatedFiles = files.map(file => {
+                const matchedFile = newTreeData.tree.find(f => f.path === file.path);
+                return {
+                    path: file.path,
+                    sha: matchedFile ? matchedFile.sha : null
+                }
+            });
+
+            res.status(201).json({
+                success: true,
+                files: updatedFiles
+            });
         }
+        catch (error) {
+            console.error("Error while storing files:", error);
+            throw new GihubException(error.status);
+        }
+
+        // const paramOwner = req.body.owner;
+        // const paramRepo = req.body.repo;
+        // const paramPath =  req.body.path; 
+        // const paramMessage = req.body.message; 
+        // const paramContent = req.body.content;
+        // const paramBranch = req.body.ref;
+        // const paramSha = req.body.sha; // Required when updating a file
+
+        // // Committer - default authenticated user
+        // // Author - default authenticated user
+
+        
+        // if (paramOwner != null && 
+        //     paramRepo != null && 
+        //     paramPath != null && 
+        //     paramMessage != null && 
+        //     paramContent != null && 
+        //     paramBranch != null &&
+        //     paramSha != null
+        // ) {
+
+        //     const request = {
+        //         owner: paramOwner,
+        //         repo: paramRepo,
+        //         path: paramPath,
+        //         message: paramMessage,
+        //         content: paramContent,
+        //         branch: paramBranch,
+        //         sha: paramSha,
+        //         headers: {
+        //             'X-GitHub-Api-Version': config.githubApiVersion
+        //         }
+        //     }
+
+        //     let repoData = await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', request);
+
+        //     if (repoData.status===200 || repoData.status===201) {
+        //         res.status(repoData.status).json({
+        //             success: true,
+        //             data: {
+        //                 sha: repoData.data.content.sha
+        //             }
+        //         });
+            
+        //     } 
+        //     else {
+        //         throw new GihubException(repoData.status);
+        //     }
+            
+        // } 
+        // else {
+        //     throw new InvalidRequestException();
+        // }
     }
 
     forkRepository = async (req, res) => { 
