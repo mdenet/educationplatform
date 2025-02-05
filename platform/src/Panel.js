@@ -82,21 +82,21 @@ class Panel {
      * @param {*} fileHandler the handler to be used for saving
      * @returns a promise
      */
-    save(fileHandler) {
-        let thisEditor = this.editor;
-        return fileHandler.storeFile(this.getFileUrl(), this.getValueSha(), this.getValue())
-            .then((response) => { 
-                // Update the panel with the new SHA 
-                this.setValueSha(JSON.parse(response).data.sha);
+    // save(fileHandler) {
+    //     let thisEditor = this.editor;
+    //     return fileHandler.storeFile(this.getFileUrl(), this.getValueSha(), this.getValue())
+    //         .then((response) => { 
+    //             // Update the panel with the new SHA 
+    //             this.setValueSha(JSON.parse(response).data.sha);
 
-                // Mark the editor clean if the save completed
-                thisEditor.session.getUndoManager().markClean(); 
-            })
-            .catch((error) => {
-                console.error("Error saving panel '" + this.id + "':", error);
-                throw error;
-            });
-    }
+    //             // Mark the editor clean if the save completed
+    //             thisEditor.session.getUndoManager().markClean(); 
+    //         })
+    //         .catch((error) => {
+    //             console.error("Error saving panel '" + this.id + "':", error);
+    //             throw error;
+    //         });
+    // }
 
     getEditor() {
         return this.editor;

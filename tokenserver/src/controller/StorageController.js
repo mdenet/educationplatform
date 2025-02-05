@@ -15,7 +15,7 @@ class StorageController {
 
     constructor() {
         this.router.get('/file', asyncCatch(this.getFile));
-        this.router.post('/file', asyncCatch(this.storeFile));
+        this.router.post('/file', asyncCatch(this.storeFiles));
         this.router.post('/fork', asyncCatch(this.forkRepository));
     }
 
@@ -52,7 +52,7 @@ class StorageController {
 
     }
 
-    storeFile = async (req, res) => {
+    storeFiles = async (req, res) => {
         const encryptedAuthCookie = req.cookies[getAuthCookieName];
         const octokit = this.initOctokit(encryptedAuthCookie);
         const { files, message } = req.body;
@@ -155,60 +155,6 @@ class StorageController {
             console.error("Error while storing files:", error);
             throw new GihubException(error.status);
         }
-
-        // const paramOwner = req.body.owner;
-        // const paramRepo = req.body.repo;
-        // const paramPath =  req.body.path; 
-        // const paramMessage = req.body.message; 
-        // const paramContent = req.body.content;
-        // const paramBranch = req.body.ref;
-        // const paramSha = req.body.sha; // Required when updating a file
-
-        // // Committer - default authenticated user
-        // // Author - default authenticated user
-
-        
-        // if (paramOwner != null && 
-        //     paramRepo != null && 
-        //     paramPath != null && 
-        //     paramMessage != null && 
-        //     paramContent != null && 
-        //     paramBranch != null &&
-        //     paramSha != null
-        // ) {
-
-        //     const request = {
-        //         owner: paramOwner,
-        //         repo: paramRepo,
-        //         path: paramPath,
-        //         message: paramMessage,
-        //         content: paramContent,
-        //         branch: paramBranch,
-        //         sha: paramSha,
-        //         headers: {
-        //             'X-GitHub-Api-Version': config.githubApiVersion
-        //         }
-        //     }
-
-        //     let repoData = await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', request);
-
-        //     if (repoData.status===200 || repoData.status===201) {
-        //         res.status(repoData.status).json({
-        //             success: true,
-        //             data: {
-        //                 sha: repoData.data.content.sha
-        //             }
-        //         });
-            
-        //     } 
-        //     else {
-        //         throw new GihubException(repoData.status);
-        //     }
-            
-        // } 
-        // else {
-        //     throw new InvalidRequestException();
-        // }
     }
 
     forkRepository = async (req, res) => { 

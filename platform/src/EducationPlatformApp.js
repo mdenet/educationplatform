@@ -670,7 +670,7 @@ class EducationPlatformApp {
         }
     }
 
-    savePanelContents(){
+    savePanelContents() {
         let panelsToSave = this.panels.filter(p => p.canSave());
         if (panelsToSave.length === 0) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
@@ -710,31 +710,6 @@ class EducationPlatformApp {
             .catch(error => {
                 this.errorHandler.notify("An error occurred while trying to save the panel contents.", error);
             });
-
-
-        // let fileStorePromises = [];
-
-        // // FIXME: This currently creates separate commits for each panel. We really would want one commit for all of them together...
-        // for(const panel of panelsToSave){
-            
-        //     let storePromise = panel.save(this.fileHandler);
-            
-        //     if (storePromise!=null) {
-                
-        //         storePromise.then( () => {
-        //             console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
-        //         });
-
-        //         fileStorePromises.push(storePromise);
-        //     }
-        // }
-        
-        // Promise.all(fileStorePromises).then(() => {
-        //     PlaygroundUtility.successNotification("The activity panel contents have been saved.");
-        
-        // }).catch((err) => {
-        //     this.errorHandler.notify("An error occurred while trying to save the panel contents.", err);
-        // });
     }
 
     /**

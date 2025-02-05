@@ -61,37 +61,7 @@ class FileHandler {
         }
     }
 
-    storeFile(url, sha, newFileContent, message){
-        
-        if (message === undefined) {
-            message=("MDENet Education Platform save.");
-        }
-        
-        let responsePromise;
-
-        if(isAuthenticated()){
-            // collect the request parameters in the url (owner, repo, ref, path)
-            let request = this.getPrivateFileUpdateParams(url);
-        
-            // add remaining parameters to the request
-            request.params.message = message;   
-            request.params.sha= sha;  
-            request.params.content= this.bytesToBase64( new TextEncoder().encode(newFileContent) );
-            
-            responsePromise = jsonRequest( request.url,  JSON.stringify(request.params), true );
-
-        } 
-        else {
-            console.error("File could not be stored - not authenticated.");
-            responsePromise = null;
-        }
-        
-        return responsePromise;
-    }
-
     storeFiles(filesToSave, message = "MDENet Education Platform save."){
-        
-        let responsePromise;
 
         if (!isAuthenticated()) {
             throw new Error("Files could not be stored - not authenticated.");
@@ -122,25 +92,6 @@ class FileHandler {
         }
         
         return jsonRequest( requestUrl.href, JSON.stringify(request), true );
-
-        // if(isAuthenticated()){
-        //     // collect the request parameters in the url (owner, repo, ref, path)
-        //     let request = this.getPrivateFileUpdateParams(url);
-        
-        //     // add remaining parameters to the request
-        //     request.params.message = message;   
-        //     request.params.sha= sha;  
-        //     request.params.content= this.bytesToBase64( new TextEncoder().encode(newFileContent) );
-            
-        //     responsePromise = jsonRequest( request.url,  JSON.stringify(request.params), true );
-
-        // } 
-        // else {
-        //     console.error("File could not be stored - not authenticated.");
-        //     responsePromise = null;
-        // }
-        
-        return responsePromise;
     }
 
     forkRepository(url, repository, owner, mainOnly){
@@ -239,10 +190,7 @@ class FileHandler {
     githubRawUrlToStoreRequest(githubUrlPath){
 
         let pathParts = githubUrlPath.split("/");
-        // let requestUrl = new URL(this.tokenHandlerUrl);
         let requestParams = {};
-
-        // requestUrl.pathname = "/mdenet-auth/github/file";
 
         pathParts.shift() // unused empty
 
@@ -251,7 +199,6 @@ class FileHandler {
         requestParams.ref = pathParts.shift();
         requestParams.path = pathParts.join("/");
 
-        // return  { url: requestUrl.href, params: requestParams };
         return requestParams;
     }
 }
