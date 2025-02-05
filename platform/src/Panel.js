@@ -128,6 +128,10 @@ class Panel {
         this.fileUrl = url;
     }
 
+    getPathFromUrl() {
+        return this.getFileUrl().split("/").slice(6).join("/");
+    }
+
     setType(type){
 
         if (this.type != null){
