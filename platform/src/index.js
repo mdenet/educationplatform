@@ -1,13 +1,15 @@
 
 /*global TOKEN_SERVER_URL -- is set by environment variable*/
+/*global WEBSOCKETS_URI -- is set by environment variable*/
 import { EducationPlatformApp } from "./EducationPlatformApp.js";
 import { PlaygroundUtility } from "./PlaygroundUtility.js";
 
-const TOKEN_HANDLER_URL = TOKEN_SERVER_URL || "http://127.0.0.1:10000";
+const TOKEN_HANDLER_URL = TOKEN_SERVER_URL;
+const WS_URI = WEBSOCKETS_URI;
 let urlParameters = new URLSearchParams(window.location.search);  
 
 var platform = new EducationPlatformApp();
-platform.initialize(urlParameters, TOKEN_HANDLER_URL);
+platform.initialize(urlParameters, TOKEN_HANDLER_URL, WS_URI);
 
 // Some functions and variables are accessed  
 // by onclick - or similer - events
