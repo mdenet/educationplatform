@@ -72,17 +72,27 @@ class EducationPlatformApp {
         }
 
         document.getElementById("btnnologin").onclick= () => {
-
+            window.sessionStorage.setItem("isAuthenticated", false);
             PlaygroundUtility.hideLogin();
         }
 
 
-        if (!urlParamPrivateRepo()){
+        if (!urlParamPrivateRepo()) {
             // Public repo so no need to authenticate
-            this.initializeActivity(urlParameters);
-            
-        } else {
-            PlaygroundUtility.showLogin();
+            this.initializeActivity(urlParameters);    
+        } 
+        else {
+            // Check if there is a valid authentication cookie, if there is then skip login process
+            const hasAuthCookie = jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/validate",
+                                            JSON.stringify({}), true);
+            hasAuthCookie.then((response) => {
+                if (response.authenticated) {
+                    this.setupAuthenticatedState(urlParameters);
+                } 
+                else {
+                    PlaygroundUtility.showLogin();
+                }
+            })       
         }
 
         document.getElementById("btnlogin").onclick= async () => {
@@ -91,8 +101,6 @@ class EducationPlatformApp {
             const urlRequest = { url: utility.getWindowLocationHref() };
             let authServerDetails= await jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/url",
                                                     JSON.stringify(urlRequest) );
-
-            
 
             authServerDetails = JSON.parse(authServerDetails);
 
@@ -112,11 +120,9 @@ class EducationPlatformApp {
             //TODO loading box
             let authDetails = jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/token",
                                         JSON.stringify(tokenRequest), true );
-            authDetails.then( () => {
-                document.getElementById('save')?.classList.remove('hidden');
-                window.sessionStorage.setItem("isAuthenticated", true);
-                this.initializeActivity(urlParameters);
-            } );
+            authDetails.then(() => {
+                this.setupAuthenticatedState(urlParameters);
+            });
         }
 
         // Clean authentication parameters from url
@@ -143,7 +149,12 @@ class EducationPlatformApp {
         window.history.replaceState({}, document.title, "?" + queryString);
     }
 
-
+    // Helper method to set up the state after the user has been authenticated
+    setupAuthenticatedState(urlParameters) {
+        document.getElementById('save')?.classList.remove('hidden');
+        window.sessionStorage.setItem("isAuthenticated", true);
+        this.initializeActivity(urlParameters);
+    }
 
     initializeActivity(urlParameters){
 

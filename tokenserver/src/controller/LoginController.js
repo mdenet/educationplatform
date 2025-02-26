@@ -3,8 +3,9 @@ import * as express from "express";
 import {InvalidRequestException} from "../exceptions/InvalidRequestException.js";
 import {asyncCatch} from "../middleware/ErrorHandlingMiddleware.js";
 import {getAuthCookieName} from "../cookieName.js";
-import {getEncryptedCookie} from "../lib-curity/cookieEncrypter";
+import {getEncryptedCookie, decryptCookie} from "../lib-curity/cookieEncrypter";
 import { config } from "../config.js";
+import {Octokit} from "octokit";
 
 const MAX_CODE_LENGTH = 200;  
 const MIN_CODE_LENGTH = 10;  
@@ -13,8 +14,6 @@ const MIN_STATE_LENGTH = 5;
 
 class LoginController {
 
-   
-    
     router = express.Router();
 
     octokitApp;
@@ -22,6 +21,7 @@ class LoginController {
     constructor(octokitAppInstance) {
         this.router.post('/url', asyncCatch(this.getAuthUrl));
         this.router.post('/token', asyncCatch(this.createToken));
+        this.router.get('/validate', asyncCatch(this.validateAuthCookie));
 
         this.octokitApp = octokitAppInstance;
     }
@@ -68,7 +68,30 @@ class LoginController {
         }
     } 
 
+    validateAuthCookie = async (req, res, next) => {
+        try {
+            const authCookie = req.cookies[getAuthCookieName];
+            if (authCookie == null) {
+                return res.status(401).json({ authenticated: false });
+            }
 
+            let token = decryptCookie(config.encKey, authCookie);
+            const octokit = new Octokit({ auth: token });
+
+            // Validate the token by making a simple API call to GitHub
+            const { data } = await octokit.request('GET /user');
+
+            if (data && data.login) {
+                return res.status(200).json({ authenticated: true });
+            } else {
+                return res.status(401).json({ authenticated: false });
+            }
+
+        }
+        catch (err) {
+            next(err);
+        }
+    }
 
     static validateTokenRequest(reqBody){
 
