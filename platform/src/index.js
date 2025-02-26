@@ -1,7 +1,6 @@
 
 /*global TOKEN_SERVER_URL -- is set by environment variable*/
 /*global WEBSOCKETS_URI -- is set by environment variable*/
-/*global FEEDBACK_SURVEY_URL -- url of feedback survey*/
 import { EducationPlatformApp } from "./EducationPlatformApp.js";
 import { PlaygroundUtility } from "./PlaygroundUtility.js";
 
