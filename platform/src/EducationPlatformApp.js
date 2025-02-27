@@ -72,35 +72,20 @@ class EducationPlatformApp {
             PlaygroundUtility.showFeedbackButton();
         }
 
-        if (!urlParamPrivateRepo()) {
-            // Public repo so no need to authenticate
-            this.initializeActivity(urlParameters);    
-        } 
+        // Check if returning from an authentication redirect
+        if (urlParameters.has("code") && urlParameters.has("state")) {
+            this.handleAuthRedirect(urlParameters, tokenHandlerUrl);
+        }
         else {
-            // Check if there is a valid authentication cookie, if there is then skip login process
-            const hasAuthCookie = getRequest(tokenHandlerUrl + "/mdenet-auth/login/validate");
-            hasAuthCookie.then((response) => {
-                if (response.authenticated) {
-                    console.log("User has previously logged in - redirecting to activity.");
-                    this.setupAuthenticatedState(urlParameters);
-                } 
-                else {
-                    console.log("User is not authenticated - showing login.");
-                    PlaygroundUtility.showLogin();
-                }
-            })
-            .catch((error) => {
-                console.error("Error while checking authentication cookie:", error);
-                PlaygroundUtility.showLogin();
-            });       
+            this.handleInitialLoad(urlParameters, tokenHandlerUrl);
         }
 
-        document.getElementById("btnnologin").onclick= () => {
+        document.getElementById("btnnologin").onclick = async () => {
             setAuthenticated(false);
             PlaygroundUtility.hideLogin();
         }
 
-        document.getElementById("btnlogin").onclick= async () => {
+        document.getElementById("btnlogin").onclick = async () => {
 
             // Get github url
             const urlRequest = { url: utility.getWindowLocationHref() };
@@ -109,28 +94,59 @@ class EducationPlatformApp {
 
             authServerDetails = JSON.parse(authServerDetails);
 
-            // Authenticate redirect 
+            // Authentication redirect
             utility.setWindowLocationHref(authServerDetails.url);
         }
 
-        if (urlParameters.has("code") && urlParameters.has("state")  ){
-            // Returning from authentication redirect
-            PlaygroundUtility.hideLogin();
-
-            //Complete authentication
-            const tokenRequest = {};
-            tokenRequest.state = urlParameters.get("state");
-            tokenRequest.code = urlParameters.get("code");
-
-            //TODO loading box
-            let authDetails = jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/token",
-                                        JSON.stringify(tokenRequest), true );
-            authDetails.then(() => {
-                this.setupAuthenticatedState(urlParameters);
-            });
-        }
-
         // Clean authentication parameters from url
+        this.cleanAuthParams(urlParameters);
+    }
+
+    async handleAuthRedirect(urlParameters, tokenHandlerUrl) {
+        // Returning from authentication redirect
+        PlaygroundUtility.hideLogin();
+
+        // Complete authentication
+        const tokenRequest = {};
+        tokenRequest.state = urlParameters.get("state");
+        tokenRequest.code = urlParameters.get("code");
+
+        try {
+            //TODO loading box
+            const authDetails = await jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/token",
+                JSON.stringify(tokenRequest), true );
+            
+            this.setupAuthenticatedState(urlParameters);
+        }
+        catch (error) {
+            console.error("Error while completing authentication:", error);
+            PlaygroundUtility.showLogin();
+        }
+    }
+
+    async handleInitialLoad(urlParameters, tokenHandlerUrl) {
+        try {
+            // Check if there is a valid authentication cookie, if there is then skip login process
+            const hasAuthCookie = await getRequest(tokenHandlerUrl + "/mdenet-auth/login/validate");
+            
+            if (hasAuthCookie.authenticated) {
+                console.log("User has previously logged in - redirecting to activity.");
+
+                PlaygroundUtility.hideLogin();
+                this.setupAuthenticatedState(urlParameters);
+            } 
+            else {
+                console.log("User is not authenticated - showing login.");
+                PlaygroundUtility.showLogin();
+            }
+        }
+        catch (error) {
+            console.error("Error while checking authentication cookie:", error);
+            PlaygroundUtility.showLogin();
+        }
+    }
+    
+    cleanAuthParams(urlParameters) {
         urlParameters.delete("code");
         urlParameters.delete("state");
 
@@ -138,13 +154,14 @@ class EducationPlatformApp {
         // Skips the default encoding to so that the URL can be reused
         let params = [];
         for (const [key, value] of urlParameters) {
-        // For a specific key ('activities' in this case), you add it to the array without encoding
-        if (key === 'activities') {
-            params.push(`${key}=${value}`);
-        } else {
-            // For all other parameters, you still want to encode them
-            params.push(`${key}=${encodeURIComponent(value)}`);
-        }
+            // For a specific key ('activities' in this case), you add it to the array without encoding
+            if (key === 'activities') {
+                params.push(`${key}=${value}`);
+            } 
+            else {
+                // For all other parameters, you still want to encode them
+                params.push(`${key}=${encodeURIComponent(value)}`);
+            }
         }
         // Now join all the parameters with '&' to form the query string
         let queryString = params.join('&');
@@ -155,7 +172,6 @@ class EducationPlatformApp {
 
     // Helper method to set up the state after the user has been authenticated
     setupAuthenticatedState(urlParameters) {
-        PlaygroundUtility.hideLogin();
         document.getElementById('save')?.classList.remove('hidden');
         setAuthenticated(true);
         this.initializeActivity(urlParameters);
