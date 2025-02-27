@@ -52,19 +52,20 @@ export function jsonRequest(url, json, useCredentials=false) {
         if (xhr.status >= 200 && xhr.status < 300) {
             resolve(xhr.response);
         
-        } else {
+        } 
+        else {
             reject({
-            status: xhr.status,
-            statusText: xhr.statusText
+                status: xhr.status,
+                statusText: xhr.statusText
             });
         }
         };
 
         xhr.onerror = function () {
-        reject({
-            status: xhr.status,
-            statusText: xhr.statusText
-        });
+            reject({
+                status: xhr.status,
+                statusText: xhr.statusText
+            });
         };
 
         xhr.send(json);
@@ -172,7 +173,8 @@ export function urlParamPrivateRepo(){
  * @returns true if the user is signed in
  */
 export function isAuthenticated(){
-    return window.sessionStorage.getItem("isAuthenticated") != null;
+    return window.sessionStorage.getItem("isAuthenticated") !== null &&
+    window.sessionStorage.getItem("isAuthenticated") === "true";
 }
 
 /**

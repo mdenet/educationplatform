@@ -87,19 +87,24 @@ class EducationPlatformApp {
                                             JSON.stringify({}), true);
             hasAuthCookie.then((response) => {
                 if (response.authenticated) {
+                    console.log("Authenticated cookie, user is logged in.");
                     this.setupAuthenticatedState(urlParameters);
                 } 
                 else {
                     PlaygroundUtility.showLogin();
                 }
-            })       
+            })
+            .catch((error) => {
+                console.error("Error while checking authentication cookie:", error);
+                PlaygroundUtility.showLogin();
+            });       
         }
 
         document.getElementById("btnlogin").onclick= async () => {
 
             // Get github url
             const urlRequest = { url: utility.getWindowLocationHref() };
-            let authServerDetails= await jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/url",
+            let authServerDetails = await jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/url",
                                                     JSON.stringify(urlRequest) );
 
             authServerDetails = JSON.parse(authServerDetails);
