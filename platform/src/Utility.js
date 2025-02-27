@@ -168,6 +168,13 @@ export function urlParamPrivateRepo(){
     return urlParams.has("privaterepo") && urlParams.get("privaterepo")==='true';
 }
 
+/**
+ * @param {boolean} flag
+ * Set the boolean authenticated flag in the session storage
+ */
+export function setAuthenticated(flag) {
+    window.sessionStorage.setItem("isAuthenticated", flag);
+}
 
 /**
  * 
@@ -254,6 +261,7 @@ export const utility = {
     jsonRequestConversion,
     getRequest,
     urlParamPrivateRepo,
+    setAuthenticated,
     isAuthenticated,
     parseConfigFile,
     getWindowLocationSearch,

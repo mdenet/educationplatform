@@ -70,9 +70,12 @@ class LoginController {
 
     validateAuthCookie = async (req, res, next) => {
         try {
+            const goodResponse = { authenticated: true };
+            const badResponse = { authenticated: false };
+
             const authCookie = req.cookies[getAuthCookieName];
             if (authCookie == null) {
-                return res.status(401).json({ authenticated: false });
+                return res.status(200).json(badResponse);
             }
 
             let token = decryptCookie(config.encKey, authCookie);
@@ -83,10 +86,10 @@ class LoginController {
 
             // If the data returned is valid, then the token is valid
             if (data && data.login) {
-                return res.status(200).json({ authenticated: true });
+                return res.status(200).json(goodResponse);
             } 
             else {
-                return res.status(401).json({ authenticated: false });
+                return res.status(200).json(badResponse);
             }
 
         }

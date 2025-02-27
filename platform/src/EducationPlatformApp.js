@@ -32,7 +32,7 @@ import { Button } from './Button.js';
 import { Preloader } from './Preloader.js';
 import { Layout, PANEL_HOLDER_ID } from './Layout.js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
-import { jsonRequest, urlParamPrivateRepo, utility, getRequest } from './Utility.js';
+import { jsonRequest, urlParamPrivateRepo, utility, getRequest, setAuthenticated } from './Utility.js';
 import { ErrorHandler } from './ErrorHandler.js';
 
 
@@ -62,6 +62,7 @@ class EducationPlatformApp {
 
     initialize( urlParameters, tokenHandlerUrl ){
         this.fileHandler = new FileHandler(tokenHandlerUrl);
+        setAuthenticated(false);
 
         /* 
         *  Setup the browser environment 
@@ -70,12 +71,6 @@ class EducationPlatformApp {
             PlaygroundUtility.setFeedbackButtonUrl(FEEDBACK_SURVEY_URL);
             PlaygroundUtility.showFeedbackButton();
         }
-
-        document.getElementById("btnnologin").onclick= () => {
-            window.sessionStorage.setItem("isAuthenticated", false);
-            PlaygroundUtility.hideLogin();
-        }
-
 
         if (!urlParamPrivateRepo()) {
             // Public repo so no need to authenticate
@@ -98,6 +93,11 @@ class EducationPlatformApp {
                 console.error("Error while checking authentication cookie:", error);
                 PlaygroundUtility.showLogin();
             });       
+        }
+
+        document.getElementById("btnnologin").onclick= () => {
+            setAuthenticated(false);
+            PlaygroundUtility.hideLogin();
         }
 
         document.getElementById("btnlogin").onclick= async () => {
@@ -134,7 +134,6 @@ class EducationPlatformApp {
         urlParameters.delete("code");
         urlParameters.delete("state");
 
-
         // Encode ':' and '/' with toString
         // Skips the default encoding to so that the URL can be reused
         let params = [];
@@ -156,8 +155,9 @@ class EducationPlatformApp {
 
     // Helper method to set up the state after the user has been authenticated
     setupAuthenticatedState(urlParameters) {
+        PlaygroundUtility.hideLogin();
         document.getElementById('save')?.classList.remove('hidden');
-        window.sessionStorage.setItem("isAuthenticated", true);
+        setAuthenticated(true);
         this.initializeActivity(urlParameters);
     }
 
