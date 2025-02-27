@@ -128,7 +128,7 @@ class EducationPlatformApp {
         try {
             // Check if there is a valid authentication cookie, if there is then skip login process
             const hasAuthCookie = await getRequest(tokenHandlerUrl + "/mdenet-auth/login/validate");
-            
+
             if (hasAuthCookie.authenticated) {
                 console.log("User has previously logged in - redirecting to activity.");
 

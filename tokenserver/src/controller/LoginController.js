@@ -75,6 +75,7 @@ class LoginController {
 
             const authCookie = req.cookies[getAuthCookieName];
             if (authCookie == null) {
+                console.log("No auth cookie found");
                 return res.status(200).json(badResponse);
             }
 
@@ -89,6 +90,7 @@ class LoginController {
                 return res.status(200).json(goodResponse);
             } 
             else {
+                console.log("Invalid token");
                 return res.status(200).json(badResponse);
             }
 
