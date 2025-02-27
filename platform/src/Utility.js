@@ -30,7 +30,6 @@ export function arrayEquals( arrayA, arrayB, allowAnyWildcard=false ) {
 }
 
 
-
 /**
  * Posts a json request to the given url.
  * @param {String} url the destination url
@@ -49,16 +48,15 @@ export function jsonRequest(url, json, useCredentials=false) {
         xhr.withCredentials = useCredentials;
         
         xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(xhr.response);
-        
-        } 
-        else {
-            reject({
-                status: xhr.status,
-                statusText: xhr.statusText
-            });
-        }
+            if (xhr.status >= 200 && xhr.status < 300) {
+                resolve(xhr.response);
+            } 
+            else {
+                reject({
+                    status: xhr.status,
+                    statusText: xhr.statusText
+                });
+            }
         };
 
         xhr.onerror = function () {
@@ -91,29 +89,30 @@ export function jsonRequestConversion(url, json, parameterName){
         xhr.setRequestHeader("Content-Type", "application/json");
         
         xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
+            if (xhr.status >= 200 && xhr.status < 300) {
 
-            let response = JSON.parse(xhr.response);
+                let response = JSON.parse(xhr.response);
 
-            let parameterData = {};
-            parameterData.name = parameterName;
-            parameterData.data = response.output;
+                let parameterData = {};
+                parameterData.name = parameterName;
+                parameterData.data = response.output;
 
-            resolve(parameterData);
-        
-        } else {
-            reject({
-            status: xhr.status,
-            statusText: xhr.statusText
-            });
-        }
+                resolve(parameterData);
+            
+            } 
+            else {
+                reject({
+                    status: xhr.status,
+                    statusText: xhr.statusText
+                });
+            }
         };
 
         xhr.onerror = function () {
-        reject({
-            status: xhr.status,
-            statusText: xhr.statusText
-        });
+            reject({
+                status: xhr.status,
+                statusText: xhr.statusText
+            });
         };
 
         xhr.send(json);
@@ -131,28 +130,30 @@ export function getRequest(url){
 
     return new Promise(function (resolve, reject) {
         
-        let xmlHttp = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         
-        xmlHttp.onload = function() { 
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-                resolve(xmlHttp.responseText);
-            } else {
+        xhr.open("GET", url, true);  
+        
+        xhr.onload = function() { 
+            if (xhr.status >= 200 && xhr.status < 300) {
+                resolve(xhr.response);
+            } 
+            else {
                 reject({
-                    status: xmlHttp.status,
-                    statusText: xmlHttp.statusText
+                    status: xhr.status,
+                    statusText: xhr.statusText
                 });
             }
         }
 
-        xmlHttp.onerror = function() {
+        xhr.onerror = function() {
             reject({
-                status: xmlHttp.status,
-                statusText: xmlHttp.statusText
+                status: xhr.status,
+                statusText: xhr.statusText
             });
         }
 
-        xmlHttp.open("GET", url , true);  
-        xmlHttp.send(null);
+        xhr.send(null);
     });
 }
 

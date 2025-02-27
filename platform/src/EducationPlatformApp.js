@@ -32,7 +32,7 @@ import { Button } from './Button.js';
 import { Preloader } from './Preloader.js';
 import { Layout, PANEL_HOLDER_ID } from './Layout.js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
-import { jsonRequest, urlParamPrivateRepo, utility } from './Utility.js';
+import { jsonRequest, urlParamPrivateRepo, utility, getRequest } from './Utility.js';
 import { ErrorHandler } from './ErrorHandler.js';
 
 
@@ -83,14 +83,14 @@ class EducationPlatformApp {
         } 
         else {
             // Check if there is a valid authentication cookie, if there is then skip login process
-            const hasAuthCookie = jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/validate",
-                                            JSON.stringify({}), true);
+            const hasAuthCookie = getRequest(tokenHandlerUrl + "/mdenet-auth/login/validate");
             hasAuthCookie.then((response) => {
                 if (response.authenticated) {
-                    console.log("Authenticated cookie, user is logged in.");
+                    console.log("User has previously logged in - redirecting to activity.");
                     this.setupAuthenticatedState(urlParameters);
                 } 
                 else {
+                    console.log("User is not authenticated - showing login.");
                     PlaygroundUtility.showLogin();
                 }
             })

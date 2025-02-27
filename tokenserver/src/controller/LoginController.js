@@ -81,9 +81,11 @@ class LoginController {
             // Validate the token by making a simple API call to GitHub
             const { data } = await octokit.request('GET /user');
 
+            // If the data returned is valid, then the token is valid
             if (data && data.login) {
                 return res.status(200).json({ authenticated: true });
-            } else {
+            } 
+            else {
                 return res.status(401).json({ authenticated: false });
             }
 
