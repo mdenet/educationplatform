@@ -123,16 +123,18 @@ export function jsonRequestConversion(url, json, parameterName){
 /**
  * Http get request to url
  * 
- * @param {*} url 
+ * @param {*} url the destination url 
+ * @param {boolean} useCredentials xhr setting
  * @returns Promise to the response 
  */
-export function getRequest(url){
+export function getRequest(url, useCredentials=false){
 
     return new Promise(function (resolve, reject) {
         
         let xhr = new XMLHttpRequest();
         
-        xhr.open("GET", url, true);  
+        xhr.open("GET", url, true);
+        xhr.withCredentials = useCredentials;  
         
         xhr.onload = function() { 
             if (xhr.status >= 200 && xhr.status < 300) {

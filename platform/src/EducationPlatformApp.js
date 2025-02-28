@@ -74,6 +74,7 @@ class EducationPlatformApp {
 
         // Check if returning from an authentication redirect
         if (urlParameters.has("code") && urlParameters.has("state")) {
+            // Returning from authentication redirect
             this.handleAuthRedirect(urlParameters, tokenHandlerUrl);
         }
         else {
@@ -103,7 +104,6 @@ class EducationPlatformApp {
     }
 
     async handleAuthRedirect(urlParameters, tokenHandlerUrl) {
-        // Returning from authentication redirect
         PlaygroundUtility.hideLogin();
 
         // Complete authentication
@@ -127,7 +127,8 @@ class EducationPlatformApp {
     async handleInitialLoad(urlParameters, tokenHandlerUrl) {
         try {
             // Check if there is a valid authentication cookie, if there is then skip login process
-            const hasAuthCookie = await getRequest(tokenHandlerUrl + "/mdenet-auth/login/validate");
+            let hasAuthCookie = await getRequest(tokenHandlerUrl + "/mdenet-auth/login/validate", true);
+            hasAuthCookie = JSON.parse(hasAuthCookie);
 
             if (hasAuthCookie.authenticated) {
                 console.log("User has previously logged in - redirecting to activity.");
