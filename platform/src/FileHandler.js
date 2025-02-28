@@ -61,7 +61,11 @@ class FileHandler {
         }
     }
 
-    storeFiles(filesToSave, message = "MDENet Education Platform save."){
+    fetchBranches() {
+
+    }
+
+    storeFiles(filesToSave, message){
 
         if (!isAuthenticated()) {
             throw new Error("Files could not be stored - not authenticated.");

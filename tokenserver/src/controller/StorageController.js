@@ -15,6 +15,7 @@ class StorageController {
 
     constructor() {
         this.router.get('/file', asyncCatch(this.getFile));
+        this.router.get('/branches', asyncCatch(this.getBranches));
         this.router.post('/file', asyncCatch(this.storeFiles));
         this.router.post('/fork', asyncCatch(this.forkRepository));
     }
@@ -48,7 +49,13 @@ class StorageController {
         } else {
             throw new InvalidRequestException();
         }
-        
+    }
+    
+    getBranches = async (req, res) => {
+        const encryptedAuthCookie = req.cookies[getAuthCookieName];
+        const octokit = this.initOctokit(encryptedAuthCookie);
+
+        const { owner, repo } = req.query;
 
     }
 
@@ -213,12 +220,12 @@ class StorageController {
                 auth: token
               })
               
-        } else {
-            octokit = new Octokit({
-              })
+        } 
+        else {
+            octokit = new Octokit({})
         }
 
-        return octokit ;
+        return octokit;
     }
 
 }

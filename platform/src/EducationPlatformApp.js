@@ -773,6 +773,7 @@ class EducationPlatformApp {
 
     showBranches(event) {
         console.log("Showing branches");
+        let branches = this.fileHandler.fetchBranches();
     }
 
     /**

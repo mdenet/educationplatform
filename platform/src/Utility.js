@@ -121,43 +121,50 @@ export function jsonRequestConversion(url, json, parameterName){
 
 
 /**
- * Http get request to url
+ * HTTP GET request to the specified with optional query parameters.
  * 
- * @param {*} url the destination url 
- * @param {boolean} useCredentials xhr setting
- * @returns Promise to the response 
+ * @param {String} url The destination URL.
+ * @param {object} params Optional query parameters as key/value pairs.
+ * @param {boolean} useCredentials Whether to send credentials.
+ * @returns {Promise} Promise to the response.
  */
-export function getRequest(url, useCredentials=false){
+export function getRequest(url, params = {}, useCredentials = false) {
+
+    // If params are provided, convert them to a query string.
+    if (params && Object.keys(params).length > 0) {
+        const queryString = new URLSearchParams(params).toString();
+        // Append the query string to the URL (check if URL already has a query string).
+        url += (url.includes('?') ? '&' : '?') + queryString;
+    }
 
     return new Promise(function (resolve, reject) {
-        
         let xhr = new XMLHttpRequest();
-        
+
         xhr.open("GET", url, true);
-        xhr.withCredentials = useCredentials;  
-        
-        xhr.onload = function() { 
+        xhr.withCredentials = useCredentials;
+
+        xhr.onload = function () {
             if (xhr.status >= 200 && xhr.status < 300) {
                 resolve(xhr.response);
-            } 
-            else {
+            } else {
                 reject({
                     status: xhr.status,
                     statusText: xhr.statusText
                 });
             }
-        }
+        };
 
-        xhr.onerror = function() {
+        xhr.onerror = function () {
             reject({
                 status: xhr.status,
                 statusText: xhr.statusText
             });
-        }
+        };
 
         xhr.send(null);
     });
 }
+
 
 /**
  * Checks the private url parameter
