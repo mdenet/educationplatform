@@ -174,6 +174,7 @@ class EducationPlatformApp {
     // Helper method to set up the state after the user has been authenticated
     setupAuthenticatedState(urlParameters) {
         document.getElementById('save')?.classList.remove('hidden');
+        document.getElementById('branch')?.classList.remove('hidden');
         setAuthenticated(true);
         this.initializeActivity(urlParameters);
     }
@@ -768,6 +769,10 @@ class EducationPlatformApp {
             .catch(error => {
                 this.errorHandler.notify("An error occurred while trying to save the panel contents.", error);
             });
+    }
+
+    showBranches(event) {
+        console.log("Showing branches");
     }
 
     /**

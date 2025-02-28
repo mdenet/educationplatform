@@ -89,6 +89,9 @@
 	content: url("../images/save.png");
 }
 
+.mif-branch::before {
+	content: url("../images/branch.png");
+}
 
 .mif-link::before {
 	content: url("../images/link.png");
