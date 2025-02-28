@@ -127,7 +127,7 @@ class EducationPlatformApp {
     async handleInitialLoad(urlParameters, tokenHandlerUrl) {
         try {
             // Check if there is a valid authentication cookie, if there is then skip login process
-            let hasAuthCookie = await getRequest(tokenHandlerUrl + "/mdenet-auth/login/validate", true);
+            let hasAuthCookie = await getRequest(tokenHandlerUrl + "/mdenet-auth/login/validate", {}, true);
             hasAuthCookie = JSON.parse(hasAuthCookie);
 
             if (hasAuthCookie.authenticated) {

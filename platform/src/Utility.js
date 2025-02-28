@@ -124,13 +124,13 @@ export function jsonRequestConversion(url, json, parameterName){
  * HTTP GET request to the specified with optional query parameters.
  * 
  * @param {String} url The destination URL.
- * @param {object} params Optional query parameters as key/value pairs.
+ * @param {object} params Query parameters as key/value pairs.
  * @param {boolean} useCredentials Whether to send credentials.
  * @returns {Promise} Promise to the response.
  */
-export function getRequest(url, params = {}, useCredentials = false) {
+export function getRequest(url, params, useCredentials = false) {
 
-    // If params are provided, convert them to a query string.
+    // Convert params to a query string, if provided
     if (params && Object.keys(params).length > 0) {
         const queryString = new URLSearchParams(params).toString();
         // Append the query string to the URL (check if URL already has a query string).
