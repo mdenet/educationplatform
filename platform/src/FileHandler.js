@@ -1,4 +1,4 @@
-import { jsonRequest, isAuthenticated} from './Utility.js';
+import { jsonRequest, isAuthenticated, getRequest} from './Utility.js';
 
 
 class FileHandler {
@@ -62,7 +62,16 @@ class FileHandler {
     }
 
     fetchBranches(url) {
+        const sourceURL = new URL(url);
 
+        // Parse the URL to get the owner and repo
+        const pathParts = this.getPathParts(sourceURL.pathname);
+        const owner = pathParts.owner;
+        const repo = pathParts.repo;
+
+        if (!isAuthenticated()) {
+            throw new Error("Not authenticated to fetch branches.");
+        }
     }
 
     storeFiles(filesToSave, message){
@@ -204,6 +213,20 @@ class FileHandler {
         requestParams.path = pathParts.join("/");
 
         return requestParams;
+    }
+
+    getPathParts(path) {
+        let pathParts = path.split("/");
+        const parts = { };
+
+        pathParts.shift(); // unused empty
+
+        parts.owner = pathParts.shift();
+        parts.repo = pathParts.shift();
+        parts.ref = pathParts.shift();
+        parts.path = pathParts.join("/");
+
+        return parts;
     }
 }
 

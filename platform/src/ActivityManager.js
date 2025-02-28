@@ -44,7 +44,6 @@ class ActivityManager {
     initializeActivities(){
         this.configErrors = this.configErrors.concat(this.fetchActivities());
 
-        console.log("object.keys(this.activities)", Object.keys(this.activities));
         for(var activityKey of Object.keys(this.activities)) {
             this.resolveActionReferences( this.activities[activityKey].id );
         }

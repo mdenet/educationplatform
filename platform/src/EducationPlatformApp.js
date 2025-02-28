@@ -773,6 +773,8 @@ class EducationPlatformApp {
 
     showBranches() {
         const activityURL = utility.getActivityURL();
+
+        // Retrieve a list of branches in the repository
         let branches = this.fileHandler.fetchBranches(activityURL);
     }
 
