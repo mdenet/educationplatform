@@ -72,6 +72,15 @@ class FileHandler {
         if (!isAuthenticated()) {
             throw new Error("Not authenticated to fetch branches.");
         }
+
+        const params = {
+            owner: owner,
+            repo: repo
+        }
+        try {
+            const response = getRequest(this.tokenHandlerUrl + "/mdenet-auth/github/branches", params, true);
+            const branches = JSON.parse(response);
+        }
     }
 
     storeFiles(filesToSave, message){

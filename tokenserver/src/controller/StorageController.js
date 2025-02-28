@@ -57,6 +57,10 @@ class StorageController {
 
         const { owner, repo } = req.query;
 
+        if (!owner || !repo) {
+            throw new InvalidRequestException();
+        }
+
     }
 
     storeFiles = async (req, res) => {
