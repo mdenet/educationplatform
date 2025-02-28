@@ -30,7 +30,7 @@ class LoginController {
         try {
             //TODO validate request url
 
-            let userData= await this.octokitApp.getWebFlowAuthorizationUrl(
+            let userData = await this.octokitApp.getWebFlowAuthorizationUrl(
                 {redirectUrl: req.body.url}
             );
 

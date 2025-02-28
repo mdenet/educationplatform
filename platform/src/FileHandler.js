@@ -61,7 +61,7 @@ class FileHandler {
         }
     }
 
-    fetchBranches() {
+    fetchBranches(url) {
 
     }
 

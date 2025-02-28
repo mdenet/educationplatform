@@ -178,6 +178,15 @@ export function urlParamPrivateRepo(){
 }
 
 /**
+ * Get the activity URL
+ * @returns the activity URL, or null if not found
+ */
+export function getActivityURL() {
+    let urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("activities");
+}
+
+/**
  * @param {boolean} flag
  * Set the boolean authenticated flag in the session storage
  */
@@ -270,6 +279,7 @@ export const utility = {
     jsonRequestConversion,
     getRequest,
     urlParamPrivateRepo,
+    getActivityURL,
     setAuthenticated,
     isAuthenticated,
     parseConfigFile,

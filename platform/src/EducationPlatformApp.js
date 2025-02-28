@@ -771,9 +771,9 @@ class EducationPlatformApp {
             });
     }
 
-    showBranches(event) {
-        console.log("Showing branches");
-        let branches = this.fileHandler.fetchBranches();
+    showBranches() {
+        const activityURL = utility.getActivityURL();
+        let branches = this.fileHandler.fetchBranches(activityURL);
     }
 
     /**

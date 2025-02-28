@@ -33,22 +33,8 @@ class ActivityManager {
         this.fileHandler = fileHandler;
 
         // Retrieve the url of the activities configuration
-        var parameters = new URLSearchParams(utility.getWindowLocationSearch());
-        if (parameters.has("activities")) {
-            this.customActivitiesUrl = true;
-            this.activitiesUrl = parameters.get("activities");
-        }
-
-
-        var parameterKeys = Array.from(parameters.keys());
-
-        // Retrieve selected activity from the url parameters 
-        for (const key of parameterKeys) {
-            if (!parameters.get(key)) {
-                this.activityId = key;
-                break;
-            }
-        }
+        this.activitiesUrl = utility.getActivityURL();
+        this.activitiesUrl ? this.customActivitiesUrl = true : this.customActivitiesUrl = false;
     }
 
     /**
@@ -58,6 +44,7 @@ class ActivityManager {
     initializeActivities(){
         this.configErrors = this.configErrors.concat(this.fetchActivities());
 
+        console.log("object.keys(this.activities)", Object.keys(this.activities));
         for(var activityKey of Object.keys(this.activities)) {
             this.resolveActionReferences( this.activities[activityKey].id );
         }
