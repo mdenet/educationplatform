@@ -449,7 +449,7 @@ class EducationPlatformApp {
             Metro.notify.killAll();
 
             if ( Object.prototype.hasOwnProperty.call(response, "error")) {
-                outputConsole.setError(response.error);
+                outputConsole.setValue(response.error);
             } else {
 
                 var responseDiagram = Object.keys(response).find( key => key.toLowerCase().includes("diagram") );
