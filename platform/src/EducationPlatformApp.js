@@ -781,14 +781,29 @@ class EducationPlatformApp {
             const dropdownContainer = document.getElementById("branch-dropdown-container");
             dropdownContainer.style.display = "block";
 
+             // Hook up the "New Branch" button
+            const createBranchButton = document.getElementById("branch-create-button");
+            createBranchButton.onclick = () => {
+                console.log("Create new branch clicked");
+                // TODO: Implementation for creating a new branch
+            };
+
             // Clear old list items
             const branchList = document.getElementById("branch-list");
             branchList.innerHTML = "";
+
+            let currentBranch = utility.getCurrentBranch();
 
             // For each branch, we add <li> with the branch name
             branches.forEach((branch) => {
                 let li = document.createElement("li");
                 li.textContent = branch;
+
+                // highlight the currently active branch
+                if (branch === currentBranch) {
+                    li.classList.add("current-branch");
+                }
+
                 li.addEventListener("click", () => {
                     console.log("Selected branch:", branch);
                     // TODO: Implement branch switching

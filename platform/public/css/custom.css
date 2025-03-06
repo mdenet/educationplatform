@@ -264,6 +264,10 @@ body {
     padding: 1rem;
 }
 
+#branch-create-button {
+    border-radius: 20px; 
+}
+
 .branch-list-container {
     max-height: 300px; /* just so it scrolls if branches are long */
     overflow-y: auto;
@@ -276,6 +280,11 @@ body {
     list-style: none;
     padding: 0;
     margin: 0;
+}
+
+.current-branch {
+    background-color: #d9edf7;
+    border-left: 4px solid #46b8da;
 }
 
 .branch-list li {

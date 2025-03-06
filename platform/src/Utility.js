@@ -171,11 +171,25 @@ export function urlParamPrivateRepo(){
 
 /**
  * Get the activity URL
- * @returns the activity URL, or null if not found
+ * @returns {String} the activity URL, or null if not found
  */
 export function getActivityURL() {
     let urlParams = new URLSearchParams(window.location.search);
     return urlParams.get("activities");
+}
+
+/**
+ * Get the current branch from the URL 
+ * @returns {String} the branch name
+ */
+export function getCurrentBranch() {
+    const url = new URL(this.getActivityURL());
+    const pathParts = url.pathname.split('/').filter(Boolean);
+    // pathParts[0] => owner
+    // pathParts[1] => repo
+    // pathParts[2] => branch
+    // pathParts[3] => rest
+    return pathParts[2];
 }
 
 /**
@@ -271,6 +285,7 @@ export const utility = {
     jsonRequestConversion,
     getRequest,
     urlParamPrivateRepo,
+    getCurrentBranch,
     getActivityURL,
     setAuthenticated,
     isAuthenticated,
