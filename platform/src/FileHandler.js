@@ -61,7 +61,7 @@ class FileHandler {
         }
     }
 
-    fetchBranches(url) {
+    async fetchBranches(url) {
 
         if (!isAuthenticated()) {
             throw new Error("Not authenticated to fetch branches.");
@@ -73,7 +73,7 @@ class FileHandler {
         }
 
         try {
-            const response = getRequest(requestUrl, true);
+            const response = await getRequest(requestUrl, true);
             const branches = JSON.parse(response);
             return branches;
         }

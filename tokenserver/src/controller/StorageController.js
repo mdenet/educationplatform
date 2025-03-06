@@ -61,6 +61,25 @@ class StorageController {
             throw new InvalidRequestException();
         }
 
+        try {
+            // Fetch the list of branches
+            const { data: branches } = await octokit.request('GET /repos/{owner}/{repo}/branches', {
+                owner,
+                repo,
+                headers: {
+                    'X-GitHub-Api-Version': config.githubApiVersion
+                }
+            });
+
+            // Extract branch names from the response
+            const branchNames = branches.map(branch => branch.name);
+
+            res.status(200).json(branchNames);
+        }
+        catch (error) {
+            console.error("Error while fetching branches:", error);
+            throw new GihubException(error.status);
+        }
     }
 
     storeFiles = async (req, res) => {

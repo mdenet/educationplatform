@@ -776,6 +776,7 @@ class EducationPlatformApp {
 
         // Retrieve a list of branches in the repository
         let branches = this.fileHandler.fetchBranches(activityURL);
+        console.log(branches);
     }
 
     /**
