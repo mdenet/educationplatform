@@ -777,6 +777,7 @@ class EducationPlatformApp {
         try {
             // Retrieve a list of branches in the repository
             let branches = await this.fileHandler.fetchBranches(activityURL);
+            let currentBranch = utility.getCurrentBranch();
 
             const dropdownContainer = document.getElementById("branch-dropdown-container");
             dropdownContainer.style.display = "block";
@@ -797,8 +798,6 @@ class EducationPlatformApp {
             const branchList = document.getElementById("branch-list");
             branchList.innerHTML = "";
 
-            let currentBranch = utility.getCurrentBranch();
-
             // For each branch, we add <li> with the branch name
             branches.forEach((branch) => {
                 let li = document.createElement("li");
@@ -810,8 +809,10 @@ class EducationPlatformApp {
                 }
 
                 li.addEventListener("click", () => {
-                    console.log("Selected branch:", branch);
-                    // TODO: Implement branch switching
+                    const currentURL = utility.getWindowLocationHref();
+                    const targetURL = currentURL.replace("/" + currentBranch + "/", "/" + branch + "/");
+
+                    utility.setWindowLocationHref(targetURL);
                 });
                 branchList.appendChild(li);
             });
