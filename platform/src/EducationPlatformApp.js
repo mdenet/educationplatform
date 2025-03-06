@@ -781,6 +781,11 @@ class EducationPlatformApp {
             const dropdownContainer = document.getElementById("branch-dropdown-container");
             dropdownContainer.style.display = "block";
 
+            const closeButton = document.getElementById("branch-close-button");
+            closeButton.onclick = () => {
+                dropdownContainer.style.display = "none";
+            };
+
              // Hook up the "New Branch" button
             const createBranchButton = document.getElementById("branch-create-button");
             createBranchButton.onclick = () => {
@@ -810,6 +815,23 @@ class EducationPlatformApp {
                 });
                 branchList.appendChild(li);
             });
+
+            // Set up the filter logic for the branch search
+            const branchSearch = document.getElementById("branch-search");
+            branchSearch.oninput = function (event) {
+                const filterText = event.target.value.toLowerCase();
+
+                // Filter through the <li> items and show/hide based on the search text
+                const listItems = branchList.querySelectorAll("li");
+                listItems.forEach(li => {
+                    const branchName = li.textContent.toLowerCase();
+                    // If branchName includes the typed string, show it; otherwise hide
+                    li.style.display = branchName.includes(filterText)
+                        ? ""
+                        : "none";
+                });
+            };
+
         }
         catch (error) {
             console.error(error);
