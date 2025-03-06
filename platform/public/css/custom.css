@@ -207,7 +207,6 @@ body {
 	display: none !important;
 }
 
-
 .navview.js-compact:not(.expanded) .navview-menu .navview-menu a:hover .caption {
 	display: flex !important;
 	background-color: #cecece;
@@ -220,3 +219,74 @@ body {
 .splitter .gutter::before {
 	background-color: inherit;
 }
+
+.branch-dropdown-container {
+    position: absolute;
+    top: 80px; 
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    font-family: sans-serif;
+    padding-bottom: 1rem;
+}
+
+.branch-dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #ccc;
+    border-radius: 4px 4px 0 0;
+}
+
+.branch-dropdown-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.branch-close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.branch-dropdown-search {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* space between the input and the button */
+    padding: 1rem;
+}
+
+.branch-list-container {
+    max-height: 300px; /* just so it scrolls if branches are long */
+    overflow-y: auto;
+    margin: 0 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.branch-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.branch-list li {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.branch-list li:hover {
+    background-color: #fafafa;
+}
+
+
+

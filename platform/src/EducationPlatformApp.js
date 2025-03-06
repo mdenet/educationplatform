@@ -771,12 +771,35 @@ class EducationPlatformApp {
             });
     }
 
-    showBranches() {
-        const activityURL = utility.getActivityURL();
 
-        // Retrieve a list of branches in the repository
-        let branches = this.fileHandler.fetchBranches(activityURL);
-        console.log(branches);
+    async showBranches() {
+        const activityURL = utility.getActivityURL();
+        try {
+            // Retrieve a list of branches in the repository
+            let branches = await this.fileHandler.fetchBranches(activityURL);
+
+            const dropdownContainer = document.getElementById("branch-dropdown-container");
+            dropdownContainer.style.display = "block";
+
+            // Clear old list items
+            const branchList = document.getElementById("branch-list");
+            branchList.innerHTML = "";
+
+            // For each branch, we add <li> with the branch name
+            branches.forEach((branch) => {
+                let li = document.createElement("li");
+                li.textContent = branch;
+                li.addEventListener("click", () => {
+                    console.log("Selected branch:", branch);
+                    // TODO: Implement branch switching
+                });
+                branchList.appendChild(li);
+            });
+        }
+        catch (error) {
+            console.error(error);
+            this.errorHandler.notify("An error occurred while trying to fetch the branches.", error);
+        }
     }
 
     /**
