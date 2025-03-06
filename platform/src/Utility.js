@@ -124,18 +124,10 @@ export function jsonRequestConversion(url, json, parameterName){
  * HTTP GET request to the specified with optional query parameters.
  * 
  * @param {String} url The destination URL.
- * @param {object} params Query parameters as key/value pairs.
  * @param {boolean} useCredentials Whether to send credentials.
  * @returns {Promise} Promise to the response.
  */
-export function getRequest(url, params, useCredentials = false) {
-
-    // Convert params to a query string, if provided
-    if (params && Object.keys(params).length > 0) {
-        const queryString = new URLSearchParams(params).toString();
-        // Append the query string to the URL (check if URL already has a query string).
-        url += (url.includes('?') ? '&' : '?') + queryString;
-    }
+export function getRequest(url, useCredentials = false) {
 
     return new Promise(function (resolve, reject) {
         let xhr = new XMLHttpRequest();
