@@ -12,12 +12,74 @@
   "activationEvents": [],
   "browser": "./dist/web/extension.js",
   "contributes": {
+    "menus": {
+      "editor/title": [
+        {
+          "command": "panels.run",
+          "group": "navigation"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "mdenet-extension.helloWorld",
-        "title": "Hello World"
+        "command": "activities.refresh",
+        "title": "Refresh Activities"
+      },
+      {
+        "command": "tasks.refresh",
+        "title": "Refresh Tasks"
+      },
+      {
+        "command": "panels.refresh",
+        "title": "Refresh Panels"
+      },
+      {
+        "command": "activities.play",
+        "title": "Play Activity"
+      },
+      {
+        "command": "activities.stop",
+        "title": "Stop Activity"
+      },
+      {
+        "command": "tasks.select",
+        "title": "Select Task"
+      },
+      {
+        "command": "panels.displayPanel",
+        "title": "Display Panel"
+      },
+      {
+        "command": "panels.run",
+        "title": "Run Panel",
+        "icon": "public/images/M.svg"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mdenetActivity",
+          "title": "MDENet",
+          "icon": "public/images/M.svg"
+        }
+      ]
+    },
+    "views": {
+      "mdenetActivity": [
+        {
+          "id": "activities",
+          "name": "Activities"
+        },
+        {
+          "id": "tasks",
+          "name": "Tasks"
+        },
+        {
+          "id": "panels",
+          "name": "Panels"
+        }
+      ]
+    }
   },
   "scripts": {
     "test": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. --extensionTestsPath=dist/web/test/suite/index.js",
