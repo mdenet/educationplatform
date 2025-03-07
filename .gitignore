@@ -1,1 +1,3 @@
 node_modules/*
+mdenet-extension/node_modules/*
+mdenet-extension/dist/*
