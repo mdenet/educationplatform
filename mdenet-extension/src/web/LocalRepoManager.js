@@ -10,11 +10,11 @@ export class LocalRepoManager {
 
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) {
-            console.log('No workspace is opened');
+            // console.log('No workspace is opened');
             this.files = [];
         } else {
             this.rootUri = workspaceFolders[0].uri; // Use VS Code's Uri API
-            console.log('Root path:', this.rootUri.toString());
+            // console.log('Root path:', this.rootUri.toString());
             this.files = [];
         }
 
@@ -33,9 +33,9 @@ export class LocalRepoManager {
                 .map(([file]) => file)
                 .filter(file => file.endsWith('activity.json') || file.endsWith('activity.yml'));
 
-            console.log('Files:', this.files);
+            // console.log('Files:', this.files);
         } catch (error) {
-            console.error('Error reading workspace directory:', error);
+            // console.error('Error reading workspace directory:', error);
             return;
         }
     }
@@ -54,7 +54,7 @@ export class LocalRepoManager {
             const fileData = await vscode.workspace.fs.readFile(fileUri);
             return new TextDecoder("utf-8").decode(fileData);
         } catch (error) {
-            console.error(`Error reading file ${fileName}:`, error);
+            // console.error(`Error reading file ${fileName}:`, error);
             throw error;
         }
     }

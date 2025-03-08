@@ -1,5 +1,5 @@
 
-import { parse as yamlParse, YAMLParseError} from 'yaml' 
+import * as yaml from 'yaml';
 
 export const ARRAY_ANY_ELEMENT = '*';
 
@@ -193,7 +193,7 @@ export function parseConfigFile(contents, extension="yml"){
 
 
             case "yml":
-                configObject= yamlParse(contents);
+                configObject= yaml.parse(contents);
                 break;
 
             default:
@@ -201,7 +201,7 @@ export function parseConfigFile(contents, extension="yml"){
                 configObject = null;
         }
     } catch(err){
-        if (err instanceof YAMLParseError || err instanceof SyntaxError){
+        if (err instanceof yaml.YAMLParseError || err instanceof SyntaxError){
             configObject = err;
         } else {
             throw err;
