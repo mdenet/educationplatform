@@ -60,8 +60,17 @@
                     "panelclass": "OutputPanel",
 
                     "icon": "console"
+                },
+
+                {
+                    "id": "instruction",
+
+                    "name": "instruction",
+
+                    "panelclass": "InstructionPanel",
+
+                    "icon": ""
                 }
             ]
         }
     } 
-    
