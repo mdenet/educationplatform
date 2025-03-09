@@ -782,12 +782,12 @@ class EducationPlatformApp {
             this.toggleCreateBranchContainerVisibility(false);
             this.toggleSwitchBranchContainerVisibility(true);
 
-            const closeButton = document.getElementById("branch-close-button");
+            const closeButton = document.getElementById("switch-branch-close-button");
             closeButton.onclick = () => {
                 this.toggleSwitchBranchContainerVisibility(false);
             };
 
-            const createBranchButton = document.getElementById("branch-create-button");
+            const createBranchButton = document.getElementById("new-branch-button");
             createBranchButton.onclick = () => {
                 this.createBranch(currentBranch);
             };
@@ -874,7 +874,7 @@ class EducationPlatformApp {
     }
 
     toggleSwitchBranchContainerVisibility(visibility) {
-        const container = document.getElementById("branch-dropdown-container");
+        const container = document.getElementById("switch-branch-container");
         visibility ? container.style.display = "block" : container.style.display = "none";
     }
 

@@ -64,18 +64,19 @@
         <div class="navview-content" id="navview-content"></div>
     </div>
 
-    <div id="branch-dropdown-container" class="branch-dropdown-container" style="display:none;">
+
+    <div id="switch-branch-container" class="branch-container" style="display:none;">
         
-        <div class="branch-dropdown-header">
-            <h6 class="branch-dropdown-title">Switch Branch</h6>
-            <button class="branch-close-button" id="branch-close-button">
+        <div class="branch-header">
+            <h6 class="branch-title">Switch branch</h6>
+            <button class="close-button" id="switch-branch-close-button">
                 <span class="default-icon-cross"></span>
             </button>
         </div>
 
-        <div class="branch-dropdown-search">
+        <div class="branch-input-container">
             <input type="text" id="branch-search" placeholder="Filter branches..." data-role="input">
-            <button class="button primary" id="branch-create-button">New Branch</button>
+            <button class="button primary round-button" id="new-branch-button">New Branch</button>
         </div>
 
         <div class="branch-list-container">
@@ -86,31 +87,30 @@
 
     </div>
 
-    <div id="create-branch-container" class="create-branch-container" style="display:none;">
 
-        <div class="create-branch-header">
-            <h5 class="create-branch-title">Create a Branch</h5>
-            <button class="create-branch-close" id="create-branch-close-button">
+    <div id="create-branch-container" class="branch-container" style="display:none;">
+
+        <div class="branch-header">
+            <h6 class="branch-title">Create a branch</h6>
+            <button class="close-button" id="create-branch-close-button">
                 <span class="default-icon-cross"></span>
             </button>
         </div>
-    
-        <div class="create-branch-body">
-            <label class="create-branch-label">Name</label>
+
+        <div class="branch-input-container">
             <input type="text" id="new-branch-name" placeholder="New branch name..." data-role="input">
-    
-            <label class="create-branch-label">Based on</label>
-            <div class="create-branch-based-on">
-                <!-- This text is rendered dynamically -->
-                <span id="create-branch-based-on-text"></span>
-            </div>
+            <button class="button primary round-button" id="create-branch-submit-button">Create branch</button>
         </div>
-    
-        <div class="create-branch-footer">
-            <button class="button primary" id="create-branch-submit-button">Create Branch</button>
+
+        <div class="create-branch-based-on-container">
+            <p class="create-branch-based-on">
+                This branch will be based on: 
+                <strong id="create-branch-based-on-text"></strong>
+            </p>
         </div>
 
     </div>
+
     
 
     <script type="module" src="js/bundle.js"></script>
