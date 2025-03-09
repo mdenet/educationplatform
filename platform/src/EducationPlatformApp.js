@@ -779,19 +779,17 @@ class EducationPlatformApp {
             let branches = await this.fileHandler.fetchBranches(activityURL);
             let currentBranch = utility.getCurrentBranch();
 
-            const dropdownContainer = document.getElementById("branch-dropdown-container");
-            dropdownContainer.style.display = "block";
+            this.toggleCreateBranchContainerVisibility(false);
+            this.toggleSwitchBranchContainerVisibility(true);
 
             const closeButton = document.getElementById("branch-close-button");
             closeButton.onclick = () => {
-                dropdownContainer.style.display = "none";
+                this.toggleSwitchBranchContainerVisibility(false);
             };
 
-             // Hook up the "New Branch" button
             const createBranchButton = document.getElementById("branch-create-button");
             createBranchButton.onclick = () => {
-                console.log("Create new branch clicked");
-                // TODO: Implementation for creating a new branch
+                this.createBranch(currentBranch);
             };
 
             // Clear old list items
@@ -809,10 +807,7 @@ class EducationPlatformApp {
                 }
 
                 li.addEventListener("click", () => {
-                    const currentURL = utility.getWindowLocationHref();
-                    const targetURL = currentURL.replace("/" + currentBranch + "/", "/" + branch + "/");
-
-                    utility.setWindowLocationHref(targetURL);
+                    this.switchBranch(currentBranch, branch);
                 });
                 branchList.appendChild(li);
             });
@@ -826,7 +821,6 @@ class EducationPlatformApp {
                 const listItems = branchList.querySelectorAll("li");
                 listItems.forEach(li => {
                     const branchName = li.textContent.toLowerCase();
-                    // If branchName includes the typed string, show it; otherwise hide
                     li.style.display = branchName.includes(filterText)
                         ? ""
                         : "none";
@@ -839,6 +833,56 @@ class EducationPlatformApp {
             this.errorHandler.notify("An error occurred while trying to fetch the branches.", error);
         }
     }
+
+    /**
+     * Switch to a different branch in the repository
+     * Changes the branch parameter in the URL 
+     * @param {String} currentBranch 
+     * @param {String} branchToSwitchTo 
+     */
+    switchBranch(currentBranch, branchToSwitchTo) {
+        const currentURL = utility.getWindowLocationHref();
+        const targetURL = currentURL.replace("/" + currentBranch + "/", "/" + branchToSwitchTo + "/");
+
+        utility.setWindowLocationHref(targetURL);
+    }
+
+    /**
+     * Displays a window to create and check out a new branch in the repository
+     * @param {String} currentBranch - the current branch the user is on
+     */
+    createBranch(currentBranch) {
+        this.toggleSwitchBranchContainerVisibility(false);
+        this.toggleCreateBranchContainerVisibility(true);
+
+        const closeButton = document.getElementById("create-branch-close-button");
+        closeButton.onclick = () => {
+            this.toggleCreateBranchContainerVisibility(false);
+        };
+
+        document.getElementById("create-branch-based-on-text").textContent = currentBranch;
+
+        // Clear the input
+        document.getElementById("new-branch-name").value = "";
+
+        const submitButton = document.getElementById("create-branch-submit-button");
+        submitButton.onclick = () => {
+            const branchName = document.getElementById("new-branch-name").value;
+            console.log("User typed new branch name:", branchName);
+            // TODO: Create and checkout a new branch
+        };
+    }
+
+    toggleSwitchBranchContainerVisibility(visibility) {
+        const container = document.getElementById("branch-dropdown-container");
+        visibility ? container.style.display = "block" : container.style.display = "none";
+    }
+
+    toggleCreateBranchContainerVisibility(visibility) {
+        const container = document.getElementById("create-branch-container");
+        visibility ? container.style.display = "block" : container.style.display = "none";
+    }
+
 
     /**
      * Poll for editor to become available. 

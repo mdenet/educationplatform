@@ -83,7 +83,35 @@
                 <!-- Branch items will be added dynamically -->
             </ul>
         </div>
+
     </div>
+
+    <div id="create-branch-container" class="create-branch-container" style="display:none;">
+
+        <div class="create-branch-header">
+            <h5 class="create-branch-title">Create a Branch</h5>
+            <button class="create-branch-close" id="create-branch-close-button">
+                <span class="default-icon-cross"></span>
+            </button>
+        </div>
+    
+        <div class="create-branch-body">
+            <label class="create-branch-label">Name</label>
+            <input type="text" id="new-branch-name" placeholder="New branch name..." data-role="input">
+    
+            <label class="create-branch-label">Based on</label>
+            <div class="create-branch-based-on">
+                <!-- This text is rendered dynamically -->
+                <span id="create-branch-based-on-text"></span>
+            </div>
+        </div>
+    
+        <div class="create-branch-footer">
+            <button class="button primary" id="create-branch-submit-button">Create Branch</button>
+        </div>
+
+    </div>
+    
 
     <script type="module" src="js/bundle.js"></script>
 
