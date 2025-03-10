@@ -867,7 +867,7 @@ class EducationPlatformApp {
         document.getElementById("new-branch-name").value = "";
 
         const submitButton = document.getElementById("create-branch-submit-button");
-        submitButton.onclick = async () => {
+        submitButton.onclick = () => {
             
             const newBranch = document.getElementById("new-branch-name").value.trim();
             if (!this.validateBranchName(newBranch)) {
@@ -877,14 +877,13 @@ class EducationPlatformApp {
 
             this.fileHandler.createBranch(activityURL, newBranch)
             .then(() => {
-                PlaygroundUtility.successNotification("Branch" + newBranch + "created successfully");
+                PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
+                this.displaySwitchToBranchLink(currentBranch, newBranch);
             })
             .catch((error) => {
                 console.error(error);
                 this.errorHandler.notify("An error occurred while creating a branch.", error);
             });
-
-            // this.switchBranch(currentBranch, newBranch);
         };
     }
 
@@ -936,6 +935,16 @@ class EducationPlatformApp {
     toggleCreateBranchContainerVisibility(visibility) {
         const container = document.getElementById("create-branch-container");
         visibility ? container.style.display = "block" : container.style.display = "none";
+    }
+
+    displaySwitchToBranchLink(currentBranch, branchToSwitchTo) {
+        document.getElementById("switch-branch-name").textContent = branchToSwitchTo;
+        document.getElementById("switch-to-branch-link").style.display = "block";
+
+        document.getElementById("switch-branch-anchor").onclick = (event) => {
+            event.preventDefault();
+            this.switchBranch(currentBranch, branchToSwitchTo);
+        };
     }
 
     /**

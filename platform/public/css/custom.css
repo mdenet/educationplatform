@@ -311,6 +311,23 @@ body {
     border-radius: 20px;
 }
 
+#switch-to-branch-link {
+    text-align: center;
+    margin-top: 10px;
+}
+
+#switch-branch-anchor {
+    text-decoration: none;
+	font-weight: 600;
+    color: #007bff;
+    font-size: 14px;
+}
+
+#switch-branch-anchor:hover {
+    text-decoration: underline;
+    color: #0056b3; /* Darker blue on hover */
+}
+
 
 
 
