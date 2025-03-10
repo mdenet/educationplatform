@@ -85,10 +85,10 @@ class FileHandler {
     /**
      * Create a new branch in the repository
      * @param {String} url
-     * @param {String} branchName 
+     * @param {String} newBranch
      * @returns {Promise} Promise to the response
      */
-    createBranch(url, branchName) {
+    createBranch(url, newBranch) {
 
         if (!isAuthenticated()) {
             throw new Error("Not authenticated to checkout a branch.");
@@ -102,8 +102,8 @@ class FileHandler {
             throw new Error("Failed to create branch - invalid URL");
         }
         // Add the remaining branch name parameter to the request
-        requestParams.branchName = branchName;
-
+        requestParams.newBranch = newBranch;
+        
         return jsonRequest(requestUrl, JSON.stringify(requestParams), true);
     }
 
@@ -282,7 +282,7 @@ class FileHandler {
 
         switch(fileSourceUrl.host) {
             case 'raw.githubusercontent.com':
-                fileRequestUrl = this.githubRawUrlToGetBranchesRequestUrl(fileSourceUrl.pathname);
+                fileRequestUrl = this.githubRawUrlToCreateBranchRequestParams(fileSourceUrl.pathname);
                 break;
             default:
                 console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");

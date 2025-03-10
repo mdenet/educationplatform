@@ -18,6 +18,7 @@ class StorageController {
         this.router.get('/branches', asyncCatch(this.getBranches));
         this.router.post('/file', asyncCatch(this.storeFiles));
         this.router.post('/fork', asyncCatch(this.forkRepository));
+        this.router.post('/create-branch', asyncCatch(this.createBranch));
     }
 
     getFile = async (req, res) => { 
@@ -48,6 +49,48 @@ class StorageController {
 
         } else {
             throw new InvalidRequestException();
+        }
+    }
+
+    createBranch = async (req, res) => {
+        const encryptedAuthCookie = req.cookies[getAuthCookieName];
+        const octokit = this.initOctokit(encryptedAuthCookie);
+
+        const { owner, repo, ref: currentBranch, newBranch } = req.body;
+
+        if (!owner || !repo || !currentBranch || !newBranch) {
+            throw new InvalidRequestException();
+        }
+
+        try {
+            // Get the latest commit SHA from the current branch
+            const { data: branchData } = await octokit.request('GET /repos/{owner}/{repo}/branches/{branch}', {
+                owner,
+                repo,
+                branch: currentBranch,
+                headers: {
+                    'X-GitHub-Api-Version': config.githubApiVersion
+                }
+            });
+            const latestCommitSha = branchData.commit.sha;
+
+            // Create a new branch referencing the latest commit SHA
+            await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
+                owner,
+                repo,
+                ref: `refs/heads/${newBranch}`,
+                sha: latestCommitSha,
+                headers: {
+                    'X-GitHub-Api-Version': config.githubApiVersion
+                }
+            });
+
+            res.status(201).json({ success: true });
+        }
+        catch (error) {
+            console.log("we entered catch");
+            console.error("Error creating branch:", error);
+            throw new GihubException(error.status);
         }
     }
     
