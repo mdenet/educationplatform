@@ -776,8 +776,8 @@ class EducationPlatformApp {
         const activityURL = utility.getActivityURL();
         try {
             // Retrieve a list of branches in the repository
-            let branches = await this.fileHandler.fetchBranches(activityURL);
-            let currentBranch = utility.getCurrentBranch();
+            const branches = await this.fileHandler.fetchBranches(activityURL);
+            const currentBranch = utility.getCurrentBranch();
 
             this.toggleCreateBranchContainerVisibility(false);
             this.toggleSwitchBranchContainerVisibility(true);
@@ -789,7 +789,7 @@ class EducationPlatformApp {
 
             const createBranchButton = document.getElementById("new-branch-button");
             createBranchButton.onclick = () => {
-                this.showCreateBranchPrompt(currentBranch, activityURL);
+                this.showCreateBranchPrompt(branches, currentBranch, activityURL);
             };
 
             // Clear old list items
@@ -849,10 +849,11 @@ class EducationPlatformApp {
 
     /**
      * Displays a window to create and check out a new branch in the repository
+     * @param {Array} listOfBranches - the list of branches in the repository
      * @param {String} currentBranch - the current branch the user is on
      * @param {String} activityURL - the URL of the activity
      */
-    showCreateBranchPrompt(currentBranch, activityURL) {
+    showCreateBranchPrompt(listOfBranches, currentBranch, activityURL) {
         this.toggleSwitchBranchContainerVisibility(false);
         this.toggleCreateBranchContainerVisibility(true);
 
@@ -864,17 +865,26 @@ class EducationPlatformApp {
         document.getElementById("create-branch-based-on-text").textContent = currentBranch;
 
         // Clear the input
-        document.getElementById("new-branch-name").value = "";
+        const newBranchInput = document.getElementById("new-branch-name");
+        newBranchInput.value = "";
 
         const submitButton = document.getElementById("create-branch-submit-button");
         submitButton.onclick = () => {
-            
-            const newBranch = document.getElementById("new-branch-name").value.trim();
+            const newBranch = newBranchInput.value.trim();
+
+            // Check if the branch already exists
+            if (listOfBranches.includes(newBranch)) {
+                PlaygroundUtility.warningNotification("Branch " + newBranch + " already exists.");
+                return;
+            }
+
+            // Validate the branch name
             if (!this.validateBranchName(newBranch)) {
                 PlaygroundUtility.warningNotification("Invalid branch name. Please try again.");
                 return;
             }
 
+            // Create the new branch
             this.fileHandler.createBranch(activityURL, newBranch)
             .then(() => {
                 PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
