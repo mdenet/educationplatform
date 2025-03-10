@@ -789,7 +789,7 @@ class EducationPlatformApp {
 
             const createBranchButton = document.getElementById("new-branch-button");
             createBranchButton.onclick = () => {
-                this.createBranch(currentBranch);
+                this.showCreateBranchPrompt(currentBranch, activityURL);
             };
 
             // Clear old list items
@@ -830,7 +830,7 @@ class EducationPlatformApp {
         }
         catch (error) {
             console.error(error);
-            this.errorHandler.notify("An error occurred while trying to fetch the branches.", error);
+            this.errorHandler.notify("An error occurred while displaying the branches.", error);
         }
     }
 
@@ -850,8 +850,9 @@ class EducationPlatformApp {
     /**
      * Displays a window to create and check out a new branch in the repository
      * @param {String} currentBranch - the current branch the user is on
+     * @param {String} activityURL - the URL of the activity
      */
-    createBranch(currentBranch) {
+    showCreateBranchPrompt(currentBranch, activityURL) {
         this.toggleSwitchBranchContainerVisibility(false);
         this.toggleCreateBranchContainerVisibility(true);
 
@@ -866,10 +867,20 @@ class EducationPlatformApp {
         document.getElementById("new-branch-name").value = "";
 
         const submitButton = document.getElementById("create-branch-submit-button");
-        submitButton.onclick = () => {
-            const branchName = document.getElementById("new-branch-name").value;
-            console.log("User typed new branch name:", branchName);
-            // TODO: Create and checkout a new branch
+        submitButton.onclick = async () => {
+            const newBranch = document.getElementById("new-branch-name").value;
+
+            this.fileHandler.createBranch(currentBranch, newBranch, activityURL)
+            .then(() => {
+                console.log("Branch created successfully.");
+                PlaygroundUtility.successNotification("Branch created successfully");
+            })
+            .catch((error) => {
+                console.error(error);
+                this.errorHandler.notify("An error occurred while creating a branch.", error);
+            });
+
+            this.switchBranch(currentBranch, newBranch, activityURL);
         };
     }
 

@@ -82,6 +82,31 @@ class FileHandler {
         }
     }
 
+    /**
+     * Create a new branch in the repository
+     * @param {String} url
+     * @param {String} branchName 
+     * @returns {Promise} Promise to the response
+     */
+    createBranch(url, branchName) {
+
+        if (!isAuthenticated()) {
+            throw new Error("Not authenticated to checkout a branch.");
+        }
+
+        const requestUrl = new URL(this.tokenHandlerUrl);
+        requestUrl.pathname = "/mdenet-auth/github/create-branch";
+
+        const requestParams = this.createBranchRequestParams(url);
+        if (!requestParams) {
+            throw new Error("Failed to create branch - invalid URL");
+        }
+        // Add the remaining branch name parameter to the request
+        requestParams.branchName = branchName;
+
+        return jsonRequest(requestUrl, JSON.stringify(requestParams), true);
+    }
+
     storeFiles(filesToSave, message){
 
         if (!isAuthenticated()) {
@@ -180,7 +205,7 @@ class FileHandler {
         switch(fileSourceUrl.host){
 
             case 'raw.githubusercontent.com':
-                fileRequestUrl= this.githubRawUrlToRequestUrl(fileSourceUrl.pathname);
+                fileRequestUrl= this.githubRawUrlToFileRequestUrl(fileSourceUrl.pathname);
                 break;
 
             default:
@@ -203,7 +228,7 @@ class FileHandler {
 
         switch(fileSourceUrl.host) {
             case 'raw.githubusercontent.com':
-                fileRequestUrl = this.githubRawUrlToBranchesRequestUrl(fileSourceUrl.pathname);
+                fileRequestUrl = this.githubRawUrlToGetBranchesRequestUrl(fileSourceUrl.pathname);
                 break;
             default:
                 console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
@@ -213,23 +238,21 @@ class FileHandler {
 
         return fileRequestUrl;
     }
-
-
+    
     /**
      * Convert github raw file url path into request url
      * @param {String} githubUrlPath github raw file path without the host
      * @returns {String} request url
      */
-    githubRawUrlToRequestUrl(githubUrlPath) {
+    githubRawUrlToFileRequestUrl(githubUrlPath) {
         const params = this.getPathParts(githubUrlPath);
         return this.constructRequestUrl("/mdenet-auth/github/file", params);
     }
 
-    githubRawUrlToBranchesRequestUrl(githubUrlPath) {
+    githubRawUrlToGetBranchesRequestUrl(githubUrlPath) {
         const params = this.getPathParts(githubUrlPath);
         return this.constructRequestUrl("/mdenet-auth/github/branches", params);
     }
-
 
     getPrivateFileUpdateParams(fileUrl){
 
@@ -241,7 +264,7 @@ class FileHandler {
         switch(fileSourceUrl.host){
 
             case 'raw.githubusercontent.com':
-                fileStoreRequest= this.githubRawUrlToStoreRequest(fileSourceUrl.pathname);
+                fileStoreRequest= this.githubRawUrlToStoreRequestParams(fileSourceUrl.pathname);
                 break;
 
             default:
@@ -253,9 +276,36 @@ class FileHandler {
         return fileStoreRequest;        
     }
 
+    createBranchRequestParams(fileUrl) {
+        let fileSourceUrl = new URL(fileUrl);
+        let fileRequestUrl;
 
-    githubRawUrlToStoreRequest(githubUrlPath){
-        let requestParams = this.getPathParts(githubUrlPath);
+        switch(fileSourceUrl.host) {
+            case 'raw.githubusercontent.com':
+                fileRequestUrl = this.githubRawUrlToGetBranchesRequestUrl(fileSourceUrl.pathname);
+                break;
+            default:
+                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
+                fileRequestUrl = null;
+                break;
+        }
+
+        return fileRequestUrl;
+    }
+
+
+    githubRawUrlToStoreRequestParams(githubUrlPath){
+        const requestParams = this.getPathParts(githubUrlPath);
+        return requestParams;
+    }
+
+    githubRawUrlToCreateBranchRequestParams(githubUrlPath) {
+        const pathParts = this.getPathParts(githubUrlPath);
+        const requestParams = {
+            owner: pathParts.owner,
+            repo: pathParts.repo,
+            ref: pathParts.ref
+        }
         return requestParams;
     }
 }
