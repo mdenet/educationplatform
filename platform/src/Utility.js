@@ -121,43 +121,42 @@ export function jsonRequestConversion(url, json, parameterName){
 
 
 /**
- * Http get request to url
+ * HTTP GET request to the specified with optional query parameters.
  * 
- * @param {*} url the destination url 
- * @param {boolean} useCredentials xhr setting
- * @returns Promise to the response 
+ * @param {String} url The destination URL.
+ * @param {boolean} useCredentials Whether to send credentials.
+ * @returns {Promise} Promise to the response.
  */
-export function getRequest(url, useCredentials=false){
+export function getRequest(url, useCredentials = false) {
 
     return new Promise(function (resolve, reject) {
-        
         let xhr = new XMLHttpRequest();
-        
+
         xhr.open("GET", url, true);
-        xhr.withCredentials = useCredentials;  
-        
-        xhr.onload = function() { 
+        xhr.withCredentials = useCredentials;
+
+        xhr.onload = function () {
             if (xhr.status >= 200 && xhr.status < 300) {
                 resolve(xhr.response);
-            } 
-            else {
+            } else {
                 reject({
                     status: xhr.status,
                     statusText: xhr.statusText
                 });
             }
-        }
+        };
 
-        xhr.onerror = function() {
+        xhr.onerror = function () {
             reject({
                 status: xhr.status,
                 statusText: xhr.statusText
             });
-        }
+        };
 
         xhr.send(null);
     });
 }
+
 
 /**
  * Checks the private url parameter
@@ -168,6 +167,29 @@ export function urlParamPrivateRepo(){
     let urlParams = new URLSearchParams(window.location.search);    
 
     return urlParams.has("privaterepo") && urlParams.get("privaterepo")==='true';
+}
+
+/**
+ * Get the activity URL
+ * @returns {String} the activity URL, or null if not found
+ */
+export function getActivityURL() {
+    let urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("activities");
+}
+
+/**
+ * Get the current branch from the URL 
+ * @returns {String} the branch name
+ */
+export function getCurrentBranch() {
+    const url = new URL(this.getActivityURL());
+    const pathParts = url.pathname.split('/').filter(Boolean);
+    // pathParts[0] => owner
+    // pathParts[1] => repo
+    // pathParts[2] => branch
+    // pathParts[3] => rest
+    return pathParts[2];
 }
 
 /**
@@ -263,6 +285,8 @@ export const utility = {
     jsonRequestConversion,
     getRequest,
     urlParamPrivateRepo,
+    getCurrentBranch,
+    getActivityURL,
     setAuthenticated,
     isAuthenticated,
     parseConfigFile,

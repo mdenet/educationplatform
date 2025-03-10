@@ -89,6 +89,9 @@
 	content: url("../images/save.png");
 }
 
+.mif-branch::before {
+	content: url("../images/branch.png");
+}
 
 .mif-link::before {
 	content: url("../images/link.png");
@@ -204,7 +207,6 @@ body {
 	display: none !important;
 }
 
-
 .navview.js-compact:not(.expanded) .navview-menu .navview-menu a:hover .caption {
 	display: flex !important;
 	background-color: #cecece;
@@ -217,3 +219,116 @@ body {
 .splitter .gutter::before {
 	background-color: inherit;
 }
+
+.branch-container {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    font-family: sans-serif;
+    padding-bottom: 1rem;
+}
+
+.branch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #ccc;
+    border-radius: 4px 4px 0 0;
+}
+
+.branch-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.branch-input-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.branch-input-container input {
+    flex-grow: 1;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.branch-list-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 0 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.branch-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.branch-list li {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.branch-list li:hover {
+    background-color: #fafafa;
+}
+
+.current-branch {
+    background-color: #d9edf7;
+    border-left: 4px solid #46b8da;
+}
+
+.create-branch-based-on-container {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+
+.round-button {
+    border-radius: 20px;
+}
+
+#switch-to-branch-link {
+    text-align: center;
+    margin-top: 10px;
+}
+
+#switch-branch-anchor {
+    text-decoration: none;
+	font-weight: 600;
+    color: #007bff;
+    font-size: 14px;
+}
+
+#switch-branch-anchor:hover {
+    text-decoration: underline;
+    color: #0056b3; /* Darker blue on hover */
+}
+
+
+
+
+

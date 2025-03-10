@@ -50,6 +50,10 @@
                         <span class="icon"><span class="mif-example-16 mif-save"></span></span>
                         <span class="caption">Save</span>
                     </a>
+                    <a href="#" onclick="showBranches(event)" id="branch" class="hidden">
+                        <span class="icon"><span class="mif-example-16 mif-branch"></span></span>
+                        <span class="caption">Branch</span>
+                    </a>
                     <a href="https://mde-network.com/" target=”_blank” id="about">
                         <span class="icon"><span class="mif-example-16 mif-info"></span></span>
                         <span class="caption">About</span>
@@ -59,9 +63,65 @@
         </div>
         <div class="navview-content" id="navview-content"></div>
     </div>
+
+
+    <div id="switch-branch-container" class="branch-container" style="display:none;">
+        
+        <div class="branch-header">
+            <h6 class="branch-title">Switch branch</h6>
+            <button class="close-button" id="switch-branch-close-button">
+                <span class="default-icon-cross"></span>
+            </button>
+        </div>
+
+        <div class="branch-input-container">
+            <input type="text" id="branch-search" placeholder="Filter branches..." data-role="input">
+            <button class="button primary round-button" id="new-branch-button">New Branch</button>
+        </div>
+
+        <div class="branch-list-container">
+            <ul id="branch-list" class="branch-list">
+                <!-- Branch items will be added dynamically -->
+            </ul>
+        </div>
+
+    </div>
+
+
+    <div id="create-branch-container" class="branch-container" style="display:none;">
+
+        <div class="branch-header">
+            <h6 class="branch-title">Create a branch</h6>
+            <button class="close-button" id="create-branch-close-button">
+                <span class="default-icon-cross"></span>
+            </button>
+        </div>
+
+        <div class="branch-input-container">
+            <input type="text" id="new-branch-name" placeholder="New branch name..." data-role="input">
+            <button class="button primary round-button" id="create-branch-submit-button">Create branch</button>
+        </div>
+
+        <div class="create-branch-based-on-container">
+            <p class="create-branch-based-on">
+                This branch will be based on: 
+                <strong id="create-branch-based-on-text">
+                    <!-- Render the text dynamically -->
+                </strong>
+            </p>
+            <p id="switch-to-branch-link" style="display:none;">
+                <a href="#" id="switch-branch-anchor">
+                    Go to 
+                    <span id="switch-branch-name">
+                        <!-- Render the text dynamically -->
+                    </span>
+                </a>
+            </p>
+        </div>
+
+    </div>
+
     
-
-
 
     <script type="module" src="js/bundle.js"></script>
 

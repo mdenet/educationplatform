@@ -33,22 +33,8 @@ class ActivityManager {
         this.fileHandler = fileHandler;
 
         // Retrieve the url of the activities configuration
-        var parameters = new URLSearchParams(utility.getWindowLocationSearch());
-        if (parameters.has("activities")) {
-            this.customActivitiesUrl = true;
-            this.activitiesUrl = parameters.get("activities");
-        }
-
-
-        var parameterKeys = Array.from(parameters.keys());
-
-        // Retrieve selected activity from the url parameters 
-        for (const key of parameterKeys) {
-            if (!parameters.get(key)) {
-                this.activityId = key;
-                break;
-            }
-        }
+        this.activitiesUrl = utility.getActivityURL();
+        this.activitiesUrl ? this.customActivitiesUrl = true : this.customActivitiesUrl = false;
     }
 
     /**

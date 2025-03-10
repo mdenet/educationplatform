@@ -1,4 +1,4 @@
-import { jsonRequest, isAuthenticated} from './Utility.js';
+import { jsonRequest, isAuthenticated, getRequest} from './Utility.js';
 
 
 class FileHandler {
@@ -61,7 +61,53 @@ class FileHandler {
         }
     }
 
-    storeFiles(filesToSave, message = "MDENet Education Platform save."){
+    async fetchBranches(url) {
+
+        if (!isAuthenticated()) {
+            throw new Error("Not authenticated to fetch branches.");
+        }
+
+        const requestUrl = this.getBranchesRequestUrl(url);
+        if (!requestUrl) {
+            throw new Error("Failed to fetch branches - invalid URL");
+        }
+
+        try {
+            const response = await getRequest(requestUrl, true);
+            const branches = JSON.parse(response);
+            return branches;
+        }
+        catch (error) {
+            console.error("Failed to fetch branches: " + error);
+        }
+    }
+
+    /**
+     * Create a new branch in the repository
+     * @param {String} url
+     * @param {String} newBranch
+     * @returns {Promise} Promise to the response
+     */
+    createBranch(url, newBranch) {
+
+        if (!isAuthenticated()) {
+            throw new Error("Not authenticated to checkout a branch.");
+        }
+
+        const requestUrl = new URL(this.tokenHandlerUrl);
+        requestUrl.pathname = "/mdenet-auth/github/create-branch";
+
+        const requestParams = this.createBranchRequestParams(url);
+        if (!requestParams) {
+            throw new Error("Failed to create branch - invalid URL");
+        }
+        // Add the remaining branch name parameter to the request
+        requestParams.newBranch = newBranch;
+        
+        return jsonRequest(requestUrl, JSON.stringify(requestParams), true);
+    }
+
+    storeFiles(filesToSave, message){
 
         if (!isAuthenticated()) {
             throw new Error("Files could not be stored - not authenticated.");
@@ -111,21 +157,55 @@ class FileHandler {
     }
 
     /**
-     * Converts file urls from different hosts into requsts for the token server
+     * Parses the URL of a file and extracts the key parameters
+     * @param {String} pathName The raw file path obtained using .pathname from a URL object
+     * @returns {object} An object containing the owner, repo, ref and path of the file
+     */
+    getPathParts(pathName) {
+        let pathParts = pathName.split("/");
+        const parts = { };
+
+        pathParts.shift(); // unused empty
+
+        parts.owner = pathParts.shift();
+        parts.repo = pathParts.shift();
+        parts.ref = pathParts.shift();
+        parts.path = pathParts.join("/");
+
+        return parts;
+    }
+
+    /**
+     * Helper method to construct request URL with search parameters
+     * @param {String} pathname The pathname for the request URL
+     * @param {Object} searchParams The search parameters in the request
+     * @returns {String} The constructed request URL
+     */
+    constructRequestUrl(requestRoute, searchParams) {
+        let requestUrl = new URL(this.tokenHandlerUrl);
+        requestUrl.pathname = requestRoute;
+
+        for (const key in searchParams) {
+            requestUrl.searchParams.append(key, searchParams[key]);
+        }
+
+        return requestUrl.href;
+    }
+
+    /**
+     * Converts file urls from different hosts into requests for the token server
      * @param {String} fileUrl the url of the file
      * @returns {String} request url
      */
     getPrivateFileRequestUrl(fileUrl){
 
         let fileSourceUrl = new URL(fileUrl);
-
         let fileRequestUrl;
-
 
         switch(fileSourceUrl.host){
 
             case 'raw.githubusercontent.com':
-                fileRequestUrl= this.githubRawUrlToRequestUrl(fileSourceUrl.pathname);
+                fileRequestUrl= this.githubRawUrlToFileRequestUrl(fileSourceUrl.pathname);
                 break;
 
             default:
@@ -137,32 +217,42 @@ class FileHandler {
         return fileRequestUrl;
     }
 
+    /**
+     * Converts file urls from different hosts into requests for the token server
+     * @param {String} fileUrl the url of the file
+     * @returns {String} request url
+     */
+    getBranchesRequestUrl(fileUrl) {
+        let fileSourceUrl = new URL(fileUrl);
+        let fileRequestUrl;
 
+        switch(fileSourceUrl.host) {
+            case 'raw.githubusercontent.com':
+                fileRequestUrl = this.githubRawUrlToGetBranchesRequestUrl(fileSourceUrl.pathname);
+                break;
+            default:
+                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
+                fileRequestUrl = null;
+                break;
+        }
+
+        return fileRequestUrl;
+    }
+    
     /**
      * Convert github raw file url path into request url
      * @param {String} githubUrlPath github raw file path without the host
      * @returns {String} request url
      */
-    githubRawUrlToRequestUrl(githubUrlPath){
-
-        let pathParts = githubUrlPath.split("/");
-        let requestUrl = new URL(this.tokenHandlerUrl);
-
-        requestUrl.pathname = "/mdenet-auth/github/file";
-
-        pathParts.shift() // unused empty
-
-        requestUrl.searchParams.append("owner", pathParts.shift() );
-
-        requestUrl.searchParams.append("repo", pathParts.shift() );
-
-        requestUrl.searchParams.append("ref", pathParts.shift() ); 
-
-        requestUrl.searchParams.append("path", pathParts.join("/"));
-
-        return requestUrl.href;
+    githubRawUrlToFileRequestUrl(githubUrlPath) {
+        const params = this.getPathParts(githubUrlPath);
+        return this.constructRequestUrl("/mdenet-auth/github/file", params);
     }
 
+    githubRawUrlToGetBranchesRequestUrl(githubUrlPath) {
+        const params = this.getPathParts(githubUrlPath);
+        return this.constructRequestUrl("/mdenet-auth/github/branches", params);
+    }
 
     getPrivateFileUpdateParams(fileUrl){
 
@@ -174,7 +264,7 @@ class FileHandler {
         switch(fileSourceUrl.host){
 
             case 'raw.githubusercontent.com':
-                fileStoreRequest= this.githubRawUrlToStoreRequest(fileSourceUrl.pathname);
+                fileStoreRequest= this.githubRawUrlToStoreRequestParams(fileSourceUrl.pathname);
                 break;
 
             default:
@@ -186,19 +276,36 @@ class FileHandler {
         return fileStoreRequest;        
     }
 
+    createBranchRequestParams(fileUrl) {
+        let fileSourceUrl = new URL(fileUrl);
+        let fileRequestUrl;
 
-    githubRawUrlToStoreRequest(githubUrlPath){
+        switch(fileSourceUrl.host) {
+            case 'raw.githubusercontent.com':
+                fileRequestUrl = this.githubRawUrlToCreateBranchRequestParams(fileSourceUrl.pathname);
+                break;
+            default:
+                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
+                fileRequestUrl = null;
+                break;
+        }
 
-        let pathParts = githubUrlPath.split("/");
-        let requestParams = {};
+        return fileRequestUrl;
+    }
 
-        pathParts.shift() // unused empty
 
-        requestParams.owner = pathParts.shift();
-        requestParams.repo = pathParts.shift();
-        requestParams.ref = pathParts.shift();
-        requestParams.path = pathParts.join("/");
+    githubRawUrlToStoreRequestParams(githubUrlPath){
+        const requestParams = this.getPathParts(githubUrlPath);
+        return requestParams;
+    }
 
+    githubRawUrlToCreateBranchRequestParams(githubUrlPath) {
+        const pathParts = this.getPathParts(githubUrlPath);
+        const requestParams = {
+            owner: pathParts.owner,
+            repo: pathParts.repo,
+            ref: pathParts.ref
+        }
         return requestParams;
     }
 }

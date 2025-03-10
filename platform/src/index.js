@@ -17,6 +17,7 @@ window.updateGutterVisibility = platform.updateGutterVisibility.bind(platform);
 window.runAction = platform.runAction.bind(platform);
 window.panels = platform.panels;
 window.savePanelContents = platform.savePanelContents.bind(platform);
+window.showBranches = platform.showBranches.bind(platform);
 window.toggle = platform.toggle.bind(platform);
 window.togglePanelById = platform.togglePanelById.bind(platform);
 //window.renderDiagram = renderDiagram;

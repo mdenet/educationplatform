@@ -174,6 +174,7 @@ class EducationPlatformApp {
     // Helper method to set up the state after the user has been authenticated
     setupAuthenticatedState(urlParameters) {
         document.getElementById('save')?.classList.remove('hidden');
+        document.getElementById('branch')?.classList.remove('hidden');
         setAuthenticated(true);
         this.initializeActivity(urlParameters);
     }
@@ -768,6 +769,192 @@ class EducationPlatformApp {
             .catch(error => {
                 this.errorHandler.notify("An error occurred while trying to save the panel contents.", error);
             });
+    }
+
+
+    async showBranches() {
+        const activityURL = utility.getActivityURL();
+        try {
+            // Retrieve a list of branches in the repository
+            const branches = await this.fileHandler.fetchBranches(activityURL);
+            const currentBranch = utility.getCurrentBranch();
+
+            this.toggleCreateBranchContainerVisibility(false);
+            this.toggleSwitchBranchContainerVisibility(true);
+
+            const closeButton = document.getElementById("switch-branch-close-button");
+            closeButton.onclick = () => {
+                this.toggleSwitchBranchContainerVisibility(false);
+            };
+
+            const createBranchButton = document.getElementById("new-branch-button");
+            createBranchButton.onclick = () => {
+                this.showCreateBranchPrompt(branches, currentBranch, activityURL);
+            };
+
+            // Clear old list items
+            const branchList = document.getElementById("branch-list");
+            branchList.innerHTML = "";
+
+            // For each branch, we add <li> with the branch name
+            branches.forEach((branch) => {
+                let li = document.createElement("li");
+                li.textContent = branch;
+
+                // highlight the currently active branch
+                if (branch === currentBranch) {
+                    li.classList.add("current-branch");
+                }
+
+                li.addEventListener("click", () => {
+                    this.switchBranch(currentBranch, branch);
+                });
+                branchList.appendChild(li);
+            });
+
+            // Set up the filter logic for the branch search
+            const branchSearch = document.getElementById("branch-search");
+            branchSearch.oninput = function (event) {
+                const filterText = event.target.value.toLowerCase();
+
+                // Filter through the <li> items and show/hide based on the search text
+                const listItems = branchList.querySelectorAll("li");
+                listItems.forEach(li => {
+                    const branchName = li.textContent.toLowerCase();
+                    li.style.display = branchName.includes(filterText)
+                        ? ""
+                        : "none";
+                });
+            };
+
+        }
+        catch (error) {
+            console.error(error);
+            this.errorHandler.notify("An error occurred while displaying the branches.", error);
+        }
+    }
+
+    /**
+     * Switch to a different branch in the repository
+     * Changes the branch parameter in the URL 
+     * @param {String} currentBranch 
+     * @param {String} branchToSwitchTo 
+     */
+    switchBranch(currentBranch, branchToSwitchTo) {
+        const currentURL = utility.getWindowLocationHref();
+        const targetURL = currentURL.replace("/" + currentBranch + "/", "/" + branchToSwitchTo + "/");
+
+        utility.setWindowLocationHref(targetURL);
+    }
+
+    /**
+     * Displays a window to create and check out a new branch in the repository
+     * @param {Array} listOfBranches - the list of branches in the repository
+     * @param {String} currentBranch - the current branch the user is on
+     * @param {String} activityURL - the URL of the activity
+     */
+    showCreateBranchPrompt(listOfBranches, currentBranch, activityURL) {
+        this.toggleSwitchBranchContainerVisibility(false);
+        this.toggleCreateBranchContainerVisibility(true);
+
+        const closeButton = document.getElementById("create-branch-close-button");
+        closeButton.onclick = () => {
+            this.toggleCreateBranchContainerVisibility(false);
+        };
+
+        document.getElementById("create-branch-based-on-text").textContent = currentBranch;
+
+        // Clear the input
+        const newBranchInput = document.getElementById("new-branch-name");
+        newBranchInput.value = "";
+
+        const submitButton = document.getElementById("create-branch-submit-button");
+        submitButton.onclick = () => {
+            const newBranch = newBranchInput.value.trim();
+
+            // Check if the branch already exists
+            if (listOfBranches.includes(newBranch)) {
+                PlaygroundUtility.warningNotification("Branch " + newBranch + " already exists.");
+                return;
+            }
+
+            // Validate the branch name
+            if (!this.validateBranchName(newBranch)) {
+                PlaygroundUtility.warningNotification("Invalid branch name. Please try again.");
+                return;
+            }
+
+            // Create the new branch
+            this.fileHandler.createBranch(activityURL, newBranch)
+            .then(() => {
+                PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
+                this.displaySwitchToBranchLink(currentBranch, newBranch);
+            })
+            .catch((error) => {
+                console.error(error);
+                this.errorHandler.notify("An error occurred while creating a branch.", error);
+            });
+        };
+    }
+
+    /**
+     * Validates a branch name:
+     * - Non-empty
+     * - Min length 3
+     * - Max length 100
+     * - No consecutive dots ("..")
+     * - Only [A-Za-z0-9._-] characters
+     *
+     * @param {String} branchName - The proposed branch name.
+     * @returns {boolean} true if valid, false otherwise.
+     */
+    validateBranchName(branchName) {
+        // Must not be empty or whitespace
+        if (!branchName || !branchName.trim()) {
+            return false;
+        }
+
+        // Trim leading/trailing spaces
+        const trimmed = branchName.trim();
+
+        // Check length
+        if (trimmed.length > 100 || trimmed.length < 3) {
+            return false;
+        }
+
+        // Disallow consecutive dots
+        if (trimmed.includes('..')) {
+            return false;
+        }
+
+        // Only A-Z, a-z, 0-9, ., _, -
+        const allowedPattern = /^[A-Za-z0-9._-]+$/;
+        if (!allowedPattern.test(trimmed)) {
+            return false;
+        }
+
+        // Passes all checks
+        return true;
+    }
+
+    toggleSwitchBranchContainerVisibility(visibility) {
+        const container = document.getElementById("switch-branch-container");
+        visibility ? container.style.display = "block" : container.style.display = "none";
+    }
+
+    toggleCreateBranchContainerVisibility(visibility) {
+        const container = document.getElementById("create-branch-container");
+        visibility ? container.style.display = "block" : container.style.display = "none";
+    }
+
+    displaySwitchToBranchLink(currentBranch, branchToSwitchTo) {
+        document.getElementById("switch-branch-name").textContent = branchToSwitchTo;
+        document.getElementById("switch-to-branch-link").style.display = "block";
+
+        document.getElementById("switch-branch-anchor").onclick = (event) => {
+            event.preventDefault();
+            this.switchBranch(currentBranch, branchToSwitchTo);
+        };
     }
 
     /**
