@@ -24,7 +24,7 @@ export function activate(context) {
 				// console.log("Activities", activityManager.activities);
 				// console.log("Tool URLs", activityManager.getToolUrls());
 				toolManager.setToolsUrls(activityManager.getToolUrls().add("https://ep.mde-network.org/common/utility.json"));
-				activityManager.hideActivitiesNavEntries();
+				activityManager.showActivitiesNavEntries();
 				const selectedActivity = activityManager.getSelectedActivity();
 				// console.log('Selected Activity:', selectedActivity);
 				console.log("Errors", ActivityValidator.validate(selectedActivity, toolManager.tools))

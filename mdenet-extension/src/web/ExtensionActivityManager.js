@@ -68,7 +68,7 @@ class ExtensionActivityManager extends GeneralActivityManager {
         return (this.context.workspaceState.get(panelId) != null);
     }
 
-    hideActivitiesNavEntries(){
+    showActivitiesNavEntries(){
         for(var activityKey of Object.keys(this.activities)) {
             // Show activities that have no generated panels
             if (this.hasGeneratedPanel(activityKey)){
