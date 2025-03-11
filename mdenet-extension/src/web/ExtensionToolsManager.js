@@ -48,7 +48,6 @@ class ExtensionToolsManager extends ToolManager{
                     // something is wrong
                     this.configErrors.push(new Error(`${url} is not a valid URL or a valid URL placeholder.`))
                 }
-                
                 this.toolsUrls.push(toolUrl);
             }
 
@@ -65,19 +64,20 @@ class ExtensionToolsManager extends ToolManager{
      */
     fetchTools(){
         let errors = [];
-
+        let corsProxy = "https://api.allorigins.win/raw?url=";
         for (let toolUrl of this.toolsUrls) {
-
-            let xhr = new XMLHttpRequest();
-            xhr.open("GET", toolUrl.url, false);
-
+            let xhr = new XMLHttpRequest();      
+            let url = corsProxy + toolUrl.url;
             try{
+                xhr.open("GET", url, false);
                 xhr.send();
             } catch (err) {
+                console.log("Error in fetching tool: " + toolUrl.url);
+                console.log("Error: " + err);
                 if (err instanceof DOMException){
-                    errors.push( new Error(`A tool configuration file was not accessible at: ${toolUrl.url}. 
-                                                            Check the tool's url given in the activity file is correct and the tool 
-                                                            service is still available.`) );
+                    // errors.push( new Error(`A tool configuration file was not accessible at: ${toolUrl.url}. 
+                    //                                         Check the tool's url given in the activity file is correct and the tool 
+                    //                                         service is still available.`) );
                 } else {
                     throw err;
                 }
@@ -89,11 +89,12 @@ class ExtensionToolsManager extends ToolManager{
 
                 var toolConfig = this.rewriteUrl("https://ep.mde-network.org", toolUrl.url, response_text);
 
+                // console.log("Tool Config: ", toolConfig);
                 // Now parse tool config
                 let validatedConfig = this.parseAndValidateToolConfig(toolConfig);
 
                 if ( validatedConfig.errors.length == 0 ){
-                    
+                    // console.log("No errors in" + toolUrl.url);
                     const config = validatedConfig.config;
 
                     // Store the tool found in the given json
@@ -107,6 +108,7 @@ class ExtensionToolsManager extends ToolManager{
                 
                 } else {
                     // Error tool file parsing error
+                    // console.log("Errors in" + toolUrl.url);
                     errors = errors.concat(validatedConfig.errors);
                 }                
             }
