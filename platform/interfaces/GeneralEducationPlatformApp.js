@@ -1,3 +1,4 @@
+import { ActivityValidator } from "../src/ActivityValidator";
 const COMMON_UTILITY_URL = "https://ep.mde-network.org/common/utility.json";
 
 class GeneralEducationPlatformApp{
@@ -73,6 +74,14 @@ class GeneralEducationPlatformApp{
 
     addToolIconStyles(toolUrl){
         throw new Error("Implement addToolIconStyles in subclass");
+    }
+
+    initializePanels(){
+        throw new Error("Implement initializePanels in subclass");
+    }
+
+    displayErrors(errors){
+        throw new Error("Implement displayErrors in subclass");
     }
 
   

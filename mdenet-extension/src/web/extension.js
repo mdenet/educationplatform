@@ -5,6 +5,8 @@ import { ExtensionActivityManager } from './ExtensionActivityManager';
 import { ExtensionToolsManager } from './ExtensionToolsManager';
 import { LocalRepoManager } from './LocalRepoManager';
 import { ActivityValidator } from '../../../platform/src/ActivityValidator';
+import { ExtensionEducationPlatformApp } from './ExtensionEducationPlatformApp';
+import { ExtensionErrorHandler } from './ExtensionErorrHandler';
 
 export function activate(context) {
 	const activityProvider = new ActivityTreeDataProvider();
@@ -20,21 +22,29 @@ export function activate(context) {
 				activityProvider.setPlaying(file);
 				const toolManager = new ExtensionToolsManager();
 				const activityManager = new ExtensionActivityManager((toolManager.getPanelDefinition).bind(toolManager), localRepoManager, taskProvider, context, file.label)
-				await activityManager.initializeActivities();
-				// console.log("Activities", activityManager.activities);
-				// console.log("Tool URLs", activityManager.getToolUrls());
-				toolManager.setToolsUrls(activityManager.getToolUrls().add("https://ep.mde-network.org/common/utility.json"));
-				activityManager.showActivitiesNavEntries();
-				const selectedActivity = activityManager.getSelectedActivity();
-				// console.log('Selected Activity:', selectedActivity);
-				console.log("Errors", ActivityValidator.validate(selectedActivity, toolManager.tools))
-				vscode.window.showInformationMessage(`Playing ${file.label}`);
+				const errorHandler = new ExtensionErrorHandler();
+				const app = new ExtensionEducationPlatformApp(errorHandler);
+				await app.initializeActivity(toolManager, activityManager);
+				
+				// await activityManager.initializeActivities();
+				// // console.log("Activities", activityManager.activities);
+				// // console.log("Tool URLs", activityManager.getToolUrls());
+				// toolManager.setToolsUrls(activityManager.getToolUrls().add("https://ep.mde-network.org/common/utility.json"));
+				// activityManager.showActivitiesNavEntries();
+				// const selectedActivity = activityManager.getSelectedActivity();
+				// // console.log('Selected Activity:', selectedActivity);
+				// console.log("Errors", ActivityValidator.validate(selectedActivity, toolManager.tools))
+				// vscode.window.showInformationMessage(`Playing ${file.label}`);
 			} catch (error) {
 				vscode.window.showErrorMessage(`Error playing ${file.label}: ${error.message}`);
 			}
 		}),
 		vscode.commands.registerCommand('activities.stop', async (file) => {
+			context.workspaceState.keys().forEach(key => {
+				context.workspaceState.update(key,null);
+			});
 			activityProvider.setStopped();
+			taskProvider.setTasks([]);
 			vscode.window.showInformationMessage(`Stopped ${file.label}`);
 		}),
 	);
