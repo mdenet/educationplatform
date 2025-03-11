@@ -772,7 +772,9 @@ class EducationPlatformApp {
     }
 
 
-    async showBranches() {
+    async showBranches(event) {
+        event.preventDefault();
+
         const activityURL = utility.getActivityURL();
         try {
             // Retrieve a list of branches in the repository
