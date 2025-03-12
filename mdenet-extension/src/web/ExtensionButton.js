@@ -27,7 +27,7 @@ class ExtensionButton{
                            
         } else if (buttonConfigObject["actionfunction"] != undefined)  {        
             this.type = buttonTypes.BUTTON_ACTION;
-            this.action = "runAction( '" + parentPanel + "', '" + buttonConfigObject.id +"' )";
+            this.action = "app.runAction( '" + parentPanel + "', '" + buttonConfigObject.id +"' )";
     
         } else if (buttonConfigObject["internal"] != undefined) {
 

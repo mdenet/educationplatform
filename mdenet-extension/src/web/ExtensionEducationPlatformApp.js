@@ -4,6 +4,7 @@ import { ExtensionProgramPanel } from "./ExtensionProgramPanel";
 import { ExtensionConsolePanel } from "./ExtensionConsolePanel";
 import { ExtensionOutputPanel } from "./ExtensionOutputPanel";
 import { ExtensionCompositePanel } from "./ExtensionCompositePanel"; 
+import * as vscode from 'vscode';
 
 class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     constructor(errorHandler,context){;
@@ -86,6 +87,14 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
             }
         }
         return visiblePanels;
+    }
+
+    displayMessage(message){
+        vscode.window.showInformationMessage(message);
+    }
+
+    updateSessionInfo(editorPanelId, editorInstanceUrl){
+        this.context.workspaceState.update(editorPanelId,editorInstanceUrl);
     }
 
 }

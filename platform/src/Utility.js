@@ -66,7 +66,6 @@ export function jsonRequest(url, json, useCredentials=false){
             statusText: xhr.statusText
         });
         };
-
         xhr.send(json);
     });
 }
