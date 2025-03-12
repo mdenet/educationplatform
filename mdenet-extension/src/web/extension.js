@@ -1,21 +1,23 @@
 import * as vscode from 'vscode';
 import { ActivityTreeDataProvider }  from './providers/ActivityTreeDataProvider';
 import { TaskTreeDataProvider } from './providers/TaskTreeDataProvider';
+import { PanelTreeDataProvider } from './providers/PanelTreeDataProvider';
 import { ExtensionActivityManager } from './ExtensionActivityManager';
 import { ExtensionToolsManager } from './ExtensionToolsManager';
 import { LocalRepoManager } from './LocalRepoManager';
-import { ActivityValidator } from '../../../platform/src/ActivityValidator';
 import { ExtensionEducationPlatformApp } from './ExtensionEducationPlatformApp';
 import { ExtensionErrorHandler } from './ExtensionErorrHandler';
 
 export function activate(context) {
 	const activityProvider = new ActivityTreeDataProvider();
 	const taskProvider = new TaskTreeDataProvider();
+	const panelProvider = new PanelTreeDataProvider();
 	const localRepoManager = new LocalRepoManager();
+	let app = null;
 
 	vscode.window.registerTreeDataProvider('activities', activityProvider);
 	vscode.window.registerTreeDataProvider('tasks', taskProvider);
-
+	vscode.window.registerTreeDataProvider('panels', panelProvider);
 	context.subscriptions.push(
 		vscode.commands.registerCommand('activities.play', async (file) => {
 			try {
@@ -23,18 +25,11 @@ export function activate(context) {
 				const toolManager = new ExtensionToolsManager();
 				const activityManager = new ExtensionActivityManager((toolManager.getPanelDefinition).bind(toolManager), localRepoManager, taskProvider, context, file.label)
 				const errorHandler = new ExtensionErrorHandler();
-				const app = new ExtensionEducationPlatformApp(errorHandler);
+				app = new ExtensionEducationPlatformApp(errorHandler,context);
 				await app.initializeActivity(toolManager, activityManager);
+				const displayPanels = app.getVisiblePanels();
+				panelProvider.setPanels(displayPanels);
 				
-				// await activityManager.initializeActivities();
-				// // console.log("Activities", activityManager.activities);
-				// // console.log("Tool URLs", activityManager.getToolUrls());
-				// toolManager.setToolsUrls(activityManager.getToolUrls().add("https://ep.mde-network.org/common/utility.json"));
-				// activityManager.showActivitiesNavEntries();
-				// const selectedActivity = activityManager.getSelectedActivity();
-				// // console.log('Selected Activity:', selectedActivity);
-				// console.log("Errors", ActivityValidator.validate(selectedActivity, toolManager.tools))
-				// vscode.window.showInformationMessage(`Playing ${file.label}`);
 			} catch (error) {
 				vscode.window.showErrorMessage(`Error playing ${file.label}: ${error.message}`);
 			}
@@ -45,8 +40,37 @@ export function activate(context) {
 			});
 			activityProvider.setStopped();
 			taskProvider.setTasks([]);
+			panelProvider.setPanels([]);
 			vscode.window.showInformationMessage(`Stopped ${file.label}`);
 		}),
+		vscode.commands.registerCommand('panels.displayPanel', async (panel) => {
+			console.log('Displaying panel:', panel);
+			panel.displayPanel();
+		}),
+		vscode.commands.registerCommand('panels.run', async () => {
+			let options = [];
+			const selectedEditor = vscode.window.activeTextEditor;
+			if(!selectedEditor){
+				vscode.window.showInformationMessage("Press the buttons inside the panel");
+				return;
+			}
+			const selectedPanel = app.panels.find(panel => panel.doc === selectedEditor.document);
+			const buttonMap = new Map();
+
+			if (selectedPanel){
+				options = selectedPanel.getButtons().map(button => {buttonMap.set(button.hint,button); return button.hint});
+			}
+			// Show QuickPick menu
+			const selectedOption = await vscode.window.showQuickPick(options, {
+				placeHolder: "Select an option"
+			});
+
+			// Print the selected option
+			if (selectedOption) {
+				const selectedButton = buttonMap.get(selectedOption);
+				eval(selectedButton.action);
+			}
+		})
 	);
 }
 
