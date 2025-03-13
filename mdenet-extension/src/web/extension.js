@@ -14,6 +14,8 @@ export function activate(context) {
 	const panelProvider = new PanelTreeDataProvider();
 	const localRepoManager = new LocalRepoManager();
 	let app = null;
+	let toolManager = null;
+	let activityManager = null;
 
 	vscode.window.registerTreeDataProvider('activities', activityProvider);
 	vscode.window.registerTreeDataProvider('tasks', taskProvider);
@@ -22,8 +24,8 @@ export function activate(context) {
 		vscode.commands.registerCommand('activities.play', async (file) => {
 			try {
 				activityProvider.setPlaying(file);
-				const toolManager = new ExtensionToolsManager();
-				const activityManager = new ExtensionActivityManager((toolManager.getPanelDefinition).bind(toolManager), localRepoManager, taskProvider, context, file.label)
+				toolManager = new ExtensionToolsManager();
+				activityManager = new ExtensionActivityManager((toolManager.getPanelDefinition).bind(toolManager), localRepoManager, taskProvider, context, file.label)
 				const errorHandler = new ExtensionErrorHandler();
 				app = new ExtensionEducationPlatformApp(errorHandler,context);
 				await app.initializeActivity(toolManager, activityManager);
@@ -41,6 +43,9 @@ export function activate(context) {
 			activityProvider.setStopped();
 			taskProvider.setTasks([]);
 			panelProvider.setPanels([]);
+			app = null;
+			toolManager = null;
+			activityManager = null;
 			vscode.window.showInformationMessage(`Stopped ${file.label}`);
 		}),
 		vscode.commands.registerCommand('panels.displayPanel', async (panel) => {
@@ -70,6 +75,19 @@ export function activate(context) {
 				const selectedButton = buttonMap.get(selectedOption);
 				eval(selectedButton.action);
 			}
+		}),
+		vscode.commands.registerCommand('tasks.select', async (task) => {
+			if(app && app.activity && app.activity.id == task){
+				console.log("Task already selected");
+				return;
+			}
+			if(app && toolManager && activityManager){
+				await app.switchActivityTask(task);
+				const displayPanels = app.getVisiblePanels();
+				panelProvider.setPanels(displayPanels);
+			}
+			
+
 		})
 	);
 }

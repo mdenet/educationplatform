@@ -53,7 +53,7 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
 				break;
 			}
 			case "XtextEditorPanel":{
-				let editorUrl = current_context.workspaceState.get(newPanelId);
+				let editorUrl = this.context.workspaceState.get(newPanelId);
 				newPanel = new ExtensionProgramPanel(newPanelId,panel.file);
 				await newPanel.initialize();
 				newPanel.setType(panelDefinition.language);
@@ -95,6 +95,14 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
 
     updateSessionInfo(editorPanelId, editorInstanceUrl){
         this.context.workspaceState.update(editorPanelId,editorInstanceUrl);
+    }
+
+    async switchActivityTask(task){
+        this.activityManager.setSelectedActivity(task);
+        this.activity = this.activityManager.getSelectedActivity();
+        await this.initializePanels()
+
+        
     }
 
 }
