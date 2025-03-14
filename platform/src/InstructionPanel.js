@@ -234,10 +234,9 @@ class InstructionPanel extends Panel {
     
         function formatText(text){
             return text
-            // ! test strong vs b and em vs i
                 .replace(linkRegex, (_, txt, url) => `<a href="${url}" target="_blank">${txt}</a>`)
-                .replace(boldRegex, (_, g1, g2) => `<strong>${g1 || g2}</strong>`)
-                .replace(italicRegex, (_, g1, g2) => `<em>${g1 || g2}</em>`);
+                .replace(boldRegex, (_, g1, g2) => `<b>${g1 || g2}</b>`)
+                .replace(italicRegex, (_, g1, g2) => `<i>${g1 || g2}</i>`);
         }
     
         function getMetadata(metaString){
@@ -292,7 +291,12 @@ class InstructionPanel extends Panel {
             switch(true){
                 case trimmedLine.startsWith('#'):
                     addCentredText();
-                    currentText = trimmedLine.replace(/^#+\s*/, '') + "\n";
+                    const headerMatch = trimmedLine.match(/^(#{1,6})\s*(.*)$/);
+                    if(headerMatch){
+                        const headerLevel = headerMatch[1].length;
+                        const headerContent = headerMatch[2];
+                        currentText = `<h${headerLevel}>${headerContent}</h${headerLevel}>`;
+                    }
                     break;
     
                 case listRegex.test(trimmedLine):
@@ -321,7 +325,11 @@ class InstructionPanel extends Panel {
                     break;
     
                 default:
-                    currentText += line + "\n";
+                    if(currentText !== ""){
+                        currentText += "<br>" + line;
+                    }else{
+                        currentText = line;
+                    }
             }
         }
     
