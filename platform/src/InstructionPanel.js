@@ -224,118 +224,117 @@ class InstructionPanel extends Panel {
         const lines = text.split('\n');
         const instructionsArray = [];
         let currentText = "";
-    
+
         const boldRegex = /\*\*(.*?)\*\*|__(.*?)__/g;
         const italicRegex = /\*(.*?)\*|_(.*?)_/g;
         const linkRegex = /\[(.*?)\]\((.*?)\)/g;
-        const listRegex = /^\s*[-*]|\d+\./;
         const metadataRegex = /\{(.*?)\}/;
-        
-    
+
         function formatText(text){
             return text
                 .replace(linkRegex, (_, txt, url) => `<a href="${url}" target="_blank">${txt}</a>`)
-                .replace(boldRegex, (_, g1, g2) => `<b>${g1 || g2}</b>`)
-                .replace(italicRegex, (_, g1, g2) => `<i>${g1 || g2}</i>`);
+                .replace(boldRegex, (_, g1, g2) => `<strong>${g1 || g2}</strong>`)
+                .replace(italicRegex, (_, g1, g2) => `<em>${g1 || g2}</em>`);
         }
-    
+
         function getMetadata(metaString){
             if (!metaString) return {};
-    
-            // Extract the inner content of { ... }
+
             const content = metaString.match(metadataRegex)?.[1];
             if (!content) return {};
-    
-            // Split on comma and trim each part
+
+            // Split metadata attributes based on commas in the comment and trim each part
             const parts = content.split(',').map(part => part.trim());
             const metaObj = {};
             let currentKey = null;
-    
             for(let part of parts){
                 if(part.includes(':')){
                     // When a colon is present, parse the key and value
                     let [key, value] = part.split(':').map(s => s.trim());
                     currentKey = key;
                     // !remember to remove if no hint implemented
-                    if (key === 'hint'){
+                    if(key === 'hint'){
                         metaObj.hint = value;
                     }else if(key === 'highlighted'){
-                        // Create an array for highlighted values
                         metaObj[key] = [`#${value}Panel`];
-                    
                     }else{
                         metaObj[key] = `#${value}Panel`;
                     }
-                } else {
-                    // No colon means this is an extra value.
-                    // If the last key was "highlighted", append it.
-                    if (currentKey === 'highlighted') {
+                }else{
+                    // Create an array for highlighted values
+                    if(currentKey === 'highlighted'){
                         metaObj[currentKey].push(`#${part}Panel`);
                     }
                 }
             }
             return metaObj;
         }
-    
-        function addCentredText() {
-            if(currentText.trim()){
+
+        // Push the currentText as a new instruction if not empty.
+        const pushCurrentText = () => {
+            if (currentText.trim()) {
                 instructionsArray.push({ text: formatText(currentText.trim()), centred: true });
                 currentText = "";
             }
-        }
-    
+        };
+
+        // Append a new line to currentText.
+        const appendLine = (line) => {
+            if(!currentText){
+                currentText = line;
+            }else if (/<\/h[1-6]>$/.test(currentText)){
+                // If currentText ends with a header, append without a <br>
+                currentText += line;
+            }else{
+                currentText += "<br>" + line;
+            }
+        };
+
         for(const line of lines){
             const trimmedLine = line.trim();
             if (!trimmedLine) continue;
-    
-            switch(true){
-                case trimmedLine.startsWith('#'):
-                    addCentredText();
-                    const headerMatch = trimmedLine.match(/^(#{1,6})\s*(.*)$/);
-                    if(headerMatch){
-                        const headerLevel = headerMatch[1].length;
-                        const headerContent = headerMatch[2];
-                        currentText = `<h${headerLevel}>${headerContent}</h${headerLevel}>`;
-                    }
-                    break;
-    
-                case listRegex.test(trimmedLine):
-                    addCentredText();
-                    // ! Test if the x3C match is even necessary
-                    const match = trimmedLine.match(/^[*-]\s*(.*?)\s*(?:(?:<|\\x3C)!--\s*(\{.*\})\s*-->)?$/) ||
-                                  trimmedLine.match(/^\d+\.\s*(.*?)\s*(?:(?:<|\\x3C)!--\s*(\{.*\})\s*-->)?$/);
-    
-                    if (!match) continue;
-    
-                    const [, text, meta] = match;
-                    const metaObj = getMetadata(meta);
-                    if (!meta || Object.keys(metaObj).length === 0) {
-                        metaObj.centred = true;
-                    }
-                    instructionsArray.push({
-                        text: formatText(text),
-                        ...metaObj
-                    });
-                    // ? The above version makes lists centred if they have no metadata
-                    // const [, text, meta] = match;
-                    // instructionsArray.push({
-                    //     text: formatText(text),
-                    //     ...getMetadata(meta)
-                    // });
-                    break;
-    
-                default:
-                    if(currentText !== ""){
-                        currentText += "<br>" + line;
-                    }else{
-                        currentText = line;
-                    }
+
+            // Process headers
+            const headerMatch = trimmedLine.match(/^(#{1,6})\s*(.*)$/);
+            if(headerMatch){
+                pushCurrentText(); // push previous text block
+                const level = headerMatch[1].length;
+                currentText = `<h${level}>${headerMatch[2]}</h${level}>`;
+                continue;
             }
+
+            // Process list items
+            // ! Test if the x3C match is even necessary
+            const listMatch = trimmedLine.match(/^[*-]\s*(.*?)\s*(?:(?:<|\\x3C)!--\s*(\{.*\})\s*-->)?$/) ||
+                              trimmedLine.match(/^\d+\.\s*(.*?)\s*(?:(?:<|\\x3C)!--\s*(\{.*\})\s*-->)?$/);
+            if(listMatch){
+                pushCurrentText();
+                const [, listText, meta] = listMatch;
+                const metaObj = getMetadata(meta);
+                if(!meta || Object.keys(metaObj).length === 0){
+                    metaObj.centred = true;
+                }
+                instructionsArray.push({
+                    text: formatText(listText),
+                    ...metaObj
+                });
+                // ? The above version makes lists centred if they have no metadata
+                // const [, text, meta] = match;
+                // instructionsArray.push({
+                //     text: formatText(text),
+                //     ...getMetadata(meta)
+                // });
+                continue;
+            }
+
+            // Default case: append line to currentText
+            appendLine(line);
         }
-    
-        addCentredText();
+        
+        pushCurrentText();
         return instructionsArray;
     }
+
 }
 
 export { InstructionPanel };
