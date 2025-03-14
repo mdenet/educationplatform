@@ -1,6 +1,7 @@
 //! is import needed
 import { Panel } from "./Panel.js";
 import { InteractiveGuide } from "./InteractiveGuide.js";
+import { urlParamPrivateRepo } from './Utility.js';
 
 class InstructionPanel extends Panel {
     
@@ -21,7 +22,7 @@ class InstructionPanel extends Panel {
         try {
             // Fetches file depending on if public or private
             // !Assuming it to be public for now
-            const isPrivate = false;
+            const isPrivate = urlParamPrivateRepo();
             const fileResult = this.fileHandler.fetchFile(this.instructionUrl, isPrivate);
             if (fileResult) {
                 // Use the file content returned by the FileHandler
