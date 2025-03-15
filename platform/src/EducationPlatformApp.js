@@ -13,6 +13,8 @@ import 'ace-builds/src-min-noconflict/ext-language_tools';
 
 import 'metro4/build/metro';
 
+import * as Diff from 'diff';
+
 import { FileHandler } from './FileHandler.js';
 import { ActivityManager } from './ActivityManager.js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
@@ -774,6 +776,7 @@ class EducationPlatformApp {
 
     async showBranches(event) {
         event.preventDefault();
+        this.showPanelDiffs();
 
         const activityURL = utility.getActivityURL();
         try {
@@ -957,6 +960,59 @@ class EducationPlatformApp {
             event.preventDefault();
             this.switchBranch(currentBranch, branchToSwitchTo);
         };
+    }
+
+    /**
+     * Compare the remote file content and the panel contents to determine if the panels have been modified
+     * Displays the differences in changes between the current panel contents and the remote file content
+     */
+    async showPanelDiffs() {
+        const saveablePanels = this.panels.filter(p => p.getFileUrl());
+
+        (async () => {
+            try {
+                for (const panel of saveablePanels) {
+                    // Fetch the file from the remote repository
+                    const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
+
+                    if (!remoteFile || !remoteFile.content) {
+                        throw new Error(`No remote file content returned for ${panel.getId()}`);
+                    }
+
+                    const remoteContent = remoteFile.content;
+                    const panelContent = panel.getValue();
+
+                    // Compare the remote file content and the panel content
+                    if (panelContent === remoteContent) {
+                        continue;
+                    }
+
+                    // Generate diff using jsdiff
+                    const diff = Diff.diffLines(remoteContent, panelContent);
+
+                    console.log(`Differences for panel [${panel.getId()}]:`);
+                    diff.forEach((part) => {
+                        if (part.added) {
+                            console.log(`%c+ ${part.value}`, "color: green");  // Log additions in green
+                        } 
+                        else if (part.removed) {
+                            console.log(`%c- ${part.value}`, "color: red");   // Log deletions in red
+                        }
+                    });
+                }
+            } 
+            catch (error) {
+                console.error(error);
+            }
+        })();
+    }
+
+    /**
+     * Check if the panel contents have been modified
+     * @return {boolean} true if changes have been made, false otherwise.
+     */
+    changesHaveBeenMade() {
+        return this.panels.some(p => p.canSave());
     }
 
     /**
