@@ -21,11 +21,14 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     }
 
     displayErrors(errors){
-        console.log("Displaying errors");
+        for (let error of errors){
+            vscode.window.showErrorMessage(error.message);
+        }
     }
 
     async createPanel(panel, panelDefinition, newPanelId){
         let newPanel = null;
+        console.log("Creating panel", panelDefinition.panelclass);
         switch(panelDefinition.panelclass){
 			case "ProgramPanel":{
 				newPanel = new ExtensionProgramPanel(newPanelId,panel.file);
@@ -77,6 +80,7 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     
     getVisiblePanels(){
         let visiblePanels = [];
+        console.log("Getting visible panels for activity", this.activity);
         const layout = this.activity.layout.area;
         for(let i = 0; i < layout.length; i++){
             for(let j = 0; j < layout[i].length; j++){
@@ -97,7 +101,10 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     }
 
     updateSessionInfo(editorPanelId, editorInstanceUrl){
+        //replace the origin of editorInstanceUrl with http://localhost:8080
+        editorInstanceUrl = editorInstanceUrl.replace(/https:\/\/ep.mde-network\.org/,"http://localhost:8080");
         this.context.workspaceState.update(editorPanelId,editorInstanceUrl);
+        console.log("Updated session info",this.context.workspaceState);
     }
 
     async switchActivityTask(task){

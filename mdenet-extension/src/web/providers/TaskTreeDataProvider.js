@@ -18,6 +18,16 @@ class TaskTreeDataProvider {
     this.refresh();
   }
 
+  hideAllTasks(){
+    this.tasks.forEach((task) => this.hiddenTasks.add(task.id));
+    this.refresh();
+  }
+
+  showAllTasks(){
+    this.hiddenTasks.clear();
+    this.refresh();
+  }
+
   hideTask(taskId){
     this.hiddenTasks.add(taskId);
     this.refresh();

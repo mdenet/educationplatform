@@ -50,6 +50,7 @@ class ExtensionActivityManager extends GeneralActivityManager {
         }
         if (config.activities) {
             this.provider.setTasks(config.activities);
+            this.provider.hideAllTasks();
         } else {
             vscode.window.showWarningMessage('No activities found in the file.');
         }

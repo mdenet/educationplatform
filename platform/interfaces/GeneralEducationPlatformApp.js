@@ -40,6 +40,7 @@ class GeneralEducationPlatformApp{
             this.toolsManager.setToolsUrls( this.activityManager.getToolUrls().add(COMMON_UTILITY_URL) );
             console.log("Tools urls: ", this.toolsManager.tools);
             errors = errors.concat(this.toolsManager.getConfigErrors());
+            console.log("Errors: ", errors);
         }
 
         if (errors.length==0){
