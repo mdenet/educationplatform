@@ -343,7 +343,9 @@ class GeneralEducationPlatformApp{
          * @param {Panel} logPanel - the panel to log progress to.
          */
         checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel){
-            var socket = new WebSocket("wss://localhost::8080/tools/xtext/services/xtext/ws");
+            
+            var socket = new WebSocket("ws://localhost:8080/tools/xtext/services/xtext/ws");   
+            // var socket = new WebSocket("wss://ep.mde-network.org/tools/xtext/services/xtext/ws");
             var editorReady = false;
             socket.onopen = function(){
                 socket.send(editorID);
