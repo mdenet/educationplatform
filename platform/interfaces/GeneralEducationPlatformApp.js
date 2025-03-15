@@ -90,10 +90,11 @@ class GeneralEducationPlatformApp{
 
         // Create panels for the given activities
         for ( let apanel of this.activity.panels ){
-            var newPanel = await this.createPanelForDefinitionId(apanel);
-            if (newPanel != null){
-                this.panels.push(newPanel);
-            }
+            // var newPanel = await this.createPanelForDefinitionId(apanel);
+            // if (newPanel != null){
+            //     this.panels.push(newPanel);
+            // }
+            await this.createPanelForDefinitionId(apanel);
         }
 
     }
@@ -142,6 +143,9 @@ class GeneralEducationPlatformApp{
             });
             panel.buttons = resolvedButtonConfigs;
             newPanel.addButtons(this.createButtons( resolvedButtonConfigs, panel.id));
+        }
+        if(newPanel != null ){
+            this.panels.push(newPanel);
         }
         return newPanel;
     }
@@ -209,8 +213,9 @@ class GeneralEducationPlatformApp{
                 //actionRequestData.outputLanguage = outputLanguage;
 
             // Call backend conversion and service functions
+            console.log("Invoking action function: " + buttonConfig.actionfunction);
             let actionResultPromise = this.toolsManager.invokeActionFunction(buttonConfig.actionfunction, parameterMap);
-
+            console.log("Action sent")
             
             this.handleResponseActionFunction(action , actionResultPromise);
 
@@ -231,6 +236,7 @@ class GeneralEducationPlatformApp{
         requestPromise.then( (responseText) => {
 
             var response = JSON.parse(responseText);
+            console.log("Response", response)
             const outputPanel = this.activityManager.findPanel( action.output.id, this.panels);
 
             var outputConsole;
@@ -271,7 +277,7 @@ class GeneralEducationPlatformApp{
 
                 } else if (response.generatedText) {
                     // Generated file
-
+                    console.log("Action output type: " + action.outputType);
                     switch (action.outputType){
                         case "code":
                             // Text

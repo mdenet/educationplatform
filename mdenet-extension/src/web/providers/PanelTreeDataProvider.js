@@ -29,29 +29,53 @@ class PanelTreeDataProvider {
     this._onDidChangeTreeData.fire();
   }
 
-  /**
+   /**
    * Returns a TreeItem for the given element.
-   * @param {Object} element - The task element.
+   * @param {Object} element - The tree element (panel or parent node).
    * @returns {vscode.TreeItem}
    */
-  getTreeItem(element) {
-    return {
-      label: element.label,
-      iconPath: new vscode.ThemeIcon('layers'),
-      command: {
+   getTreeItem(element) {
+    const treeItem = new vscode.TreeItem(
+      element.label,
+      element.children && element.children.length > 0
+        ? vscode.TreeItemCollapsibleState.Collapsed
+        : vscode.TreeItemCollapsibleState.None
+    );
+
+    treeItem.iconPath = new vscode.ThemeIcon('layers');
+
+    if (!element.children || element.children.length === 0) {
+      treeItem.command = {
         command: 'panels.displayPanel',
         title: 'Display Panel',
         arguments: [element.object] // Pass the panel object
+      };
     }
-    };
+
+    return treeItem;
   }
 
   /**
    * Returns the children for the tree view.
+   * @param {Object} element - The parent node.
    * @returns {Promise<Array>}
    */
   async getChildren(element) {
-    return this.panels.map((panel) => ({label: panel.getTitle(), object: panel}));
+    if (!element) {
+      // Root level panels
+      return this.panels.map((panel) => ({
+        label: panel.getTitle(),
+        object: panel,
+        children: panel.getChildren ? panel.getChildren() : [] // Retrieve children if available
+      }));
+    }
+
+    // Return child panels if they exist
+    return element.children.map((child) => ({
+      label: child.getTitle(),
+      object: child,
+      children: child.getChildren ? child.getChildren() : []
+    }));
   }
 }
 

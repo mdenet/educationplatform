@@ -3,9 +3,12 @@ import * as vscode from 'vscode';
 
 class ExtensionConsolePanel extends ExtensionPanel{
 
-    constructor(id){
+    constructor(id="console"){
         super(id);
-        this.type = 'console';
+        
+    }
+
+    initialize(){
         this.outputChannel = vscode.window.createOutputChannel("MDENet"+this.id);
         this.outputChannel.show();
     }

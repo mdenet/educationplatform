@@ -5,7 +5,10 @@ class ExtensionOutputPanel extends ExtensionPanel{
 
     constructor(id,name){
         super(id);
-        this.name = name;
+        this.name = name
+    }
+
+    initialize(){
         this.panel = null;
         this.buttons = [];
     }

@@ -35,21 +35,24 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
 			}
 			case "ConsolePanel":{
 				newPanel = new ExtensionConsolePanel(newPanelId);
+                newPanel.initialize();
 				break;
 			}
 			case "CompositePanel":{
 				newPanel = new ExtensionCompositePanel(newPanelId);
 				if(panel.childPanels){
 					for (let childPanelConfig of panel.childPanels){
-						var childPanel = await createPanelForDefinition(childPanelConfig);
+						var childPanel = await this.createPanelForDefinitionId(childPanelConfig);
 						newPanel.addPanel(childPanel);
 					}
 				}
+                newPanel.initialize();
 				break;
 			}
 			case "OutputPanel":{
 				console.log(panel)
 				newPanel = new ExtensionOutputPanel(newPanelId,panel.name);
+                newPanel.initialize();
 				break;
 			}
 			case "XtextEditorPanel":{
@@ -74,7 +77,6 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     
     getVisiblePanels(){
         let visiblePanels = [];
-        console.log("Getting visible panels", this.activity);
         const layout = this.activity.layout.area;
         for(let i = 0; i < layout.length; i++){
             for(let j = 0; j < layout[i].length; j++){

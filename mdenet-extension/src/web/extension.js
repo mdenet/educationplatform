@@ -60,6 +60,7 @@ export function activate(context) {
 				return;
 			}
 			const selectedPanel = app.panels.find(panel => panel.doc === selectedEditor.document);
+			console.log("Selected panel", selectedPanel);
 			const buttonMap = new Map();
 
 			if (selectedPanel){
