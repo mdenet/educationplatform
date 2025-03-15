@@ -74,6 +74,9 @@ class ExtensionActivityManager extends GeneralActivityManager {
             if (this.hasGeneratedPanel(activityKey)){
                 this.setActivityVisibility(activityKey, false);
             }
+            else{
+                this.setActivityVisibility(activityKey, true);
+            }
         }
     }
 

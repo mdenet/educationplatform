@@ -74,6 +74,7 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     
     getVisiblePanels(){
         let visiblePanels = [];
+        console.log("Getting visible panels", this.activity);
         const layout = this.activity.layout.area;
         for(let i = 0; i < layout.length; i++){
             for(let j = 0; j < layout[i].length; j++){

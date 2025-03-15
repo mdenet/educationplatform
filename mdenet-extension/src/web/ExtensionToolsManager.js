@@ -31,7 +31,7 @@ class ExtensionToolsManager extends ToolManager{
                         let path = this.fetchPathByPort(url_port);
 
                         if(path != null){
-                            let base_url = "https://ep.mde-network.org";
+                            let base_url = "http://localhost:8080";
                             path = path.endsWith('/') ? path : path + '/';
                             toolUrl.url = base_url + path + url_tail;
                         }
@@ -67,7 +67,8 @@ class ExtensionToolsManager extends ToolManager{
         let corsProxy = "https://api.allorigins.win/raw?url=";
         for (let toolUrl of this.toolsUrls) {
             let xhr = new XMLHttpRequest();      
-            let url = corsProxy + toolUrl.url;
+            // let url = corsProxy + toolUrl.url;
+            let url = toolUrl.url;
             try{
                 xhr.open("GET", url, false);
                 xhr.send();
@@ -87,7 +88,7 @@ class ExtensionToolsManager extends ToolManager{
 
                 let response_text =  xhr.responseText;
 
-                var toolConfig = this.rewriteUrl("https://ep.mde-network.org", toolUrl.url, response_text);
+                var toolConfig = this.rewriteUrl("http://localhost:8080", toolUrl.url, response_text);
 
                 // console.log("Tool Config: ", toolConfig);
                 // Now parse tool config

@@ -36,18 +36,21 @@ class GeneralEducationPlatformApp{
 
         if (errors.length==0){
             // The activities have been validated
+            console.log("Initializing tools manager");
             this.toolsManager.setToolsUrls( this.activityManager.getToolUrls().add(COMMON_UTILITY_URL) );
+            console.log("Tools urls: ", this.toolsManager.tools);
             errors = errors.concat(this.toolsManager.getConfigErrors());
         }
 
         if (errors.length==0){
             // The tools have been validated 
+            console.log("Showing activities nav entries");
             this.activityManager.showActivitiesNavEntries();
 
             // Import tool grammar highlighting 
             const  toolImports = this.toolsManager.getToolsGrammarImports(); 
 
-            this.handleToolImports(toolImports);
+            await this.handleToolImports(toolImports);
 
             // Add Tool styles for icons 
            for (let toolUrl of this.toolsManager.toolsUrls){
@@ -55,6 +58,7 @@ class GeneralEducationPlatformApp{
             }
             
             this.activity = this.activityManager.getSelectedActivity(); 
+            console.log("Selected activity: " + this.activity);
 
             // Validate the resolved activity
             errors = errors.concat( ActivityValidator.validate(this.activity, this.toolsManager.tools) );   
@@ -62,6 +66,7 @@ class GeneralEducationPlatformApp{
 
         if  (errors.length==0){
             // The resolved activity has been validated
+            console.log("Initializing panels");
             await this.initializePanels();
         }
 
@@ -70,7 +75,7 @@ class GeneralEducationPlatformApp{
         }
     }
 
-    handleToolImports(toolImports){
+    async handleToolImports(toolImports){
         throw new Error("Implement handleToolImports in subclass");
     }
 
@@ -332,7 +337,7 @@ class GeneralEducationPlatformApp{
          * @param {Panel} logPanel - the panel to log progress to.
          */
         checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel){
-            var socket = new WebSocket("wss://ep.mde-network.org/tools/xtext/services/xtext/ws");
+            var socket = new WebSocket("wss://localhost::8080/tools/xtext/services/xtext/ws");
             var editorReady = false;
             socket.onopen = function(){
                 socket.send(editorID);

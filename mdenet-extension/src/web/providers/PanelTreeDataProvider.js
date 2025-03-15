@@ -50,7 +50,7 @@ class PanelTreeDataProvider {
    * Returns the children for the tree view.
    * @returns {Promise<Array>}
    */
-  async getChildren() {
+  async getChildren(element) {
     return this.panels.map((panel) => ({label: panel.getTitle(), object: panel}));
   }
 }
