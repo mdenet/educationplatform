@@ -1,8 +1,7 @@
-import { Panel } from "./Panel.js";
 import { Layout } from "./Layout.js";
-import { EditablePanel } from "./EditablePanel.js";
+import { SaveablePanel } from "./SaveablePanel.js";
 
-class CompositePanel extends Panel {
+class CompositePanel extends SaveablePanel {
     childPanels = [];
     constructor(id = "composite") {
         super(id);

@@ -1,6 +1,6 @@
-import { Panel } from "./Panel.js";
+import { SaveablePanel } from "./SaveablePanel";
 
-class EditablePanel extends Panel {
+class EditablePanel extends SaveablePanel {
     fileUrl;
     valueSha;
     lastSavedContent;
@@ -39,6 +39,7 @@ class EditablePanel extends Panel {
 
     /**
      * Has the contents of this panel changed since the last save?
+     * @override
      * @returns {boolean} true if the content has changed since the last save
      */
     canSave() {

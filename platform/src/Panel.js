@@ -7,8 +7,6 @@ class Panel {
     element;
     visible;
     type;
-    valueSha;
-    fileUrl;
 
     constructor(id) {
         this.id = id;
