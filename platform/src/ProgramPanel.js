@@ -1,15 +1,9 @@
-import { Panel } from "./Panel.js";
+import { SaveablePanel } from "./SaveablePanel";
 
-class ProgramPanel extends Panel {
+class ProgramPanel extends SaveablePanel {
 
     constructor(id = "program") {
         super(id);
-    }
-
-
-    canSave() {
-        // Only save if there are any actual changes to save -- this avoids empty commits.
-        return (this.getValueSha()) && (!(this.editor.session.getUndoManager().isClean()));
     }
 
     /**
@@ -22,7 +16,6 @@ class ProgramPanel extends Panel {
         console.log(language);
     }
     
-
 
     fit() {
         var editorElement = document.getElementById(this.id + "Editor");

@@ -1,10 +1,11 @@
-import { Panel } from "./Panel.js";
 import { Layout } from "./Layout.js";
+import { Panel } from "./Panel.js";
 
 class CompositePanel extends Panel {
-    childPanels = [];
+
     constructor(id = "composite") {
         super(id);
+        this.childPanels = [];
     }
 
     initialize(editor) {
@@ -15,34 +16,6 @@ class CompositePanel extends Panel {
         });
     }
 
-    /**
-     * Check whether there are saveable changes to a child panels contents.
-     * @override
-     * @returns true if there are changes that can be saved.
-     */
-    canSave(){
-        let childrenCanSave = false;
-
-        this.childPanels.forEach( (cp) => childrenCanSave = childrenCanSave || cp.canSave() );
-
-        return childrenCanSave;
-    }
-
-    /**
-     * @override
-     */
-    save(fileHandler){
-        let savePromises =  this.childPanels.map( (cp) => { 
-            if (cp.canSave()) { 
-                //save each child panel
-                return cp.save(fileHandler); 
-            } else { 
-                return null; 
-            }
-        });
-        return Promise.all(savePromises);
-    }
-
     addPanel(panel) {
         this.childPanels.push(panel);
         panel.parentComposite = this; // Set a reference to the parent CompositePanel
@@ -51,8 +24,6 @@ class CompositePanel extends Panel {
     removePanel(panel) {
         this.childPanels = this.childPanels.filter(p => p !== panel);
     }
-
-
 
     createElement() {
         var root = document.createElement("div");
