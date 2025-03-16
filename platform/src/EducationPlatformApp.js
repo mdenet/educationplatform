@@ -765,7 +765,7 @@ class EducationPlatformApp {
     savePanelContents(event) {
         event.preventDefault();
 
-        let panelsToSave = this.saveablePanels.filter(p => p.canSave());
+        const panelsToSave = this.saveablePanels.filter(p => p.canSave());
         if (panelsToSave.length === 0) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
             return;
@@ -1001,13 +1001,17 @@ class EducationPlatformApp {
 
     /**
      * Compare the remote file content and the panel contents to determine if the panels have been modified
-     * Displays the differences in changes between the current panel contents and the remote file content
+     * Computes the differences between the remote file content and the panel content
      */
     async showPanelDiffs() {
 
+        const panelDiffsMap = new Map();
+
         (async () => {
             try {
-                for (const panel of this.saveablePanels) {
+                const panelsToSave = this.saveablePanels.filter(p => p.canSave());
+
+                for (const panel of panelsToSave) {
                     // Fetch the file from the remote repository
                     const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
 
@@ -1018,24 +1022,28 @@ class EducationPlatformApp {
                     const remoteContent = remoteFile.content;
                     const panelContent = panel.getValue();
 
-                    // Compare the remote file content and the panel content
-                    if (panelContent === remoteContent) {
-                        continue;
-                    }
-
                     // Generate diff using jsdiff
                     const diff = Diff.diffLines(remoteContent, panelContent);
 
-                    console.log(`Differences for panel [${panel.getId()}]:`);
-                    diff.forEach((part) => {
+                    // Store changes in an array 
+                    const changes = diff.map(part => {
+                        // Format 'part' into 'change' to only include added or removed parts
+                        let change = {};
+
                         if (part.added) {
-                            console.log(`%c+ ${part.value}`, "color: green");  // Log additions in green
-                        } 
-                        else if (part.removed) {
-                            console.log(`%c- ${part.value}`, "color: red");   // Log deletions in red
+                            change.added = part.value;
                         }
-                    });
+                        else if (part.removed) {
+                            change.removed = part.value
+                        }
+
+                        return change;
+                    }).filter(change => change.added || change.removed); // Only keep meaningful changes
+
+                    // Store the changes in the map with the panel ID as the key
+                    panelDiffsMap.set(panel.getId(), changes);
                 }
+                console.log("Panel diffs:", panelDiffsMap);
             } 
             catch (error) {
                 console.error(error);
