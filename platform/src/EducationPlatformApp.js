@@ -49,6 +49,7 @@ class EducationPlatformApp {
     activity;
     preloader;
     panels;
+    saveablePanels;
 
     errorHandler;
     fileHandler;
@@ -61,6 +62,7 @@ class EducationPlatformApp {
         this.errorHandler = new ErrorHandler();
         this.preloader = new Preloader();
         this.panels = [];
+        this.saveablePanels = [];
     }
 
     initialize( urlParameters, tokenHandlerUrl ){
@@ -325,11 +327,10 @@ class EducationPlatformApp {
             if (newPanel != null){
                 this.panels.push(newPanel);
             }
-        }    
-
+        }
+        this.saveablePanels = this.getSaveablePanels(this.panels);
 
         new Layout().createFrom2dArray("navview-content", this.panels, this.activity.layout.area);
-
 
         PlaygroundUtility.showMenu();
         
@@ -747,7 +748,7 @@ class EducationPlatformApp {
     savePanelContents(event) {
         event.preventDefault();
 
-        let panelsToSave = this.getSaveablePanels(this.panels).filter(p => p.canSave());
+        let panelsToSave = this.saveablePanels.filter(p => p.canSave());
         if (panelsToSave.length === 0) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
             return;
@@ -985,11 +986,10 @@ class EducationPlatformApp {
      * Displays the differences in changes between the current panel contents and the remote file content
      */
     async showPanelDiffs() {
-        const saveablePanels = this.panels.filter(p => p.getFileUrl());
 
         (async () => {
             try {
-                for (const panel of saveablePanels) {
+                for (const panel of this.saveablePanels) {
                     // Fetch the file from the remote repository
                     const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
 
