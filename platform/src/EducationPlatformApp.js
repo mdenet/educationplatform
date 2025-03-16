@@ -27,6 +27,7 @@ import { TestPanel } from './TestPanel.js';
 import { BlankPanel } from './BlankPanel .js';
 import { XtextEditorPanel } from './XtextEditorPanel.js';
 import { CompositePanel } from './CompositePanel.js';
+import { SaveablePanel } from './SaveablePanel.js';
 import { Button } from './Button.js';
 
 import { Preloader } from './Preloader.js';
@@ -365,11 +366,11 @@ class EducationPlatformApp {
                     
                     // Set from the tool panel definition  
                     newPanel.setEditorMode(panelDefinition.language);
-
                     newPanel.setType(panelDefinition.language);
 
                     // Set from the activity 
                     newPanel.setValue(panel.file);
+                    newPanel.setLastSavedContent(panel.file);
                     newPanel.setValueSha(panel.sha); 
                     newPanel.setFileUrl(panel.url);
                     break;
@@ -393,9 +394,9 @@ class EducationPlatformApp {
 
                     // Set from the activity 
                     newPanel.setValue(panel.file);
+                    newPanel.setLastSavedContent(panel.file);
                     newPanel.setValueSha(panel.sha); 
                     newPanel.setFileUrl(panel.url)
-
                     break;
                 }
                 case "CompositePanel": {
@@ -705,6 +706,26 @@ class EducationPlatformApp {
         }
     }
 
+    /**
+     * Recursively gathers all panels that can be saved, flattening CompositePanels.
+     * @param {Panel[]} panels - The list of panels to check.
+     * @returns {SaveablePanel[]} A list of panels that can be saved.
+     */
+    getSaveablePanels(panels) {
+        let saveablePanels = [];
+
+        for (const panel of panels) {
+            if (panel instanceof CompositePanel) {
+                // Recursively flatten composite panels
+                saveablePanels.push(...this.getSaveablePanels(panel.childPanels));
+            }
+            else if (panel instanceof SaveablePanel) {
+                saveablePanels.push(panel);
+            }
+        }
+        return saveablePanels;
+    }
+
     getCommitMessage() {
         let commitMessage = prompt("Type your commit message:", DEFAULT_COMMIT_MESSAGE);
 
@@ -724,7 +745,7 @@ class EducationPlatformApp {
     savePanelContents(event) {
         event.preventDefault();
 
-        let panelsToSave = this.panels.filter(p => p.canSave());
+        let panelsToSave = this.getSaveablePanels(this.panels).filter(p => p.canSave());
         if (panelsToSave.length === 0) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
             return;
@@ -738,11 +759,8 @@ class EducationPlatformApp {
 
         let files = [];
         for (const panel of panelsToSave) {
-            files.push({
-                url: panel.getFileUrl(),
-                valueSha: panel.getValueSha(),
-                newFileContent: panel.getValue()
-            });
+            const saveData = panel.exportSaveData();
+            files.push(saveData);
         }
 
         this.fileHandler.storeFiles(files, commitMessage)
@@ -957,6 +975,51 @@ class EducationPlatformApp {
             event.preventDefault();
             this.switchBranch(currentBranch, branchToSwitchTo);
         };
+    }
+
+    /**
+     * Compare the remote file content and the panel contents to determine if the panels have been modified
+     * Displays the differences in changes between the current panel contents and the remote file content
+     */
+    async showPanelDiffs() {
+        const saveablePanels = this.getSaveablePanels(this.panels);
+
+        (async () => {
+            try {
+                for (const panel of saveablePanels) {
+                    // Fetch the file from the remote repository
+                    const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
+
+                    if (!remoteFile || !remoteFile.content) {
+                        throw new Error(`No remote file content returned for ${panel.getId()}`);
+                    }
+
+                    const remoteContent = remoteFile.content;
+                    const panelContent = panel.getValue();
+
+                    // Compare the remote file content and the panel content
+                    if (panelContent === remoteContent) {
+                        continue;
+                    }
+
+                    // Generate diff using jsdiff
+                    const diff = Diff.diffLines(remoteContent, panelContent);
+
+                    console.log(`Differences for panel [${panel.getId()}]:`);
+                    diff.forEach((part) => {
+                        if (part.added) {
+                            console.log(`%c+ ${part.value}`, "color: green");  // Log additions in green
+                        } 
+                        else if (part.removed) {
+                            console.log(`%c- ${part.value}`, "color: red");   // Log deletions in red
+                        }
+                    });
+                }
+            } 
+            catch (error) {
+                console.error(error);
+            }
+        })();
     }
 
     /**
