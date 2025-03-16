@@ -66,15 +66,6 @@ class Panel {
     }
 
     /**
-     * Can the contents of this panel (or at least some of it) be saved in a meaningful way -- in other words, is this stuff we would expect the student to change?
-     *
-     * @returns true if the panel should be considered when saving contents.
-     */
-    canSave() {
-        return this.editor.session.getUndoManager().isClean() === false;
-    }
-
-    /**
      * Save the contents of this panel using the filehandler given. Return a promise that will complete when the saving completes.
      * 
      * Only called if {#canSave} returns true.
@@ -110,26 +101,6 @@ class Panel {
         this.editor.setValue((value+""), 1);
         // Reset undo manager
         this.editor.session.getUndoManager().markClean();
-    }
-
-    getValueSha() {
-        return this.valueSha;
-    }
-
-    setValueSha(sha) {
-        this.valueSha = sha;
-    }
-
-    getFileUrl() {
-        return this.fileUrl;
-    }
-
-    setFileUrl(url) {
-        this.fileUrl = url;
-    }
-
-    getFilePath() {
-        return this.getFileUrl().split("/").slice(6).join("/");
     }
 
     setType(type){

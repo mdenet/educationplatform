@@ -1,5 +1,6 @@
 import { Panel } from "./Panel.js";
 import { Layout } from "./Layout.js";
+import { EditablePanel } from "./EditablePanel.js";
 
 class CompositePanel extends Panel {
     childPanels = [];
@@ -16,16 +17,11 @@ class CompositePanel extends Panel {
     }
 
     /**
-     * Check whether there are saveable changes to a child panels contents.
-     * @override
-     * @returns true if there are changes that can be saved.
+     * Checks if any child panel has unsaved changes.
+     * @returns {boolean} True if any child panel canSave(), otherwise false.
      */
-    canSave(){
-        let childrenCanSave = false;
-
-        this.childPanels.forEach( (cp) => childrenCanSave = childrenCanSave || cp.canSave() );
-
-        return childrenCanSave;
+    canSave() {
+        return this.childPanels.some(panel => panel instanceof EditablePanel && panel.canSave());
     }
 
     /**
