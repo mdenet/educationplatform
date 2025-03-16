@@ -18,10 +18,15 @@ class ExtensionOutputPanel extends ExtensionPanel{
             this.panel.reveal();
             return;
         }
+        if (this.panel != null){
+            this.panel.webview.html = this.getWebviewContent(content);
+            this.panel.reveal();
+            return;
+        }
         this.panel = vscode.window.createWebviewPanel(
             this.id, this.name, 
             vscode.ViewColumn.One,
-            { enableScripts: true } // Webview options (allows JavaScript)
+            { enableScripts: true }
           );
       
           // Set HTML content for the Webview
@@ -29,6 +34,20 @@ class ExtensionOutputPanel extends ExtensionPanel{
         this.panel.onDidDispose(() => {
             this.panel = null;
         });
+        this.panel.webview.onDidReceiveMessage(
+            message => {
+                if (message.command === 'button.run') {
+                    console.log("Running button", message.button);
+                    const buttonObj = this.buttons.find(button => button.id === message.button);
+                    console.log("Found button", buttonObj);
+                    if (buttonObj) {
+                        vscode.commands.executeCommand('button.run', buttonObj);
+                    }
+                }
+            },
+            undefined,
+            []
+        );
     }
 
     renderDiagram(svg){
@@ -106,9 +125,12 @@ class ExtensionOutputPanel extends ExtensionPanel{
                     }
                 </style>
                 <script>
-                    function handleButtonClick(buttonId) {
-                        // Send message to VS Code extension
-                        console.log("Button clicked: " + buttonId);
+                    const vscode = acquireVsCodeApi();
+                    function handleButtonClick(button) {
+                        vscode.postMessage({
+                            command: 'button.run',
+                            button: button
+                        });
                     }
                 </script>
             </head>

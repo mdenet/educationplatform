@@ -366,6 +366,7 @@ class GeneralEducationPlatformApp{
                     // Metro.notify.killAll();
                     // PlaygroundUtility.successNotification("Building complete.");
                     this.displayMessage("Building complete");
+                    
                 }
             }.bind(this);
     

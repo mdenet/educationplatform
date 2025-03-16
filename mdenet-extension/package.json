@@ -53,6 +53,10 @@
         "command": "panels.run",
         "title": "Run Panel",
         "icon": "public/images/M.svg"
+      },
+      {
+        "command": "button.run",
+        "title": "Run button"
       }
     ],
     "viewsContainers": {

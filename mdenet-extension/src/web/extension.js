@@ -23,6 +23,8 @@ export function activate(context) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('activities.play', async (file) => {
 			try {
+				vscode.commands.executeCommand('workbench.action.closeAllEditors');
+
 				activityProvider.setPlaying(file);
 				toolManager = new ExtensionToolsManager();
 				activityManager = new ExtensionActivityManager((toolManager.getPanelDefinition).bind(toolManager), localRepoManager, taskProvider, context, file.label)
@@ -37,9 +39,9 @@ export function activate(context) {
 			}
 		}),
 		vscode.commands.registerCommand('activities.stop', async (file) => {
-			context.workspaceState.keys().forEach(key => {
-				context.workspaceState.update(key,null);
-			});
+			// context.workspaceState.keys().forEach(key => {
+			// 	context.workspaceState.update(key,null);
+			// });
 			activityProvider.setStopped();
 			taskProvider.setTasks([]);
 			panelProvider.setPanels([]);
@@ -77,15 +79,25 @@ export function activate(context) {
 				eval(selectedButton.action);
 			}
 		}),
+		vscode.commands.registerCommand('button.run', (button) => {
+			console.log("Running button", button.action);
+
+			eval(button.action);
+		}),
 		vscode.commands.registerCommand('tasks.select', async (task) => {
 			if(app && app.activity && app.activity.id == task){
 				console.log("Task already selected");
 				return;
 			}
 			if(app && toolManager && activityManager){
-				await app.switchActivityTask(task);
-				const displayPanels = app.getVisiblePanels();
-				panelProvider.setPanels(displayPanels);
+				try{
+					vscode.commands.executeCommand('workbench.action.closeAllEditors');
+					await app.switchActivityTask(task);
+					const displayPanels = app.getVisiblePanels();
+					panelProvider.setPanels(displayPanels);
+				}catch(error){
+					vscode.window.showErrorMessage(`Error switching task: ${error.message}`);
+				}
 			}
 			
 
