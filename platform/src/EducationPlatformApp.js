@@ -176,12 +176,29 @@ class EducationPlatformApp {
         window.history.replaceState({}, document.title, "?" + queryString);
     }
 
-    // Helper method to set up the state after the user has been authenticated
+    /**
+     * Set up the environment for an authenticated user
+     * @param {URLSearchParams} urlParameters - The URL parameters.
+     */
     setupAuthenticatedState(urlParameters) {
         document.getElementById('save')?.classList.remove('hidden');
         document.getElementById('branch')?.classList.remove('hidden');
         setAuthenticated(true);
         this.initializeActivity(urlParameters);
+
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        // Warn user if there are unsaved changes before closing the tab
+        window.addEventListener("beforeunload", (event) => {
+            if (this.changesHaveBeenMade()) {
+                event.preventDefault();
+
+                // Browsers usually ignore the message
+                // return "You have unsaved changes. Are you sure you want to leave?";
+            }
+        });
     }
 
     initializeActivity(urlParameters){
@@ -1024,6 +1041,14 @@ class EducationPlatformApp {
                 console.error(error);
             }
         })();
+    }
+
+    /**
+     * Check if there are any outstanding changes in the panels that have not been saved.
+     * @returns {boolean} true if changes have been made, false otherwise
+     */
+    changesHaveBeenMade() {
+        return this.saveablePanels.some(panel => panel.canSave());
     }
 
     /**
