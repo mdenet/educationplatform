@@ -1,8 +1,8 @@
 /*global ace -- ace is externally imported*/
-import { EditorPanel } from "./EditorPanel.js";
+import { SaveablePanel } from "./SaveablePanel";
 
 
-class XtextEditorPanel extends EditorPanel {
+class XtextEditorPanel extends SaveablePanel {
 
     constructor(id = "program") {
         super(id);

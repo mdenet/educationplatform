@@ -1,6 +1,6 @@
-import { EditorPanel } from "./EditorPanel.js";
+import { SaveablePanel } from "./SaveablePanel";
 
-class ProgramPanel extends EditorPanel {
+class ProgramPanel extends SaveablePanel {
 
     constructor(id = "program") {
         super(id);

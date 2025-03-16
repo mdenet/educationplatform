@@ -27,7 +27,7 @@ import { TestPanel } from './TestPanel.js';
 import { BlankPanel } from './BlankPanel .js';
 import { XtextEditorPanel } from './XtextEditorPanel.js';
 import { CompositePanel } from './CompositePanel.js';
-import { EditablePanel } from './EditablePanel.js';
+import { SaveablePanel } from './SaveablePanel.js';
 import { Button } from './Button.js';
 
 import { Preloader } from './Preloader.js';
@@ -706,6 +706,26 @@ class EducationPlatformApp {
         }
     }
 
+    /**
+     * Recursively gathers all panels that can be saved, flattening CompositePanels.
+     * @param {Panel[]} panels - The list of panels to check.
+     * @returns {SaveablePanel[]} A list of panels that can be saved.
+     */
+    getSaveablePanels(panels) {
+        let saveablePanels = [];
+
+        for (const panel of panels) {
+            if (panel instanceof CompositePanel) {
+                // Recursively flatten composite panels
+                saveablePanels.push(...this.getSaveablePanels(panel.childPanels));
+            }
+            else if (panel instanceof SaveablePanel) {
+                saveablePanels.push(panel);
+            }
+        }
+        return saveablePanels;
+    }
+
     getCommitMessage() {
         let commitMessage = prompt("Type your commit message:", DEFAULT_COMMIT_MESSAGE);
 
@@ -725,7 +745,7 @@ class EducationPlatformApp {
     savePanelContents(event) {
         event.preventDefault();
 
-        let panelsToSave = this.panels.filter(p => p instanceof EditablePanel && p.canSave());
+        let panelsToSave = this.getSaveablePanels(this.panels).filter(p => p.canSave());
         if (panelsToSave.length === 0) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
             return;
@@ -739,11 +759,8 @@ class EducationPlatformApp {
 
         let files = [];
         for (const panel of panelsToSave) {
-            files.push({
-                url: panel.getFileUrl(),
-                valueSha: panel.getValueSha(),
-                newFileContent: panel.getValue()
-            });
+            const saveData = panel.exportSaveData();
+            files.push(saveData);
         }
 
         this.fileHandler.storeFiles(files, commitMessage)
@@ -775,7 +792,6 @@ class EducationPlatformApp {
 
     async showBranches(event) {
         event.preventDefault();
-        this.testpanelsave();
 
         const activityURL = utility.getActivityURL();
         try {
@@ -966,7 +982,7 @@ class EducationPlatformApp {
      * Displays the differences in changes between the current panel contents and the remote file content
      */
     async showPanelDiffs() {
-        const saveablePanels = this.panels.filter(p => p.getFileUrl());
+        const saveablePanels = this.getSaveablePanels(this.panels);
 
         (async () => {
             try {
