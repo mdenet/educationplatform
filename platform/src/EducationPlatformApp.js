@@ -782,6 +782,7 @@ class EducationPlatformApp {
 
                     // Mark the editor clean if the save completed
                     panel.getEditor().session.getUndoManager().markClean();
+                    panel.setLastSavedContent(panel.getValue());
 
                     console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
                 }
