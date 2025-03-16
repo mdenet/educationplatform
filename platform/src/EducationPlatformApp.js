@@ -1026,14 +1026,6 @@ class EducationPlatformApp {
     }
 
     /**
-     * Check if the panel contents have been modified
-     * @return {boolean} true if changes have been made, false otherwise.
-     */
-    changesHaveBeenMade() {
-        return this.panels.some(p => p.canSave());
-    }
-
-    /**
      * Poll for editor to become available. 
      * @param {String} statusUrl - the url for checking the status of the editor panel.
      * @param {String} editorInstanceUrl - the editor instance's url. 
