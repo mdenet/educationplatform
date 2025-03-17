@@ -351,6 +351,36 @@ body {
     margin: 0 5px;
 }
 
+.diff-content {
+    padding: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #fefefe;
+    font-family: monospace;
+    white-space: pre-wrap; /* allows line wrapping */
+}
+
+.diff-line {
+    display: block;
+    width: max-content;       /* Expand to the content's width */
+    min-width: 100%;
+    box-sizing: border-box;   /* Include padding/borders in width calculation */
+    padding: 0.25rem;
+    margin-bottom: 0.25rem;
+    border-radius: 3px;
+}
+
+.diff-added {
+    background-color: #e6ffed; 
+    color: #22863a;           
+}
+
+.diff-removed {
+    background-color: #ffeef0; 
+    color: #cb2431;           
+}
+
+
 
 
 

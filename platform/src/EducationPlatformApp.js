@@ -754,15 +754,35 @@ class EducationPlatformApp {
         return this.saveablePanels.filter(panel => panel.canSave());
     }
 
-    showSaveConfirmation(event) {
+    /**
+     * Display a modal which displays a list of panels with unsaved changes.
+     * Includes a save button where the user can confirm the save.
+     */
+    async showSaveConfirmation(event) {
         event.preventDefault();
 
-        const panelsToSave = this.getPanelsWithChanges();
-
-        this.toggleSwitchBranchVisibility(false);
-        this.toggleCreateBranchVisibility(false);
-        this.togglePanelChangeVisibility(false);
+        this.closeAllModalsExcept("save-confirmation-container");
         this.toggleSaveConfirmationVisibility(true);
+
+        const panelsToSave = this.getPanelsWithChanges();
+        const panelDiffs = await this.getPanelDiffs();
+
+        const panelList = document.getElementById("changed-panels-list");
+        panelList.innerHTML = ""; // Clear previous list items
+
+        // Populate the list of panels with unsaved changes
+        panelsToSave.forEach(panel => {
+            const panelID = panel.getId();
+
+            const li = document.createElement("li");
+            li.textContent = panel.getId();
+
+            li.addEventListener("click", () => {
+                this.displayPanelChanges(panelID, panelDiffs.get(panelID));
+            })
+
+            panelList.appendChild(li);
+        })
 
         const closeButton = document.getElementById("save-confirmation-close-button");
         closeButton.onclick = () => {
@@ -779,27 +799,16 @@ class EducationPlatformApp {
             this.savePanelContents(panelsToSave);
             this.toggleSaveConfirmationVisibility(false);
         };
-
-        const panelList = document.getElementById("changed-panels-list");
-        panelList.innerHTML = ""; // Clear previous list items
-
-        // Populate the list of panels with unsaved changes
-        panelsToSave.forEach(panel => {
-            const li = document.createElement("li");
-            li.textContent = panel.getId();
-
-            li.addEventListener("click", () => {
-                this.displayPanelChanges(panel.getId());
-            })
-
-            panelList.appendChild(li);
-        })
     }
 
-    displayPanelChanges(panelId) {
-        console.log("Displaying changes for '" + panelId + "':");
+    /**
+     * Displays a modal which shows the changes made to a given panel since the last save.
+     * @param {String} panelId - The ID of the panel to display changes for.
+     * @param {Array} panelDiff - The diffs of the panel contents.
+     */
+    displayPanelChanges(panelId, panelDiff) {
 
-        this.toggleSaveConfirmationVisibility(false);
+        this.closeAllModalsExcept("panel-changes-container");
         this.togglePanelChangeVisibility(true);
 
         const closeButton = document.getElementById("panel-changes-close-button");
@@ -815,6 +824,24 @@ class EducationPlatformApp {
 
         const title = document.getElementById("panel-title");
         title.textContent = panelId;
+
+        const diffContent = document.getElementById("diff-content");
+        diffContent.innerHTML = "";
+
+        // Render the panel changes
+        panelDiff.forEach(change => {
+            const diffLine = document.createElement("div");
+            diffLine.classList.add("diff-line");
+            if (change.added) {
+                diffLine.classList.add("diff-added");
+                diffLine.textContent = "+ " + change.added;
+            } 
+            else if (change.removed) {
+                diffLine.classList.add("diff-removed");
+                diffLine.textContent = "- " + change.removed;
+            }
+            diffContent.appendChild(diffLine);
+        })
     }
 
     /**
@@ -887,6 +914,53 @@ class EducationPlatformApp {
             });
     }
 
+    /**
+     * Computes the differences between the remote file content and the panel contents
+     * @returns {Map} A map of panel IDs to their respective changes
+     */
+    async getPanelDiffs() {
+        const panelDiffsMap = new Map();
+
+        try {
+            const panelsToSave = this.getPanelsWithChanges();
+
+            for (const panel of panelsToSave) {
+
+                // Fetch the file from the remote repository and await the result
+                const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
+                if (!remoteFile || !remoteFile.content) {
+                    throw new Error(`No remote file content returned for ${panel.getId()}`);
+                }
+
+                const remoteContent = remoteFile.content;
+                const panelContent = panel.getValue();
+    
+                // Generate diff using jsdiff
+                const diff = Diff.diffLines(remoteContent, panelContent);
+    
+                // Process diff parts to only include added or removed segments
+                const changes = diff
+                    .map(part => {
+                        let change = {};
+                        if (part.added) {
+                            change.added = part.value;
+                        } else if (part.removed) {
+                            change.removed = part.value;
+                        }
+                        return change;
+                    })
+                    .filter(change => change.added || change.removed); // Only include meaningful changes
+                
+                // Store the changes in the Map with the panel's ID as key
+                panelDiffsMap.set(panel.getId(), changes);
+            }
+            return panelDiffsMap;
+        } 
+        catch (error) {
+            console.error(error);
+            this.errorHandler.notify("An error occurred while computing the panel changes.", error);
+        }
+    }
 
     async showBranches(event) {
         event.preventDefault();
@@ -897,8 +971,7 @@ class EducationPlatformApp {
             const branches = await this.fileHandler.fetchBranches(activityURL);
             const currentBranch = utility.getCurrentBranch();
 
-            this.toggleCreateBranchVisibility(false);
-            this.toggleSaveConfirmationVisibility(false);
+            this.closeAllModalsExcept("switch-branch-container");
             this.toggleSwitchBranchVisibility(true);
 
             const closeButton = document.getElementById("switch-branch-close-button");
@@ -973,8 +1046,8 @@ class EducationPlatformApp {
      * @param {String} activityURL - the URL of the activity
      */
     showCreateBranchPrompt(listOfBranches, currentBranch, activityURL) {
-        this.toggleSwitchBranchVisibility(false);
-        this.toggleSaveConfirmationVisibility(false);
+
+        this.closeAllModalsExcept("create-branch-container");
         this.toggleCreateBranchVisibility(true);
 
         const closeButton = document.getElementById("create-branch-close-button");
@@ -1057,6 +1130,21 @@ class EducationPlatformApp {
         return true;
     }
 
+    /**
+     * Hide all modals except the one with the given ID
+     * @param {String} exceptionModalId - The HTML id of the modal to keep open
+     */
+    closeAllModalsExcept(exceptionModalId) {
+        // Get all elements with the common modal container class
+        const containers = document.querySelectorAll('.container-modal');
+        containers.forEach(container => {
+            // If this container is not the exception, hide it
+            if (container.id !== exceptionModalId) {
+                container.style.display = "none";
+            }
+        });
+    }
+
     toggleSwitchBranchVisibility(visibility) {
         const container = document.getElementById("switch-branch-container");
         visibility ? container.style.display = "block" : container.style.display = "none";
@@ -1085,59 +1173,6 @@ class EducationPlatformApp {
             event.preventDefault();
             this.switchBranch(currentBranch, branchToSwitchTo);
         };
-    }
-
-    /**
-     * Computes the differences between the remote file content and the panel contents
-     * @returns {Map} A map of panel IDs to their respective changes
-     */
-    async getPanelDiffs() {
-
-        const panelDiffsMap = new Map();
-
-        (async () => {
-            try {
-                const panelsToSave = this.getPanelsWithChanges();
-
-                for (const panel of panelsToSave) {
-                    // Fetch the file from the remote repository
-                    const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
-
-                    if (!remoteFile || !remoteFile.content) {
-                        throw new Error(`No remote file content returned for ${panel.getId()}`);
-                    }
-
-                    const remoteContent = remoteFile.content;
-                    const panelContent = panel.getValue();
-
-                    // Generate diff using jsdiff
-                    const diff = Diff.diffLines(remoteContent, panelContent);
-
-                    // Store changes in an array 
-                    const changes = diff.map(part => {
-                        // Format 'part' into 'change' to only include added or removed parts
-                        let change = {};
-
-                        if (part.added) {
-                            change.added = part.value;
-                        }
-                        else if (part.removed) {
-                            change.removed = part.value
-                        }
-
-                        return change;
-                    }).filter(change => change.added || change.removed); // Only keep meaningful changes
-
-                    // Store the changes in the map with the panel ID as the key
-                    panelDiffsMap.set(panel.getId(), changes);
-
-                    return panelDiffsMap;
-                }
-            } 
-            catch (error) {
-                console.error(error);
-            }
-        })();
     }
 
     /**
