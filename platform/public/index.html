@@ -46,7 +46,7 @@
                 <li class="item-separator"></li>
                 <li class="item-separator" id="examplesEnd"></li>
                 <li>
-                    <a href="#" onclick="savePanelContents(event)" id="save" class="hidden">
+                    <a href="#" onclick="showSaveConfirmation(event)" id="save" class="hidden">
                         <span class="icon"><span class="mif-example-16 mif-save"></span></span>
                         <span class="caption">Save</span>
                     </a>
@@ -65,10 +65,10 @@
     </div>
 
 
-    <div id="switch-branch-container" class="branch-container" style="display:none;">
+    <div id="switch-branch-container" class="container-modal" style="display:none;">
         
-        <div class="branch-header">
-            <h6 class="branch-title">Switch branch</h6>
+        <div class="container-header">
+            <h6 class="container-title">Switch branch</h6>
             <button class="close-button" id="switch-branch-close-button">
                 <span class="default-icon-cross"></span>
             </button>
@@ -79,8 +79,8 @@
             <button class="button primary round-button" id="new-branch-button">New Branch</button>
         </div>
 
-        <div class="branch-list-container">
-            <ul id="branch-list" class="branch-list">
+        <div class="list-container">
+            <ul id="branch-list" class="ul-list">
                 <!-- Branch items will be added dynamically -->
             </ul>
         </div>
@@ -88,10 +88,10 @@
     </div>
 
 
-    <div id="create-branch-container" class="branch-container" style="display:none;">
+    <div id="create-branch-container" class="container-modal" style="display:none;">
 
-        <div class="branch-header">
-            <h6 class="branch-title">Create a branch</h6>
+        <div class="container-header">
+            <h6 class="container-title">Create a branch</h6>
             <button class="close-button" id="create-branch-close-button">
                 <span class="default-icon-cross"></span>
             </button>
@@ -122,10 +122,35 @@
     </div>
 
 
-    <div id="save-popup-container" class="save-popup-container" style="display:none;">
-        
+    <div id="save-confirmation-container" class="container-modal" style="display:none;">
+
+        <div class="container-header">
+            <h6 class="container-title">Save Changes</h6>
+            <button class="close-button" id="save-confirmation-close-button">
+                <span class="default-icon-cross"></span>
+            </button>
+        </div>
+
+        <div class="save-body">
+            <p>Please review the panels with unsaved changes:</p>
+            <div class="list-container">
+                <ul id="changed-panels-list" class="ul-list">
+                    <!-- Dynamically generated list of changed panel IDs -->
+                    <!-- Example:
+                         <li class="panel-item" data-panel-id="panel1">Panel 1</li>
+                    -->
+                </ul>
+            </div>
+        </div>
+
+        <div class="save-footer">
+            <button id="confirm-save-btn" class="button primary round-button">Save</button>
+            <button id="cancel-save-btn" class="button round-button">Cancel</button>
+        </div>
 
     </div>
+    
+    
 
 
     <script type="module" src="js/bundle.js"></script>

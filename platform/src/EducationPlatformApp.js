@@ -746,6 +746,33 @@ class EducationPlatformApp {
         return saveablePanels;
     }
 
+    /**
+     * Collects all panels that have unsaved changes.
+     * @returns {SaveablePanel[]} A list of panels that have unsaved changes.
+     */
+    getPanelsWithChanges() {
+        return this.saveablePanels.filter(panel => panel.canSave());
+    }
+
+    showSaveConfirmation(event) {
+        event.preventDefault();
+
+        const panelsToSave = this.getPanelsWithChanges();
+        if (panelsToSave.length === 0) {
+            PlaygroundUtility.warningNotification("There are no panels to save.");
+            return;
+        }
+
+        this.toggleSwitchBranchVisibility(false);
+        this.toggleCreateBranchVisibility(false);
+        this.toggleSaveConfirmationVisibility(true);
+
+        const closeButton = document.getElementById("save-confirmation-close-button");
+        closeButton.onclick = () => {
+            this.toggleSaveConfirmationVisibility(false);
+        };
+    }
+
     getCommitMessage() {
         let commitMessage = prompt("Type your commit message:", DEFAULT_COMMIT_MESSAGE);
 
@@ -765,7 +792,7 @@ class EducationPlatformApp {
     savePanelContents(event) {
         event.preventDefault();
 
-        const panelsToSave = this.saveablePanels.filter(p => p.canSave());
+        const panelsToSave = this.getPanelsWithChanges();
         if (panelsToSave.length === 0) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
             return;
@@ -813,7 +840,6 @@ class EducationPlatformApp {
 
     async showBranches(event) {
         event.preventDefault();
-        this.showPanelDiffs();
 
         const activityURL = utility.getActivityURL();
         try {
@@ -821,12 +847,13 @@ class EducationPlatformApp {
             const branches = await this.fileHandler.fetchBranches(activityURL);
             const currentBranch = utility.getCurrentBranch();
 
-            this.toggleCreateBranchContainerVisibility(false);
-            this.toggleSwitchBranchContainerVisibility(true);
+            this.toggleCreateBranchVisibility(false);
+            this.toggleSaveConfirmationVisibility(false);
+            this.toggleSwitchBranchVisibility(true);
 
             const closeButton = document.getElementById("switch-branch-close-button");
             closeButton.onclick = () => {
-                this.toggleSwitchBranchContainerVisibility(false);
+                this.toggleSwitchBranchVisibility(false);
             };
 
             const createBranchButton = document.getElementById("new-branch-button");
@@ -896,12 +923,13 @@ class EducationPlatformApp {
      * @param {String} activityURL - the URL of the activity
      */
     showCreateBranchPrompt(listOfBranches, currentBranch, activityURL) {
-        this.toggleSwitchBranchContainerVisibility(false);
-        this.toggleCreateBranchContainerVisibility(true);
+        this.toggleSwitchBranchVisibility(false);
+        this.toggleSaveConfirmationVisibility(false);
+        this.toggleCreateBranchVisibility(true);
 
         const closeButton = document.getElementById("create-branch-close-button");
         closeButton.onclick = () => {
-            this.toggleCreateBranchContainerVisibility(false);
+            this.toggleCreateBranchVisibility(false);
         };
 
         document.getElementById("create-branch-based-on-text").textContent = currentBranch;
@@ -979,13 +1007,18 @@ class EducationPlatformApp {
         return true;
     }
 
-    toggleSwitchBranchContainerVisibility(visibility) {
+    toggleSwitchBranchVisibility(visibility) {
         const container = document.getElementById("switch-branch-container");
         visibility ? container.style.display = "block" : container.style.display = "none";
     }
 
-    toggleCreateBranchContainerVisibility(visibility) {
+    toggleCreateBranchVisibility(visibility) {
         const container = document.getElementById("create-branch-container");
+        visibility ? container.style.display = "block" : container.style.display = "none";
+    }
+
+    toggleSaveConfirmationVisibility(visibility) {
+        const container = document.getElementById("save-confirmation-container");
         visibility ? container.style.display = "block" : container.style.display = "none";
     }
 
@@ -1000,16 +1033,16 @@ class EducationPlatformApp {
     }
 
     /**
-     * Compare the remote file content and the panel contents to determine if the panels have been modified
-     * Computes the differences between the remote file content and the panel content
+     * Computes the differences between the remote file content and the panel contents
+     * @returns {Map} A map of panel IDs to their respective changes
      */
-    async showPanelDiffs() {
+    async getPanelDiffs() {
 
         const panelDiffsMap = new Map();
 
         (async () => {
             try {
-                const panelsToSave = this.saveablePanels.filter(p => p.canSave());
+                const panelsToSave = this.getPanelsWithChanges();
 
                 for (const panel of panelsToSave) {
                     // Fetch the file from the remote repository
@@ -1042,8 +1075,9 @@ class EducationPlatformApp {
 
                     // Store the changes in the map with the panel ID as the key
                     panelDiffsMap.set(panel.getId(), changes);
+
+                    return panelDiffsMap;
                 }
-                console.log("Panel diffs:", panelDiffsMap);
             } 
             catch (error) {
                 console.error(error);
