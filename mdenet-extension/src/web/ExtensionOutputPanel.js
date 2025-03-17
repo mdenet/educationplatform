@@ -67,49 +67,53 @@ class ExtensionOutputPanel extends ExtensionPanel{
                 <meta charset="UTF-8">
                 <title>${this.name}</title>
                 <style>
-                    /* Make the body fill the entire viewport */
                     body { 
                         display: flex; 
                         flex-direction: column; 
-                        justify-content: center; 
-                        align-items: center; 
                         height: 100vh; 
                         margin: 0;
-                        text-align: center;
+                        overflow: hidden;
                     }
     
-                    /* Title container (20% height) */
                     #title-container {
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
-                        height: 20%;
                         width: 80%;
-                        padding: 0 20px;
+                        padding: 20px;
+                        flex-shrink: 0;
                     }
     
-                    /* Title */
                     #title {
                         flex-grow: 1;
                         text-align: left;
+                        margin: 0;
                     }
     
-                    /* Buttons container */
                     #buttons-container {
                         display: flex;
                         gap: 10px;
                     }
     
-                    /* SVG container (80% height) */
                     #diagram-container {
+                        flex-grow: 1;
                         display: flex;
                         justify-content: center;
                         align-items: center;
-                        height: 80%;
                         width: 100%;
+                        overflow: auto;
+                        padding: 20px;
+                        box-sizing: border-box;
+                        position: relative;
+                        cursor: grab;
                     }
     
-                    /* Buttons Styling */
+                    #svg-wrapper {
+                        transition: transform 0.1s ease;
+                        position: absolute;
+                        transform-origin: center center;
+                    }
+    
                     button {
                         padding: 8px 15px;
                         font-size: 14px;
@@ -126,12 +130,43 @@ class ExtensionOutputPanel extends ExtensionPanel{
                 </style>
                 <script>
                     const vscode = acquireVsCodeApi();
+                    let scale = 1;
+                    let translateX = 0;
+                    let translateY = 0;
+                    let startX, startY;
+                    const scaleStep = 0.1;
+                    const minScale = 0.2;
+                    const maxScale = 3;
+
                     function handleButtonClick(button) {
                         vscode.postMessage({
                             command: 'button.run',
                             button: button
                         });
                     }
+
+                    function updateTransform() {
+                        const svgWrapper = document.getElementById('svg-wrapper');
+                        svgWrapper.style.transform = 
+                            \`scale(\${scale}) translate(\${translateX}px, \${translateY}px)\`;
+                    }
+
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const container = document.getElementById('diagram-container');
+                        const svgWrapper = document.getElementById('svg-wrapper');
+
+                        // Mouse wheel zoom
+                        container.addEventListener('wheel', (e) => {
+                            e.preventDefault();
+                            const delta = e.deltaY > 0 ? -scaleStep : scaleStep;
+                            const newScale = Math.min(maxScale, Math.max(minScale, scale + delta));
+                            if (newScale !== scale) {
+                                scale = newScale;
+                                updateTransform();
+                            }
+                        });
+
+                    });
                 </script>
             </head>
             <body>
@@ -142,7 +177,9 @@ class ExtensionOutputPanel extends ExtensionPanel{
                     </div>
                 </div>
                 <div id="diagram-container">
-                    ${svg}
+                    <div id="svg-wrapper">
+                        ${svg}
+                    </div>
                 </div>
             </body>
         </html>`;
