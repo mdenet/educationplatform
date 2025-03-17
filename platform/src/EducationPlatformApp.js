@@ -761,6 +761,7 @@ class EducationPlatformApp {
 
         this.toggleSwitchBranchVisibility(false);
         this.toggleCreateBranchVisibility(false);
+        this.togglePanelChangeVisibility(false);
         this.toggleSaveConfirmationVisibility(true);
 
         const closeButton = document.getElementById("save-confirmation-close-button");
@@ -788,12 +789,32 @@ class EducationPlatformApp {
             li.textContent = panel.getId();
 
             li.addEventListener("click", () => {
-                console.log("Displaying changes for '" + panel.getId() + "':");
+                this.displayPanelChanges(panel.getId());
             })
 
             panelList.appendChild(li);
         })
+    }
 
+    displayPanelChanges(panelId) {
+        console.log("Displaying changes for '" + panelId + "':");
+
+        this.toggleSaveConfirmationVisibility(false);
+        this.togglePanelChangeVisibility(true);
+
+        const closeButton = document.getElementById("panel-changes-close-button");
+        closeButton.onclick = () => {
+            this.togglePanelChangeVisibility(false);
+        };
+
+        const backButton = document.getElementById("panel-changes-back-button");
+        backButton.onclick = () => {
+            this.togglePanelChangeVisibility(false);
+            this.toggleSaveConfirmationVisibility(true);
+        };
+
+        const title = document.getElementById("panel-title");
+        title.textContent = panelId;
     }
 
     /**
@@ -1048,6 +1069,11 @@ class EducationPlatformApp {
 
     toggleSaveConfirmationVisibility(visibility) {
         const container = document.getElementById("save-confirmation-container");
+        visibility ? container.style.display = "block" : container.style.display = "none";
+    }
+
+    togglePanelChangeVisibility(visibility) {
+        const container = document.getElementById("panel-changes-container");
         visibility ? container.style.display = "block" : container.style.display = "none";
     }
 

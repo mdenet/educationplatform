@@ -251,7 +251,7 @@ body {
     font-weight: 600;
 }
 
-.close-button {
+.close-button, .back-button {
     background: none;
     border: none;
     cursor: pointer;
