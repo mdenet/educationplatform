@@ -778,6 +778,22 @@ class EducationPlatformApp {
             this.savePanelContents(panelsToSave);
             this.toggleSaveConfirmationVisibility(false);
         };
+
+        const panelList = document.getElementById("changed-panels-list");
+        panelList.innerHTML = ""; // Clear previous list items
+
+        // Populate the list of panels with unsaved changes
+        panelsToSave.forEach(panel => {
+            const li = document.createElement("li");
+            li.textContent = panel.getId();
+
+            li.addEventListener("click", () => {
+                console.log("Displaying changes for '" + panel.getId() + "':");
+            })
+
+            panelList.appendChild(li);
+        })
+
     }
 
     /**
