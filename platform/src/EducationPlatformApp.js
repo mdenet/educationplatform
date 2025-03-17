@@ -758,10 +758,6 @@ class EducationPlatformApp {
         event.preventDefault();
 
         const panelsToSave = this.getPanelsWithChanges();
-        if (panelsToSave.length === 0) {
-            PlaygroundUtility.warningNotification("There are no panels to save.");
-            return;
-        }
 
         this.toggleSwitchBranchVisibility(false);
         this.toggleCreateBranchVisibility(false);
@@ -776,8 +772,18 @@ class EducationPlatformApp {
         cancelButton.onclick = () => {
             this.toggleSaveConfirmationVisibility(false);
         };
+
+        const saveButton = document.getElementById("confirm-save-btn");
+        saveButton.onclick = () => {
+            this.savePanelContents(panelsToSave);
+            this.toggleSaveConfirmationVisibility(false);
+        };
     }
 
+    /**
+     * Display a prompt and return the commit message entered by the user.
+     * @returns {String} The commit message entered by the user, or the default message if the input is empty.
+     */
     getCommitMessage() {
         let commitMessage = prompt("Type your commit message:", DEFAULT_COMMIT_MESSAGE);
 
@@ -794,10 +800,12 @@ class EducationPlatformApp {
         return commitMessage;
     }
 
-    savePanelContents(event) {
-        event.preventDefault();
+    /**
+     * Saves the contents of the panels that have unsaved changes. 
+     * @param {SaveablePanel[]} panelsToSave - The list of panels to save.
+     */
+    savePanelContents(panelsToSave) {
 
-        const panelsToSave = this.getPanelsWithChanges();
         if (panelsToSave.length === 0) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
             return;
