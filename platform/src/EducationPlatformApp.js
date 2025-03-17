@@ -771,6 +771,11 @@ class EducationPlatformApp {
         closeButton.onclick = () => {
             this.toggleSaveConfirmationVisibility(false);
         };
+
+        const cancelButton = document.getElementById("cancel-save-btn");
+        cancelButton.onclick = () => {
+            this.toggleSaveConfirmationVisibility(false);
+        };
     }
 
     getCommitMessage() {

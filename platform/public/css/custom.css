@@ -336,6 +336,7 @@ body {
     margin: 0 0 1rem;
     font-size: 0.95rem;
     color: #333;
+	text-align: center;
 }
 
 .save-footer {
