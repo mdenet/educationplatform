@@ -1132,7 +1132,8 @@ class EducationPlatformApp {
 
         const submitButton = document.getElementById("create-branch-submit-button");
         submitButton.onclick = () => {
-            const newBranch = newBranchInput.value.trim();
+            // Replace spaces with dashes
+            const newBranch = newBranchInput.value.trim().replace(/\s+/g, '-');
 
             // Check if the branch already exists
             if (listOfBranches.includes(newBranch)) {
