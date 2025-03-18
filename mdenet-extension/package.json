@@ -12,6 +12,38 @@
   "activationEvents": [],
   "browser": "./dist/web/extension.js",
   "contributes": {
+    "languages": [
+      {
+        "id":"xtext",
+        "aliases": ["Xtext", "xtext"],
+        "extensions": [".xtext"],
+        "configuration": "./language-config/xtext-language-config.json"
+      },
+      {
+        "id":"xtend",
+        "aliases": ["Xtend", "xtend"],
+        "extensions": [".xtend"],
+        "configuration": "./language-config/xtend-language-config.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "xtend",
+        "path": "./snippets/xtend.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "xtext",
+        "scopeName": "source.xtext",
+        "path": "./syntaxes/xtext.tmLanguage.json"
+      },
+      {
+        "language": "xtend",
+        "scopeName": "source.xtend",
+        "path": "./syntaxes/xtend.tmLanguage.json"
+      }
+    ],
     "menus": {
       "editor/title": [
         {

@@ -99,9 +99,14 @@ export function activate(context) {
 					vscode.window.showErrorMessage(`Error switching task: ${error.message}`);
 				}
 			}
-			
-
-		})
+		}),
+		vscode.commands.registerCommand('extension.insertGuillemets', () => {
+			console.log('Inserting guillemets');
+			const editor = vscode.window.activeTextEditor;
+			if (editor) {
+				editor.insertSnippet(new vscode.SnippetString('«$0»'));
+			}
+		}),
 	);
 }
 

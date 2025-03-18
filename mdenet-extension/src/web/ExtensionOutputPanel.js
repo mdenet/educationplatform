@@ -3,14 +3,22 @@ import * as vscode from 'vscode';
 
 class ExtensionOutputPanel extends ExtensionPanel{
 
-    constructor(id,name){
+    constructor(id, name, language){
         super(id);
-        this.name = name
+        this.name = name;
+        this.language = language;
+        this.panel = null;
+        this.buttons = [];
     }
 
     initialize(){
-        this.panel = null;
-        this.buttons = [];
+        if (this.language == "multi"){
+            // this.createFileSelector();
+        }
+    }
+
+    setGeneratedFiles(generatedFiles){
+        this.generatedFiles = generatedFiles; // list of file objects that have path and content
     }
 
     displayPanel(content = '') {
@@ -55,7 +63,7 @@ class ExtensionOutputPanel extends ExtensionPanel{
        
     }
 
-    getWebviewContent(svg = "") {
+    getWebviewContent(svg = ""){
         // Generate buttons from this.buttons
         const buttonsHtml = this.buttons.map(button => 
             `<button onclick="handleButtonClick('${button.id}')">${button.hint}</button>`

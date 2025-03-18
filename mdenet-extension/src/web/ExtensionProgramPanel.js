@@ -23,11 +23,6 @@ class ExtensionProgramPanel extends ExtensionPanel{
                 }
                 const content = await response.text();
                 this.content = content;
-
-                doc = await vscode.workspace.openTextDocument({
-                    content: content,
-                    language: 'plaintext'
-                });
             } catch (error) {
                 console.error('Error fetching URL content:', error);
                 // Create an empty document with error message
@@ -41,7 +36,7 @@ class ExtensionProgramPanel extends ExtensionPanel{
     }
 
     async displayPanel(targetColumn=vscode.ViewColumn.One){
-        if(this.content && this.doc.isClosed){
+        if(this.content && (!this.doc || this.doc.isClosed)){
             this.doc = await vscode.workspace.openTextDocument({
                 content: this.content,
             });
