@@ -21,7 +21,6 @@ class InstructionPanel extends Panel {
         console.log("InstructionPanel.js: " + this.instructionUrl);
         try {
             // Fetches file depending on if public or private
-            // !Assuming it to be public for now
             const isPrivate = urlParamPrivateRepo();
             const fileResult = this.fileHandler.fetchFile(this.instructionUrl, isPrivate);
             if (fileResult) {
@@ -122,14 +121,6 @@ class InstructionPanel extends Panel {
             li.insertBefore(checkbox, li.firstChild);
         });
     }
-
-    // addHintsToSteps(){
-    //     const listItems = this.element.querySelectorAll("li");
-    //     listItems.forEach((li, index) => {
-            
-    //     });
-    // }
-
     createProgressBar(){
         // const existingProgressBar = this.element.querySelector(`#${this.id}-progress-bar`);
         // if (existingProgressBar) return;
@@ -252,10 +243,8 @@ class InstructionPanel extends Panel {
                     // When a colon is present, parse the key and value
                     let [key, value] = part.split(':').map(s => s.trim());
                     currentKey = key;
-                    // !remember to remove if no hint implemented
-                    if(key === 'hint'){
-                        metaObj.hint = value;
-                    }else if(key === 'highlighted'){
+
+                    if(key === 'highlighted'){
                         metaObj[key] = [`#${value}Panel`];
                     }else{
                         metaObj[key] = `#${value}Panel`;
