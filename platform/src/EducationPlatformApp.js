@@ -13,6 +13,8 @@ import 'ace-builds/src-min-noconflict/ext-language_tools';
 
 import 'metro4/build/metro';
 
+import * as Diff from 'diff';
+
 import { FileHandler } from './FileHandler.js';
 import { ActivityManager } from './ActivityManager.js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
@@ -47,6 +49,7 @@ class EducationPlatformApp {
     activity;
     preloader;
     panels;
+    saveablePanels;
 
     errorHandler;
     fileHandler;
@@ -59,6 +62,7 @@ class EducationPlatformApp {
         this.errorHandler = new ErrorHandler();
         this.preloader = new Preloader();
         this.panels = [];
+        this.saveablePanels = [];
     }
 
     initialize( urlParameters, tokenHandlerUrl ){
@@ -172,12 +176,29 @@ class EducationPlatformApp {
         window.history.replaceState({}, document.title, "?" + queryString);
     }
 
-    // Helper method to set up the state after the user has been authenticated
+    /**
+     * Set up the environment for an authenticated user
+     * @param {URLSearchParams} urlParameters - The URL parameters.
+     */
     setupAuthenticatedState(urlParameters) {
         document.getElementById('save')?.classList.remove('hidden');
         document.getElementById('branch')?.classList.remove('hidden');
         setAuthenticated(true);
         this.initializeActivity(urlParameters);
+
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        // Warn user if there are unsaved changes before closing the tab
+        window.addEventListener("beforeunload", (event) => {
+            if (this.changesHaveBeenMade()) {
+                event.preventDefault();
+
+                // Browsers usually ignore the message
+                // return "You have unsaved changes. Are you sure you want to leave?";
+            }
+        });
     }
 
     initializeActivity(urlParameters){
@@ -323,11 +344,10 @@ class EducationPlatformApp {
             if (newPanel != null){
                 this.panels.push(newPanel);
             }
-        }    
-
+        }
+        this.saveablePanels = this.getSaveablePanels(this.panels);
 
         new Layout().createFrom2dArray("navview-content", this.panels, this.activity.layout.area);
-
 
         PlaygroundUtility.showMenu();
         
@@ -726,6 +746,108 @@ class EducationPlatformApp {
         return saveablePanels;
     }
 
+    /**
+     * Collects all panels that have unsaved changes.
+     * @returns {SaveablePanel[]} A list of panels that have unsaved changes.
+     */
+    getPanelsWithChanges() {
+        return this.saveablePanels.filter(panel => panel.canSave());
+    }
+
+    /**
+     * Display a modal which displays a list of panels with unsaved changes.
+     * Includes a save button where the user can confirm the save.
+     */
+    async showSaveConfirmation(event) {
+        event.preventDefault();
+
+        this.closeAllModalsExcept("save-confirmation-container");
+        this.toggleSaveConfirmationVisibility(true);
+
+        const panelsToSave = this.getPanelsWithChanges();
+        const panelDiffs = await this.getPanelDiffs();
+
+        const panelList = document.getElementById("changed-panels-list");
+        panelList.innerHTML = ""; // Clear previous list items
+
+        // Populate the list of panels with unsaved changes
+        panelsToSave.forEach(panel => {
+            const panelID = panel.getId();
+
+            const li = document.createElement("li");
+            li.textContent = panel.getId();
+
+            li.addEventListener("click", () => {
+                this.displayPanelChanges(panelID, panelDiffs.get(panelID));
+            })
+
+            panelList.appendChild(li);
+        })
+
+        const closeButton = document.getElementById("save-confirmation-close-button");
+        closeButton.onclick = () => {
+            this.toggleSaveConfirmationVisibility(false);
+        };
+
+        const cancelButton = document.getElementById("cancel-save-btn");
+        cancelButton.onclick = () => {
+            this.toggleSaveConfirmationVisibility(false);
+        };
+
+        const saveButton = document.getElementById("confirm-save-btn");
+        saveButton.onclick = () => {
+            this.savePanelContents(panelsToSave);
+            this.toggleSaveConfirmationVisibility(false);
+        };
+    }
+
+    /**
+     * Displays a modal which shows the changes made to a given panel since the last save.
+     * @param {String} panelId - The ID of the panel to display changes for.
+     * @param {Array} panelDiff - The diffs of the panel contents.
+     */
+    displayPanelChanges(panelId, panelDiff) {
+
+        this.closeAllModalsExcept("panel-changes-container");
+        this.togglePanelChangeVisibility(true);
+
+        const closeButton = document.getElementById("panel-changes-close-button");
+        closeButton.onclick = () => {
+            this.togglePanelChangeVisibility(false);
+        };
+
+        const backButton = document.getElementById("panel-changes-back-button");
+        backButton.onclick = () => {
+            this.togglePanelChangeVisibility(false);
+            this.toggleSaveConfirmationVisibility(true);
+        };
+
+        const title = document.getElementById("panel-title");
+        title.textContent = panelId;
+
+        const diffContent = document.getElementById("diff-content");
+        diffContent.innerHTML = "";
+
+        // Render the panel changes
+        panelDiff.forEach(change => {
+            const diffLine = document.createElement("div");
+            diffLine.classList.add("diff-line");
+            if (change.added) {
+                diffLine.classList.add("diff-added");
+                diffLine.textContent = "+ " + change.added;
+            } 
+            else if (change.removed) {
+                diffLine.classList.add("diff-removed");
+                diffLine.textContent = "- " + change.removed;
+            }
+            diffContent.appendChild(diffLine);
+        })
+    }
+
+    /**
+     * Display a prompt and return the commit message entered by the user.
+     * @returns {String} The commit message entered by the user, or the default message if the input is empty.
+     */
     getCommitMessage() {
         let commitMessage = prompt("Type your commit message:", DEFAULT_COMMIT_MESSAGE);
 
@@ -742,10 +864,12 @@ class EducationPlatformApp {
         return commitMessage;
     }
 
-    savePanelContents(event) {
-        event.preventDefault();
+    /**
+     * Saves the contents of the panels that have unsaved changes. 
+     * @param {SaveablePanel[]} panelsToSave - The list of panels to save.
+     */
+    savePanelContents(panelsToSave) {
 
-        let panelsToSave = this.getSaveablePanels(this.panels).filter(p => p.canSave());
         if (panelsToSave.length === 0) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
             return;
@@ -779,6 +903,7 @@ class EducationPlatformApp {
 
                     // Mark the editor clean if the save completed
                     panel.getEditor().session.getUndoManager().markClean();
+                    panel.setLastSavedContent(panel.getValue());
 
                     console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
                 }
@@ -789,6 +914,53 @@ class EducationPlatformApp {
             });
     }
 
+    /**
+     * Computes the differences between the remote file content and the panel contents
+     * @returns {Map} A map of panel IDs to their respective changes
+     */
+    async getPanelDiffs() {
+        const panelDiffsMap = new Map();
+
+        try {
+            const panelsToSave = this.getPanelsWithChanges();
+
+            for (const panel of panelsToSave) {
+
+                // Fetch the file from the remote repository and await the result
+                const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
+                if (!remoteFile || !remoteFile.content) {
+                    throw new Error(`No remote file content returned for ${panel.getId()}`);
+                }
+
+                const remoteContent = remoteFile.content;
+                const panelContent = panel.getValue();
+    
+                // Generate diff using jsdiff
+                const diff = Diff.diffLines(remoteContent, panelContent);
+    
+                // Process diff parts to only include added or removed segments
+                const changes = diff
+                    .map(part => {
+                        let change = {};
+                        if (part.added) {
+                            change.added = part.value;
+                        } else if (part.removed) {
+                            change.removed = part.value;
+                        }
+                        return change;
+                    })
+                    .filter(change => change.added || change.removed); // Only include meaningful changes
+                
+                // Store the changes in the Map with the panel's ID as key
+                panelDiffsMap.set(panel.getId(), changes);
+            }
+            return panelDiffsMap;
+        } 
+        catch (error) {
+            console.error(error);
+            this.errorHandler.notify("An error occurred while computing the panel changes.", error);
+        }
+    }
 
     async showBranches(event) {
         event.preventDefault();
@@ -799,12 +971,12 @@ class EducationPlatformApp {
             const branches = await this.fileHandler.fetchBranches(activityURL);
             const currentBranch = utility.getCurrentBranch();
 
-            this.toggleCreateBranchContainerVisibility(false);
-            this.toggleSwitchBranchContainerVisibility(true);
+            this.closeAllModalsExcept("switch-branch-container");
+            this.toggleSwitchBranchVisibility(true);
 
             const closeButton = document.getElementById("switch-branch-close-button");
             closeButton.onclick = () => {
-                this.toggleSwitchBranchContainerVisibility(false);
+                this.toggleSwitchBranchVisibility(false);
             };
 
             const createBranchButton = document.getElementById("new-branch-button");
@@ -874,12 +1046,19 @@ class EducationPlatformApp {
      * @param {String} activityURL - the URL of the activity
      */
     showCreateBranchPrompt(listOfBranches, currentBranch, activityURL) {
-        this.toggleSwitchBranchContainerVisibility(false);
-        this.toggleCreateBranchContainerVisibility(true);
+
+        this.closeAllModalsExcept("create-branch-container");
+        this.toggleCreateBranchVisibility(true);
 
         const closeButton = document.getElementById("create-branch-close-button");
         closeButton.onclick = () => {
-            this.toggleCreateBranchContainerVisibility(false);
+            this.toggleCreateBranchVisibility(false);
+        };
+
+        const backButton = document.getElementById("create-branch-back-button");
+        backButton.onclick = () => {
+            this.toggleCreateBranchVisibility(false);
+            this.toggleSwitchBranchVisibility(true);
         };
 
         document.getElementById("create-branch-based-on-text").textContent = currentBranch;
@@ -957,13 +1136,38 @@ class EducationPlatformApp {
         return true;
     }
 
-    toggleSwitchBranchContainerVisibility(visibility) {
+    /**
+     * Hide all modals except the one with the given ID
+     * @param {String} exceptionModalId - The HTML id of the modal to keep open
+     */
+    closeAllModalsExcept(exceptionModalId) {
+        // Get all elements with the common modal container class
+        const containers = document.querySelectorAll('.container-modal');
+        containers.forEach(container => {
+            // If this container is not the exception, hide it
+            if (container.id !== exceptionModalId) {
+                container.style.display = "none";
+            }
+        });
+    }
+
+    toggleSwitchBranchVisibility(visibility) {
         const container = document.getElementById("switch-branch-container");
         visibility ? container.style.display = "block" : container.style.display = "none";
     }
 
-    toggleCreateBranchContainerVisibility(visibility) {
+    toggleCreateBranchVisibility(visibility) {
         const container = document.getElementById("create-branch-container");
+        visibility ? container.style.display = "block" : container.style.display = "none";
+    }
+
+    toggleSaveConfirmationVisibility(visibility) {
+        const container = document.getElementById("save-confirmation-container");
+        visibility ? container.style.display = "block" : container.style.display = "none";
+    }
+
+    togglePanelChangeVisibility(visibility) {
+        const container = document.getElementById("panel-changes-container");
         visibility ? container.style.display = "block" : container.style.display = "none";
     }
 
@@ -978,48 +1182,11 @@ class EducationPlatformApp {
     }
 
     /**
-     * Compare the remote file content and the panel contents to determine if the panels have been modified
-     * Displays the differences in changes between the current panel contents and the remote file content
+     * Check if there are any outstanding changes in the panels that have not been saved.
+     * @returns {boolean} true if changes have been made, false otherwise
      */
-    async showPanelDiffs() {
-        const saveablePanels = this.getSaveablePanels(this.panels);
-
-        (async () => {
-            try {
-                for (const panel of saveablePanels) {
-                    // Fetch the file from the remote repository
-                    const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
-
-                    if (!remoteFile || !remoteFile.content) {
-                        throw new Error(`No remote file content returned for ${panel.getId()}`);
-                    }
-
-                    const remoteContent = remoteFile.content;
-                    const panelContent = panel.getValue();
-
-                    // Compare the remote file content and the panel content
-                    if (panelContent === remoteContent) {
-                        continue;
-                    }
-
-                    // Generate diff using jsdiff
-                    const diff = Diff.diffLines(remoteContent, panelContent);
-
-                    console.log(`Differences for panel [${panel.getId()}]:`);
-                    diff.forEach((part) => {
-                        if (part.added) {
-                            console.log(`%c+ ${part.value}`, "color: green");  // Log additions in green
-                        } 
-                        else if (part.removed) {
-                            console.log(`%c- ${part.value}`, "color: red");   // Log deletions in red
-                        }
-                    });
-                }
-            } 
-            catch (error) {
-                console.error(error);
-            }
-        })();
+    changesHaveBeenMade() {
+        return this.saveablePanels.some(panel => panel.canSave());
     }
 
     /**

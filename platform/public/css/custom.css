@@ -220,7 +220,7 @@ body {
 	background-color: inherit;
 }
 
-.branch-container {
+.container-modal {
     position: absolute;
     top: 80px;
     left: 50%;
@@ -235,7 +235,7 @@ body {
     padding-bottom: 1rem;
 }
 
-.branch-header {
+.container-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -245,13 +245,13 @@ body {
     border-radius: 4px 4px 0 0;
 }
 
-.branch-title {
+.container-title {
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
 }
 
-.close-button {
+.close-button, .back-button {
     background: none;
     border: none;
     cursor: pointer;
@@ -272,7 +272,7 @@ body {
     border-radius: 4px;
 }
 
-.branch-list-container {
+.list-container {
     max-height: 300px;
     overflow-y: auto;
     margin: 0 1rem;
@@ -280,19 +280,19 @@ body {
     border-radius: 4px;
 }
 
-.branch-list {
+.ul-list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.branch-list li {
+.ul-list li {
     padding: 0.5rem 1rem;
     border-bottom: 1px solid #eee;
     cursor: pointer;
 }
 
-.branch-list li:hover {
+.ul-list li:hover {
     background-color: #fafafa;
 }
 
@@ -327,6 +327,60 @@ body {
     text-decoration: underline;
     color: #0056b3; /* Darker blue on hover */
 }
+
+.save-body {
+    padding: 1rem;
+}
+
+.save-body p {
+    margin: 0 0 1rem;
+    font-size: 0.95rem;
+    color: #333;
+	text-align: center;
+}
+
+.save-footer {
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid #ddd;
+    background-color: #f9f9f9;
+	margin-bottom: -1rem;
+}
+
+.save-footer button {
+    margin: 0 5px;
+}
+
+.diff-content {
+    padding: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #fefefe;
+    font-family: monospace;
+    white-space: pre-wrap; /* allows line wrapping */
+}
+
+.diff-line {
+    display: block;
+    width: max-content;       /* Expand to the content's width */
+    min-width: 100%;
+    box-sizing: border-box;   /* Include padding/borders in width calculation */
+    padding: 0.25rem;
+    margin-bottom: 0.25rem;
+    border-radius: 3px;
+}
+
+.diff-added {
+    background-color: #e6ffed; 
+    color: #22863a;           
+}
+
+.diff-removed {
+    background-color: #ffeef0; 
+    color: #cb2431;           
+}
+
+
 
 
 
