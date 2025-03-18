@@ -1055,6 +1055,12 @@ class EducationPlatformApp {
             this.toggleCreateBranchVisibility(false);
         };
 
+        const backButton = document.getElementById("create-branch-back-button");
+        backButton.onclick = () => {
+            this.toggleCreateBranchVisibility(false);
+            this.toggleSwitchBranchVisibility(true);
+        };
+
         document.getElementById("create-branch-based-on-text").textContent = currentBranch;
 
         // Clear the input
