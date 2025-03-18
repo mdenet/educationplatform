@@ -162,9 +162,11 @@ class GeneralEducationPlatformApp{
     runAction(source, sourceButton) {
 
         // Get the action
+        // console.log("Running Action: " + source + " " + sourceButton);
         var action = this.activityManager.getActionForCurrentActivity(source, sourceButton);
-       
+        console.log("Action: ", action);
         if (!action){
+            console.log("Cannot find action given panel '" + source + "' and button '" + sourceButton + "'");
             // let err = new EducationPlatformError(`Cannot find action given panel '${source}' and button '${sourceButton}'`);
             // this.errorHandler.notify("Failed to invoke action.", err);
 
@@ -179,6 +181,8 @@ class GeneralEducationPlatformApp{
                 //Buttons defined by tool
                 buttonConfig = action.source.ref.buttons.find (btn => btn.id == sourceButton);
             }  
+
+            console.log("Button config: ", buttonConfig);
 
             // Create map containing panel values
             let parameterMap = new Map();
@@ -202,6 +206,7 @@ class GeneralEducationPlatformApp{
 
                 parameterMap.set(paramName, param);
             }
+            console.log("Parameter map: ", parameterMap);
 
             // Add the platform language parameter
             let languageParam = {};

@@ -45,7 +45,12 @@ class ExtensionProgramPanel extends ExtensionPanel{
     }
 
     getValue(){
-        return this.doc.getText();
+        if (this.doc){
+            return this.doc.getText();
+        }
+        else{
+            return this.content;
+        }
     }
 
 }

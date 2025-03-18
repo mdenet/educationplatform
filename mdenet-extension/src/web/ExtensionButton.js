@@ -7,7 +7,7 @@ class ExtensionButton{
     id;
     icon;
     hint;
-    action;
+    actionData;
     type;
 
     /**
@@ -23,21 +23,14 @@ class ExtensionButton{
         // Set button's onclick action
         if (buttonConfigObject["url"] != undefined) {
             this.type = buttonTypes.BUTTON_HELP;
-            this.action = "vscode.env.openExternal('" + buttonConfigObject.url + "');";
+            this.actionData = { type: 'openExternal', url: buttonConfigObject.url };
                            
         } else if (buttonConfigObject["actionfunction"] != undefined)  {        
             this.type = buttonTypes.BUTTON_ACTION;
-            this.action = "app.runAction( '" + parentPanel + "', '" + buttonConfigObject.id +"' )";
+            this.actionData = { type: 'runAppAction', parentPanel, buttonId: buttonConfigObject.id };
     
-        } else if (buttonConfigObject["internal"] != undefined) {
-
-            if (buttonConfigObject.targetPanel && buttonConfigObject.internal === "toggle") {
-                this.action = "togglePanelById( '" + buttonConfigObject.targetPanel + "Panel' )";  
-            } else {
-                this.action = buttonConfigObject.internal;
-            }
-
-        } else {
+        } 
+        else {
             console.log( "Button '" + buttonConfigObject.id + "' with uknown key.");
         }
     }
@@ -49,14 +42,7 @@ class ExtensionButton{
      * @returns {ExtensionButton[]} the Button objects
      */
     static createButtons(buttonConfigs, parentPanel){
-
-        let buttons= [];
-
-        buttonConfigs.forEach((config)=>{
-            buttons.push( new ExtensionButton(config, parentPanel) );
-        })
-
-        return buttons;
+        return buttonConfigs.map(config => new ExtensionButton(config, parentPanel));
     }
 } 
 

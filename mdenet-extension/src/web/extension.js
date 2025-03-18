@@ -16,7 +16,11 @@ export function activate(context) {
 	let app = null;
 	let toolManager = null;
 	let activityManager = null;
-
+	const actionHandlers = {
+		openExternal: (data) => vscode.env.openExternal(vscode.Uri.parse(data.url)),
+		runAppAction: (data) => app.runAction(data.parentPanel, data.buttonId),
+	};
+	
 	vscode.window.registerTreeDataProvider('activities', activityProvider);
 	vscode.window.registerTreeDataProvider('tasks', taskProvider);
 	vscode.window.registerTreeDataProvider('panels', panelProvider);
@@ -76,13 +80,14 @@ export function activate(context) {
 			// Print the selected option
 			if (selectedOption) {
 				const selectedButton = buttonMap.get(selectedOption);
-				eval(selectedButton.action);
+				console.log("Running button", selectedButton.action);
+				// eval(selectedButton.action);
+				actionHandlers[selectedButton.actionData.type](selectedButton.actionData);
 			}
 		}),
 		vscode.commands.registerCommand('button.run', (button) => {
 			console.log("Running button", button.action);
-
-			eval(button.action);
+			actionHandlers[button.actionData.type](button.actionData);
 		}),
 		vscode.commands.registerCommand('tasks.select', async (task) => {
 			if(app && app.activity && app.activity.id == task){
