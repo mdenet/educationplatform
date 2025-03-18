@@ -755,6 +755,14 @@ class EducationPlatformApp {
     }
 
     /**
+     * Check if there are any outstanding changes in the panels that have not been saved.
+     * @returns {boolean} true if changes have been made, false otherwise
+     */
+    changesHaveBeenMade() {
+        return this.saveablePanels.some(panel => panel.canSave());
+    }
+
+    /**
      * Display a modal which displays a list of panels with unsaved changes.
      * Includes a save button where the user can confirm the save.
      */
@@ -766,6 +774,14 @@ class EducationPlatformApp {
 
         const panelsToSave = this.getPanelsWithChanges();
         const panelDiffs = await this.getPanelDiffs();
+
+        const saveConfirmationText = document.getElementById("save-confirmation-text");
+        if (this.changesHaveBeenMade()) {
+            saveConfirmationText.textContent = "Please review the panels with unsaved changes:";
+        }
+        else {
+            saveConfirmationText.textContent = "There are no changes to the panels.";
+        }
 
         const panelList = document.getElementById("changed-panels-list");
         panelList.innerHTML = ""; // Clear previous list items
@@ -870,7 +886,7 @@ class EducationPlatformApp {
      */
     savePanelContents(panelsToSave) {
 
-        if (panelsToSave.length === 0) {
+        if (!this.changesHaveBeenMade()) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
             return;
         }
@@ -1179,14 +1195,6 @@ class EducationPlatformApp {
             event.preventDefault();
             this.switchBranch(currentBranch, branchToSwitchTo);
         };
-    }
-
-    /**
-     * Check if there are any outstanding changes in the panels that have not been saved.
-     * @returns {boolean} true if changes have been made, false otherwise
-     */
-    changesHaveBeenMade() {
-        return this.saveablePanels.some(panel => panel.canSave());
     }
 
     /**

@@ -351,6 +351,11 @@ body {
     margin: 0 5px;
 }
 
+#panel-changes-container {
+    resize: both;
+    overflow: auto;
+}
+
 .diff-content {
     padding: 1rem;
     max-height: 300px;
