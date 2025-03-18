@@ -183,6 +183,8 @@ class EducationPlatformApp {
     setupAuthenticatedState(urlParameters) {
         document.getElementById('save')?.classList.remove('hidden');
         document.getElementById('branch')?.classList.remove('hidden');
+        document.getElementById('review-changes')?.classList.remove('hidden');
+
         setAuthenticated(true);
         this.initializeActivity(urlParameters);
 
@@ -773,32 +775,18 @@ class EducationPlatformApp {
         this.toggleSaveConfirmationVisibility(true);
 
         const panelsToSave = this.getPanelsWithChanges();
-        const panelDiffs = await this.getPanelDiffs();
+       
 
-        const saveConfirmationText = document.getElementById("save-confirmation-text");
+        const saveConfirmationText = document.getElementById("save-body-text");
         if (this.changesHaveBeenMade()) {
             saveConfirmationText.textContent = "Please review the panels with unsaved changes:";
+
+            // Render the anchor tag to review the changes
+            this.displayReviewChangesLink();
         }
         else {
-            saveConfirmationText.textContent = "There are no changes to the panels.";
+            saveConfirmationText.textContent = "There are no changes to be saved.";
         }
-
-        const panelList = document.getElementById("changed-panels-list");
-        panelList.innerHTML = ""; // Clear previous list items
-
-        // Populate the list of panels with unsaved changes
-        panelsToSave.forEach(panel => {
-            const panelID = panel.getId();
-
-            const li = document.createElement("li");
-            li.textContent = panel.getId();
-
-            li.addEventListener("click", () => {
-                this.displayPanelChanges(panelID, panelDiffs.get(panelID));
-            })
-
-            panelList.appendChild(li);
-        })
 
         const closeButton = document.getElementById("save-confirmation-close-button");
         closeButton.onclick = () => {
@@ -815,49 +803,6 @@ class EducationPlatformApp {
             this.savePanelContents(panelsToSave);
             this.toggleSaveConfirmationVisibility(false);
         };
-    }
-
-    /**
-     * Displays a modal which shows the changes made to a given panel since the last save.
-     * @param {String} panelId - The ID of the panel to display changes for.
-     * @param {Array} panelDiff - The diffs of the panel contents.
-     */
-    displayPanelChanges(panelId, panelDiff) {
-
-        this.closeAllModalsExcept("panel-changes-container");
-        this.togglePanelChangeVisibility(true);
-
-        const closeButton = document.getElementById("panel-changes-close-button");
-        closeButton.onclick = () => {
-            this.togglePanelChangeVisibility(false);
-        };
-
-        const backButton = document.getElementById("panel-changes-back-button");
-        backButton.onclick = () => {
-            this.togglePanelChangeVisibility(false);
-            this.toggleSaveConfirmationVisibility(true);
-        };
-
-        const title = document.getElementById("panel-title");
-        title.textContent = panelId;
-
-        const diffContent = document.getElementById("diff-content");
-        diffContent.innerHTML = "";
-
-        // Render the panel changes
-        panelDiff.forEach(change => {
-            const diffLine = document.createElement("div");
-            diffLine.classList.add("diff-line");
-            if (change.added) {
-                diffLine.classList.add("diff-added");
-                diffLine.textContent = "+ " + change.added;
-            } 
-            else if (change.removed) {
-                diffLine.classList.add("diff-removed");
-                diffLine.textContent = "- " + change.removed;
-            }
-            diffContent.appendChild(diffLine);
-        })
     }
 
     /**
@@ -960,7 +905,8 @@ class EducationPlatformApp {
                         let change = {};
                         if (part.added) {
                             change.added = part.value;
-                        } else if (part.removed) {
+                        } 
+                        else if (part.removed) {
                             change.removed = part.value;
                         }
                         return change;
@@ -976,6 +922,89 @@ class EducationPlatformApp {
             console.error(error);
             this.errorHandler.notify("An error occurred while computing the panel changes.", error);
         }
+    }
+
+    /**
+     * Provide the user with a way to see their unsaved changes in a seperate tab.
+     */
+    async reviewChanges(event) {
+        event.preventDefault();
+
+        this.closeAllModalsExcept("review-changes-container");
+        this.toggleReviewChangesVisibility(true);
+
+        const closeButton = document.getElementById("review-changes-close-button");
+        closeButton.onclick = () => {
+            this.toggleReviewChangesVisibility(false);
+        };
+
+        const listTitle = document.getElementById("changed-panels-title");
+        listTitle.textContent = this.changesHaveBeenMade()
+            ? "Review the changes made to the panels:"
+            : "There are no changes to the panels.";
+
+        const panelList = document.getElementById("changed-panels-list");
+        panelList.innerHTML = ""; // Clear previous list items
+
+        const panelsToSave = this.getPanelsWithChanges();
+        const panelDiffs = await this.getPanelDiffs();
+
+        // Populate the list of panels with unsaved changes
+        panelsToSave.forEach(panel => {
+            const panelID = panel.getId();
+
+            const li = document.createElement("li");
+            li.textContent = panel.getId();
+
+            li.addEventListener("click", () => {
+                this.displayChangesForPanel(panelID, panelDiffs.get(panelID));
+            })
+
+            panelList.appendChild(li);
+        })
+    }
+
+    /**
+     * Displays a modal which shows the changes made to a given panel since the last save.
+     * @param {String} panelId - The ID of the panel to display changes for.
+     * @param {Array} panelDiff - The diffs of the panel contents.
+     */
+    displayChangesForPanel(panelId, panelDiff) {
+
+        this.closeAllModalsExcept("panel-changes-container");
+        this.togglePanelChangeVisibility(true);
+
+        const closeButton = document.getElementById("panel-changes-close-button");
+        closeButton.onclick = () => {
+            this.togglePanelChangeVisibility(false);
+        };
+
+        const backButton = document.getElementById("panel-changes-back-button");
+        backButton.onclick = () => {
+            this.togglePanelChangeVisibility(false);
+            this.toggleReviewChangesVisibility(true);
+        };
+
+        const title = document.getElementById("panel-title");
+        title.textContent = panelId;
+
+        const diffContent = document.getElementById("diff-content");
+        diffContent.innerHTML = "";
+
+        // Render the panel changes
+        panelDiff.forEach(change => {
+            const diffLine = document.createElement("div");
+            diffLine.classList.add("diff-line");
+            if (change.added) {
+                diffLine.classList.add("diff-added");
+                diffLine.textContent = "+ " + change.added;
+            } 
+            else if (change.removed) {
+                diffLine.classList.add("diff-removed");
+                diffLine.textContent = "- " + change.removed;
+            }
+            diffContent.appendChild(diffLine);
+        })
     }
 
     async showBranches(event) {
@@ -1187,6 +1216,11 @@ class EducationPlatformApp {
         visibility ? container.style.display = "block" : container.style.display = "none";
     }
 
+    toggleReviewChangesVisibility(visibility) {
+        const container = document.getElementById("review-changes-container");
+        visibility ? container.style.display = "block" : container.style.display = "none";
+    }
+
     displaySwitchToBranchLink(currentBranch, branchToSwitchTo) {
         document.getElementById("switch-branch-name").textContent = branchToSwitchTo;
         document.getElementById("switch-to-branch-link").style.display = "block";
@@ -1194,6 +1228,15 @@ class EducationPlatformApp {
         document.getElementById("switch-branch-anchor").onclick = (event) => {
             event.preventDefault();
             this.switchBranch(currentBranch, branchToSwitchTo);
+        };
+    }
+
+    displayReviewChangesLink() {
+        document.getElementById("review-changes-link").style.display = "block";
+
+        document.getElementById("review-changes-anchor").onclick = (event) => {
+            event.preventDefault();
+            this.reviewChanges(event);
         };
     }
 

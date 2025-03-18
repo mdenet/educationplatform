@@ -54,6 +54,10 @@
                         <span class="icon"><span class="mif-example-16 mif-branch"></span></span>
                         <span class="caption">Branch</span>
                     </a>
+                    <a href="#" onclick="reviewChanges(event)" id="review-changes" class="hidden">
+                        <span class="icon"><span class="mif-example-16 mif-review"></span></span>
+                        <span class="caption">Review Changes</span>
+                    </a>
                     <a href="https://mde-network.com/" target=”_blank” id="about">
                         <span class="icon"><span class="mif-example-16 mif-info"></span></span>
                         <span class="caption">About</span>
@@ -135,7 +139,35 @@
         </div>
 
         <div class="save-body">
-            <p id="save-confirmation-text">
+            <p id="save-body-text">
+                <!-- Render the text dynamically -->
+            </p>
+            <p id="review-changes-link" style="display:none;">
+                <a href="#" id="review-changes-anchor">
+                    Review Changes
+                </a>
+            </p>
+        </div>
+
+        <div class="save-footer">
+            <button id="confirm-save-btn" class="button primary round-button">Save</button>
+            <button id="cancel-save-btn" class="button round-button">Cancel</button>
+        </div>
+
+    </div>
+
+
+    <div id="review-changes-container" class="container-modal" style="display:none;">
+
+        <div class="container-header">
+            <h6 class="container-title">Review Changes</h6>
+            <button class="close-button" id="review-changes-close-button">
+                <span class="default-icon-cross"></span>
+            </button>
+        </div>
+
+        <div class="changed-panels">
+            <p id="changed-panels-title">
                 <!-- Render the text dynamically -->
             </p>
             <div class="list-container">
@@ -143,11 +175,6 @@
                     <!-- Dynamically generated list of changed panels -->
                 </ul>
             </div>
-        </div>
-
-        <div class="save-footer">
-            <button id="confirm-save-btn" class="button primary round-button">Save</button>
-            <button id="cancel-save-btn" class="button round-button">Cancel</button>
         </div>
 
     </div>
