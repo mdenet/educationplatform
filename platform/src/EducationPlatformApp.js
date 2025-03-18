@@ -1144,6 +1144,16 @@ class EducationPlatformApp {
                 return;
             }
 
+            // Check for unsaved changes
+            if(this.changesHaveBeenMade()) {
+                console.log("Unsaved changes, bring these to the new branch, or discard them?");
+                // TODO: Implement logic to bring changes to the new branch
+
+                // If the user wants to bring their changes, create the branch, and save the changes to that branch
+
+                // If they want to discard their changes, simply create the branch and switch to it (below)
+            }
+
             // Create the new branch
             this.fileHandler.createBranch(activityURL, newBranch)
             .then(() => {
