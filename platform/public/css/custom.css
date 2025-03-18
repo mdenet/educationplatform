@@ -322,7 +322,7 @@ body {
 
 #switch-branch-anchor, #review-changes-anchor {
     text-decoration: none;
-	font-weight: 500;
+	font-weight: 550;
     color: #007bff;
     font-size: 14px;
 }
@@ -332,26 +332,37 @@ body {
     color: #e83e8c;
 }
 
-.save-body {
+.container-body {
     padding: 1rem;
 }
 
-.save-body p {
+.container-body p {
     font-size: 0.95rem;
     color: #333;
 	text-align: center;
 }
 
-.save-footer {
+.container-footer {
+    display: flex;
+    flex-wrap: wrap; /* Allows buttons to stack when needed */
+    justify-content: center;
+    gap: 10px; /* Space between buttons */
     padding: 1rem;
     text-align: center;
     border-top: 1px solid #ddd;
     background-color: #f9f9f9;
-	margin-bottom: -1rem;
+    margin-bottom: -1rem;
 }
 
-.save-footer button {
-    margin: 0 5px;
+.container-footer button {
+    margin: 5px;
+    padding: 0.75rem;
+    width: auto; 
+    min-width: 150px; 
+    max-width: 100%; 
+    white-space: normal; 
+    word-break: break-word; 
+    text-align: center; 
 }
 
 .changed-panels {

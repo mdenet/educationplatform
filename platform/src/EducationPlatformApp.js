@@ -1113,12 +1113,14 @@ class EducationPlatformApp {
 
         const closeButton = document.getElementById("create-branch-close-button");
         closeButton.onclick = () => {
+            this.hideSwitchToBranchLink();
             this.toggleCreateBranchVisibility(false);
         };
 
         const backButton = document.getElementById("create-branch-back-button");
         backButton.onclick = () => {
             this.toggleCreateBranchVisibility(false);
+            this.hideSwitchToBranchLink();
             this.toggleSwitchBranchVisibility(true);
         };
 
@@ -1146,25 +1148,59 @@ class EducationPlatformApp {
 
             // Check for unsaved changes
             if(this.changesHaveBeenMade()) {
-                console.log("Unsaved changes, bring these to the new branch, or discard them?");
-                // TODO: Implement logic to bring changes to the new branch
-
-                // If the user wants to bring their changes, create the branch, and save the changes to that branch
-
-                // If they want to discard their changes, simply create the branch and switch to it (below)
+                this.displayCreateBranchConfirmModal(currentBranch, newBranch);
             }
-
-            // Create the new branch
-            this.fileHandler.createBranch(activityURL, newBranch)
-            .then(() => {
-                PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
-                this.displaySwitchToBranchLink(currentBranch, newBranch);
-            })
-            .catch((error) => {
-                console.error(error);
-                this.errorHandler.notify("An error occurred while creating a branch.", error);
-            });
+            else {
+                // No unsaved changes, simply create the branch and switch to it
+                this.fileHandler.createBranch(activityURL, newBranch)
+                .then(() => {
+                    PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
+                    this.displaySwitchToBranchLink(currentBranch, newBranch);
+                })
+                .catch((error) => {
+                    console.error(error);
+                    this.errorHandler.notify("An error occurred while creating a branch.", error);
+                });
+            }
         };
+    }
+
+    displayCreateBranchConfirmModal(currentBranch, newBranch) {
+        this.toggleCreateBranchVisibility(false);
+        this.toggleCreateBranchConfirmVisibility(true);
+
+        const currentBranchHTML = document.querySelectorAll("#current-branch");
+        currentBranchHTML.forEach(element => element.textContent = currentBranch);
+
+        const newBranchHTML = document.querySelectorAll("#new-branch");
+        newBranchHTML.forEach(element => element.textContent = newBranch);
+
+        const closeButton = document.getElementById("create-branch-confirm-close-button");
+        closeButton.onclick = () => {
+            this.toggleCreateBranchConfirmVisibility(false);
+            this.hideSwitchToBranchLink();
+        };
+
+        const backButton = document.getElementById("create-branch-confirm-back-button");
+        backButton.onclick = () => {
+            this.toggleCreateBranchConfirmVisibility(false);
+            this.hideSwitchToBranchLink();
+            this.toggleCreateBranchVisibility(true);
+        };
+
+        const confirmButton = document.getElementById("confirm-bring-changes");
+        confirmButton.onclick = () => {
+            console.log("Creating branch " + newBranch + " and saving changes...");
+
+            this.displaySwitchToBranchLink(currentBranch, newBranch);
+        };
+
+        const discardButton = document.getElementById("discard-changes");
+        discardButton.onclick = () => {
+            console.log("Creating branch " + newBranch + " without saving changes...");
+            
+            this.displaySwitchToBranchLink(currentBranch, newBranch);
+        }
     }
 
     /**
@@ -1207,6 +1243,11 @@ class EducationPlatformApp {
         visibility ? container.style.display = "block" : container.style.display = "none";
     }
 
+    toggleCreateBranchConfirmVisibility(visibility) {
+        const container = document.getElementById("create-branch-confirm-container");
+        visibility ? container.style.display = "block" : container.style.display = "none";
+    }
+
     toggleReviewChangesLink(visibility) {
         const link = document.getElementById("review-changes-link");
         visibility ? link.style.display = "block" : link.style.display = "none";
@@ -1219,14 +1260,22 @@ class EducationPlatformApp {
         }
     }
 
-    displaySwitchToBranchLink(currentBranch, branchToSwitchTo) {
-        document.getElementById("switch-branch-name").textContent = branchToSwitchTo;
-        document.getElementById("switch-to-branch-link").style.display = "block";
+    hideSwitchToBranchLink() {
+        document.querySelectorAll("#switch-branch-name").forEach(name => name.textContent = "");
+        document.querySelectorAll("#switch-to-branch-link").forEach(link => link.style.display = "none")
+        document.querySelectorAll("#switch-branch-anchor").forEach(anchor => anchor.onclick = null);
+    }
 
-        document.getElementById("switch-branch-anchor").onclick = (event) => {
-            event.preventDefault();
-            this.switchBranch(currentBranch, branchToSwitchTo);
-        };
+    displaySwitchToBranchLink(currentBranch, branchToSwitchTo) {
+        document.querySelectorAll("#switch-branch-name").forEach(name => name.textContent = branchToSwitchTo);
+        document.querySelectorAll("#switch-to-branch-link").forEach(link => link.style.display = "block");
+
+        document.querySelectorAll("#switch-branch-anchor").forEach(anchor => {
+            anchor.onclick = (event) => {
+                event.preventDefault();
+                this.switchBranch(currentBranch, branchToSwitchTo);
+            };
+        });
     }
 
     /**
