@@ -782,10 +782,11 @@ class EducationPlatformApp {
             saveConfirmationText.textContent = "Please review the panels with unsaved changes:";
 
             // Render the anchor tag to review the changes
-            this.displayReviewChangesLink();
+            this.toggleReviewChangesLink(true);
         }
         else {
             saveConfirmationText.textContent = "There are no changes to be saved.";
+            this.toggleReviewChangesLink(false);
         }
 
         const closeButton = document.getElementById("save-confirmation-close-button");
@@ -1221,6 +1222,18 @@ class EducationPlatformApp {
         visibility ? container.style.display = "block" : container.style.display = "none";
     }
 
+    toggleReviewChangesLink(visibility) {
+        const link = document.getElementById("review-changes-link");
+        visibility ? link.style.display = "block" : link.style.display = "none";
+    
+        if (visibility) {
+            document.getElementById("review-changes-anchor").onclick = (event) => {
+                event.preventDefault();
+                this.reviewChanges(event);
+            };
+        }
+    }
+
     displaySwitchToBranchLink(currentBranch, branchToSwitchTo) {
         document.getElementById("switch-branch-name").textContent = branchToSwitchTo;
         document.getElementById("switch-to-branch-link").style.display = "block";
@@ -1228,15 +1241,6 @@ class EducationPlatformApp {
         document.getElementById("switch-branch-anchor").onclick = (event) => {
             event.preventDefault();
             this.switchBranch(currentBranch, branchToSwitchTo);
-        };
-    }
-
-    displayReviewChangesLink() {
-        document.getElementById("review-changes-link").style.display = "block";
-
-        document.getElementById("review-changes-anchor").onclick = (event) => {
-            event.preventDefault();
-            this.reviewChanges(event);
         };
     }
 
