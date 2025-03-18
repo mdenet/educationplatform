@@ -1139,7 +1139,7 @@ class EducationPlatformApp {
             }
 
             // Validate the branch name
-            if (!this.validateBranchName(newBranch)) {
+            if (!utility.validateBranchName(newBranch)) {
                 PlaygroundUtility.warningNotification("Invalid branch name. Please try again.");
                 return;
             }
@@ -1165,46 +1165,6 @@ class EducationPlatformApp {
                 this.errorHandler.notify("An error occurred while creating a branch.", error);
             });
         };
-    }
-
-    /**
-     * Validates a branch name:
-     * - Non-empty
-     * - Min length 3
-     * - Max length 100
-     * - No consecutive dots ("..")
-     * - Only [A-Za-z0-9._-] characters
-     *
-     * @param {String} branchName - The proposed branch name.
-     * @returns {boolean} true if valid, false otherwise.
-     */
-    validateBranchName(branchName) {
-        // Must not be empty or whitespace
-        if (!branchName || !branchName.trim()) {
-            return false;
-        }
-
-        // Trim leading/trailing spaces
-        const trimmed = branchName.trim();
-
-        // Check length
-        if (trimmed.length > 100 || trimmed.length < 3) {
-            return false;
-        }
-
-        // Disallow consecutive dots
-        if (trimmed.includes('..')) {
-            return false;
-        }
-
-        // Only A-Z, a-z, 0-9, ., _, -
-        const allowedPattern = /^[A-Za-z0-9._-]+$/;
-        if (!allowedPattern.test(trimmed)) {
-            return false;
-        }
-
-        // Passes all checks
-        return true;
     }
 
     /**
