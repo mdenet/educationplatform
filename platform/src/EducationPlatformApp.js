@@ -1045,6 +1045,21 @@ class EducationPlatformApp {
                 }
 
                 li.addEventListener("click", () => {
+
+                    if (this.changesHaveBeenMade()) {
+                        const confirmSwitch = confirm(
+                            "⚠️ You have unsaved changes!\n\n" +
+                            "Switching branches will discard your unsaved work.\n" +
+                            "Do you want to continue?\n\n" +
+                            "✔ OK to switch branches\n" +
+                            "✖ Cancel to stay on this branch"
+                        );
+                    
+                        if (!confirmSwitch) {
+                            return;
+                        }
+                    }
+
                     this.switchBranch(currentBranch, branch);
                 });
                 branchList.appendChild(li);
