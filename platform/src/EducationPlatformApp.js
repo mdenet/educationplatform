@@ -810,6 +810,26 @@ class EducationPlatformApp {
     }
 
     /**
+     * Checks if the local environment is outdated compared to the remote repository.
+     * @returns {boolean} true if the local environment is outdated, false otherwise.
+     */
+    async isLocalEnvironmentOutdated() {
+        for (const panel of this.saveablePanels) {
+            // Fetch the file from the remote repository
+            const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
+
+            if (!remoteFile) {
+                throw new Error(`No remote file found for ${panel.getId()}`);
+            }
+
+            // Compare the remote SHA with the panel's current SHA. If they differ, the local environment is outdated.
+            if (remoteFile.sha !== panel.getValueSha()) {
+                return true;
+            }
+        }
+    }
+
+    /**
      * Display a prompt and return the commit message entered by the user.
      * @returns {String} The commit message entered by the user, or the default message if the input is empty.
      */
@@ -837,6 +857,11 @@ class EducationPlatformApp {
 
         if (!this.changesHaveBeenMade()) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
+            return;
+        }
+
+        if (this.isLocalEnvironmentOutdated()) {
+            PlaygroundUtility.warningNotification("There have been changes to the remote repository - please save your changes to a new branch.")
             return;
         }
 
