@@ -849,16 +849,18 @@ class EducationPlatformApp {
             PlaygroundUtility.successNotification("The activity panel contents have been saved.");
         })
         .catch(error => {
-            this.errorHandler.notify("An error occurred while trying to save the panel contents.", error);
+            console.error(error);
+            this.errorHandler.notify("An error occurred while trying to save the panel contents.");
         });
     }
 
     /**
      * Saves the content of the panels to the remote repository.
      * @param {String} commitMessage - The commit message to be used for the save.
+     * @param {String} branchName - Optional - by default the current branch is used.
      * @returns {Promise<void>} A promise that resolves when the save is complete.
      */
-    async saveFiles(commitMessage) {
+    async saveFiles(commitMessage, branchName) {
         return new Promise((resolve, reject) => {
 
             const panelsToSave = this.getPanelsWithChanges();
@@ -869,7 +871,7 @@ class EducationPlatformApp {
                 files.push(panel.exportSaveData());
             }
 
-            this.fileHandler.storeFiles(files, commitMessage)
+            this.fileHandler.storeFiles(files, commitMessage, branchName)
             .then(response => {
                 // Returns a [ {path, sha} ] list corresponding to each file
                 let dataReturned = JSON.parse(response);
@@ -941,7 +943,7 @@ class EducationPlatformApp {
         } 
         catch (error) {
             console.error(error);
-            this.errorHandler.notify("An error occurred while computing the panel changes.", error);
+            this.errorHandler.notify("An error occurred while computing the panel changes.");
         }
     }
 
@@ -1111,7 +1113,7 @@ class EducationPlatformApp {
         }
         catch (error) {
             console.error(error);
-            this.errorHandler.notify("An error occurred while displaying the branches.", error);
+            this.errorHandler.notify("An error occurred while displaying the branches.");
         }
     }
 
@@ -1186,7 +1188,7 @@ class EducationPlatformApp {
                 })
                 .catch((error) => {
                     console.error(error);
-                    this.errorHandler.notify("An error occurred while creating a branch.", error);
+                    this.errorHandler.notify("An error occurred while creating a branch.");
                 });
             }
         };
@@ -1218,32 +1220,35 @@ class EducationPlatformApp {
         const confirmButton = document.getElementById("confirm-bring-changes");
         confirmButton.onclick = () => {
             this.fileHandler.createBranch(this.activityURL, newBranch)
-                .then(() => {
-                    // Save the changes to this new branch
-
-
-                    this.displaySwitchToBranchLink(currentBranch, newBranch);
-                })
-                .catch((error) => {
-                    console.error(error);
-                    this.errorHandler.notify("An error occurred while creating a branch.", error);
-                });
-
-            this.displaySwitchToBranchLink(currentBranch, newBranch);
+            .then(() => {
+                // Save the changes to this new branch
+                this.saveFiles("Merge changes from " + currentBranch + " to " + newBranch, newBranch)
+                    .then(() => {
+                        PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
+                        this.displaySwitchToBranchLink(currentBranch, newBranch);
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        this.errorHandler.notify("An error occured while trying to bring the changes over to the new branch");
+                    });
+            })
+            .catch((error) => {
+                console.error(error);
+                this.errorHandler.notify("An error occurred while creating a branch.");
+            });
         };
 
         const discardButton = document.getElementById("discard-changes");
         discardButton.onclick = () => {
             this.fileHandler.createBranch(this.activityURL, newBranch)
-                .then(() => {
-                    PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
-                    this.displaySwitchToBranchLink(currentBranch, newBranch);
-                })
-                .catch((error) => {
-                    console.error(error);
-                    this.errorHandler.notify("An error occurred while creating a branch.", error);
-                });
-        
+            .then(() => {
+                PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
+                this.displaySwitchToBranchLink(currentBranch, newBranch);
+            })
+            .catch((error) => {
+                console.error(error);
+                this.errorHandler.notify("An error occurred while creating a branch.");
+            });
         }
     }
 
