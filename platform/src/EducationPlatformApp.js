@@ -50,6 +50,8 @@ class EducationPlatformApp {
     preloader;
     panels;
     saveablePanels;
+    branches;
+    activityURL;
 
     errorHandler;
     fileHandler;
@@ -63,6 +65,7 @@ class EducationPlatformApp {
         this.preloader = new Preloader();
         this.panels = [];
         this.saveablePanels = [];
+        this.branches = [];
     }
 
     initialize( urlParameters, tokenHandlerUrl ){
@@ -186,6 +189,7 @@ class EducationPlatformApp {
         document.getElementById('review-changes')?.classList.remove('hidden');
 
         setAuthenticated(true);
+        this.activityURL = utility.getActivityURL();
         this.initializeActivity(urlParameters);
 
         this.setupEventListeners();
@@ -966,6 +970,17 @@ class EducationPlatformApp {
     }
 
     /**
+     * Refreshes the list of branches, so we always have the most up-to-date state.
+     */
+    async refreshBranches() {
+        try {
+            this.branches = await this.fileHandler.fetchBranches(this.activityURL);
+        } catch (error) {
+            console.error("Error fetching branches:", error);
+        }
+    }
+
+    /**
      * Displays a modal which shows the changes made to a given panel since the last save.
      * @param {String} panelId - The ID of the panel to display changes for.
      * @param {Array} panelDiff - The diffs of the panel contents.
@@ -1011,14 +1026,11 @@ class EducationPlatformApp {
     async showBranches(event) {
         event.preventDefault();
 
-        const activityURL = utility.getActivityURL();
         try {
-            // Retrieve a list of branches in the repository
-            const branches = await this.fileHandler.fetchBranches(activityURL);
             const currentBranch = utility.getCurrentBranch();
 
             this.closeAllModalsExcept("switch-branch-container");
-            this.toggleSwitchBranchVisibility(true);
+            await this.toggleSwitchBranchVisibility(true);
 
             const closeButton = document.getElementById("switch-branch-close-button");
             closeButton.onclick = () => {
@@ -1027,7 +1039,7 @@ class EducationPlatformApp {
 
             const createBranchButton = document.getElementById("new-branch-button");
             createBranchButton.onclick = () => {
-                this.showCreateBranchPrompt(branches, currentBranch, activityURL);
+                this.showCreateBranchPrompt(currentBranch);
             };
 
             // Clear old list items
@@ -1035,7 +1047,7 @@ class EducationPlatformApp {
             branchList.innerHTML = "";
 
             // For each branch, we add <li> with the branch name
-            branches.forEach((branch) => {
+            this.branches.forEach((branch) => {
                 let li = document.createElement("li");
                 li.textContent = branch;
 
@@ -1102,14 +1114,12 @@ class EducationPlatformApp {
 
     /**
      * Displays a window to create and check out a new branch in the repository
-     * @param {Array} listOfBranches - the list of branches in the repository
      * @param {String} currentBranch - the current branch the user is on
-     * @param {String} activityURL - the URL of the activity
      */
-    showCreateBranchPrompt(listOfBranches, currentBranch, activityURL) {
+    async showCreateBranchPrompt(currentBranch) {
 
         this.closeAllModalsExcept("create-branch-container");
-        this.toggleCreateBranchVisibility(true);
+        await this.toggleCreateBranchVisibility(true);
 
         const closeButton = document.getElementById("create-branch-close-button");
         closeButton.onclick = () => {
@@ -1118,10 +1128,10 @@ class EducationPlatformApp {
         };
 
         const backButton = document.getElementById("create-branch-back-button");
-        backButton.onclick = () => {
+        backButton.onclick = async () => {
             this.toggleCreateBranchVisibility(false);
             this.hideSwitchToBranchLink();
-            this.toggleSwitchBranchVisibility(true);
+            await this.toggleSwitchBranchVisibility(true);
         };
 
         document.getElementById("create-branch-based-on-text").textContent = currentBranch;
@@ -1136,7 +1146,7 @@ class EducationPlatformApp {
             const newBranch = newBranchInput.value.trim().replace(/\s+/g, '-');
 
             // Check if the branch already exists
-            if (listOfBranches.includes(newBranch)) {
+            if (this.branches.includes(newBranch)) {
                 PlaygroundUtility.warningNotification("Branch " + newBranch + " already exists.");
                 return;
             }
@@ -1153,7 +1163,7 @@ class EducationPlatformApp {
             }
             else {
                 // No unsaved changes, simply create the branch and switch to it
-                this.fileHandler.createBranch(activityURL, newBranch)
+                this.fileHandler.createBranch(this.activityURL, newBranch)
                 .then(() => {
                     PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
                     this.displaySwitchToBranchLink(currentBranch, newBranch);
@@ -1183,10 +1193,10 @@ class EducationPlatformApp {
         };
 
         const backButton = document.getElementById("create-branch-confirm-back-button");
-        backButton.onclick = () => {
+        backButton.onclick = async () => {
             this.toggleCreateBranchConfirmVisibility(false);
             this.hideSwitchToBranchLink();
-            this.toggleCreateBranchVisibility(true);
+            await this.toggleCreateBranchVisibility(true);
         };
 
         const confirmButton = document.getElementById("confirm-bring-changes");
@@ -1219,14 +1229,20 @@ class EducationPlatformApp {
         });
     }
 
-    toggleSwitchBranchVisibility(visibility) {
+    async toggleSwitchBranchVisibility(visibility) {
         const container = document.getElementById("switch-branch-container");
-        visibility ? container.style.display = "block" : container.style.display = "none";
+        if (visibility) {
+            await this.refreshBranches();
+        }
+        container.style.display = visibility ? "block" : "none";
     }
 
-    toggleCreateBranchVisibility(visibility) {
+    async toggleCreateBranchVisibility(visibility) {
         const container = document.getElementById("create-branch-container");
-        visibility ? container.style.display = "block" : container.style.display = "none";
+        if (visibility) {
+            await this.refreshBranches();
+        }
+        container.style.display = visibility ? "block" : "none";
     }
 
     toggleSaveConfirmationVisibility(visibility) {

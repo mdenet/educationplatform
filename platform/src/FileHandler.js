@@ -79,6 +79,7 @@ class FileHandler {
         }
         catch (error) {
             console.error("Failed to fetch branches: " + error);
+            throw error;
         }
     }
 
