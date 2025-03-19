@@ -777,10 +777,7 @@ class EducationPlatformApp {
 
         this.closeAllModalsExcept("save-confirmation-container");
         this.toggleSaveConfirmationVisibility(true);
-
-        const panelsToSave = this.getPanelsWithChanges();
        
-
         const saveConfirmationText = document.getElementById("save-body-text");
         if (this.changesHaveBeenMade()) {
             saveConfirmationText.textContent = "Please review the panels with unsaved changes:";
@@ -805,7 +802,7 @@ class EducationPlatformApp {
 
         const saveButton = document.getElementById("confirm-save-btn");
         saveButton.onclick = () => {
-            this.savePanelContents(panelsToSave);
+            this.savePanelContents();
             this.toggleSaveConfirmationVisibility(false);
         };
     }
@@ -831,53 +828,72 @@ class EducationPlatformApp {
     }
 
     /**
-     * Saves the contents of the panels that have unsaved changes. 
-     * @param {SaveablePanel[]} panelsToSave - The list of panels to save.
+     * Gathers the commit message and calls to save the panel contents.
+     * Provides UI feedback on the success or failure of the save operation.
      */
-    savePanelContents(panelsToSave) {
+    savePanelContents() {
 
         if (!this.changesHaveBeenMade()) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
             return;
         }
 
-        let commitMessage = this.getCommitMessage();
+        const commitMessage = this.getCommitMessage();
         // If the user clicks "Cancel", stop execution
         if (commitMessage === null) {
             return;
         }
 
-        let files = [];
-        for (const panel of panelsToSave) {
-            const saveData = panel.exportSaveData();
-            files.push(saveData);
-        }
+        this.saveFiles(commitMessage)
+        .then(() => {
+            PlaygroundUtility.successNotification("The activity panel contents have been saved.");
+        })
+        .catch(error => {
+            this.errorHandler.notify("An error occurred while trying to save the panel contents.", error);
+        });
+    }
 
-        this.fileHandler.storeFiles(files, commitMessage)
+    /**
+     * Saves the content of the panels to the remote repository.
+     * @param {String} commitMessage - The commit message to be used for the save.
+     * @returns {Promise<void>} A promise that resolves when the save is complete.
+     */
+    async saveFiles(commitMessage) {
+        return new Promise((resolve, reject) => {
+
+            const panelsToSave = this.getPanelsWithChanges();
+
+            // Build up the files to save
+            let files = [];
+            for (const panel of panelsToSave) {
+                files.push(panel.exportSaveData());
+            }
+
+            this.fileHandler.storeFiles(files, commitMessage)
             .then(response => {
                 // Returns a [ {path, sha} ] list corresponding to each file
                 let dataReturned = JSON.parse(response);
 
                 for (const panel of panelsToSave) {
                     const filePath = panel.getFilePath();
+
                     // Find the updated file that matches the panel's file path
                     const updatedFile = dataReturned.files.find(file => file.path === filePath);
-
-                    // Update the panel with the new SHA
                     const newSha = updatedFile.sha;
                     panel.setValueSha(newSha);
+                    panel.setLastSavedContent(panel.getValue());
 
                     // Mark the editor clean if the save completed
                     panel.getEditor().session.getUndoManager().markClean();
-                    panel.setLastSavedContent(panel.getValue());
 
-                    console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
+                    console.log(`The contents of panel '${panel.getId()}' were saved successfully.`);
                 }
-                PlaygroundUtility.successNotification("The activity panel contents have been saved.");
+                resolve();
             })
             .catch(error => {
-                this.errorHandler.notify("An error occurred while trying to save the panel contents.", error);
+                reject(error);
             });
+        })
     }
 
     /**
@@ -1201,16 +1217,33 @@ class EducationPlatformApp {
 
         const confirmButton = document.getElementById("confirm-bring-changes");
         confirmButton.onclick = () => {
-            console.log("Creating branch " + newBranch + " and saving changes...");
+            this.fileHandler.createBranch(this.activityURL, newBranch)
+                .then(() => {
+                    // Save the changes to this new branch
+
+
+                    this.displaySwitchToBranchLink(currentBranch, newBranch);
+                })
+                .catch((error) => {
+                    console.error(error);
+                    this.errorHandler.notify("An error occurred while creating a branch.", error);
+                });
 
             this.displaySwitchToBranchLink(currentBranch, newBranch);
         };
 
         const discardButton = document.getElementById("discard-changes");
         discardButton.onclick = () => {
-            console.log("Creating branch " + newBranch + " without saving changes...");
-            
-            this.displaySwitchToBranchLink(currentBranch, newBranch);
+            this.fileHandler.createBranch(this.activityURL, newBranch)
+                .then(() => {
+                    PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
+                    this.displaySwitchToBranchLink(currentBranch, newBranch);
+                })
+                .catch((error) => {
+                    console.error(error);
+                    this.errorHandler.notify("An error occurred while creating a branch.", error);
+                });
+        
         }
     }
 
