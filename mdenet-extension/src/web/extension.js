@@ -90,8 +90,8 @@ export function activate(context) {
 			actionHandlers[button.actionData.type](button.actionData);
 		}),
 		vscode.commands.registerCommand('tasks.select', async (task) => {
-			if(app && app.activity && app.activity.id == task){
-				console.log("Task already selected");
+			if(app?.activity?.id == task){
+				console.log("Task already selected");x
 				return;
 			}
 			if(app && toolManager && activityManager){

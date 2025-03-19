@@ -76,7 +76,7 @@ class GeneralEducationPlatformApp{
         }
     }
 
-    async handleToolImports(toolImports){
+    handleToolImports(toolImports){
         throw new Error("Implement handleToolImports in subclass");
     }
 
@@ -398,8 +398,6 @@ class GeneralEducationPlatformApp{
         throw new Error("Implement updateSessionInfo in subclass");
     }
 
-
-  
 }
 
 export { GeneralEducationPlatformApp };
