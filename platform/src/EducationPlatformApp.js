@@ -52,6 +52,7 @@ class EducationPlatformApp {
     saveablePanels;
     branches;
     activityURL;
+    confirmLeavePage;
 
     errorHandler;
     fileHandler;
@@ -66,6 +67,7 @@ class EducationPlatformApp {
         this.panels = [];
         this.saveablePanels = [];
         this.branches = [];
+        this.confirmLeavePage = false;
     }
 
     initialize( urlParameters, tokenHandlerUrl ){
@@ -198,7 +200,7 @@ class EducationPlatformApp {
     setupEventListeners() {
         // Warn user if there are unsaved changes before closing the tab
         window.addEventListener("beforeunload", (event) => {
-            if (this.changesHaveBeenMade()) {
+            if (this.changesHaveBeenMade() && !this.confirmLeavePage) {
                 event.preventDefault();
 
                 // Browsers usually ignore the message
@@ -1060,40 +1062,7 @@ class EducationPlatformApp {
                 this.showCreateBranchPrompt(currentBranch);
             };
 
-            // Clear old list items
-            const branchList = document.getElementById("branch-list");
-            branchList.innerHTML = "";
-
-            // For each branch, we add <li> with the branch name
-            this.branches.forEach((branch) => {
-                let li = document.createElement("li");
-                li.textContent = branch;
-
-                // highlight the currently active branch
-                if (branch === currentBranch) {
-                    li.classList.add("current-branch");
-                }
-
-                li.addEventListener("click", () => {
-
-                    if (this.changesHaveBeenMade()) {
-                        const confirmSwitch = confirm(
-                            "⚠️ You have unsaved changes!\n\n" +
-                            "Switching branches will discard your unsaved work.\n" +
-                            "Do you want to continue?\n\n" +
-                            "✔ OK to switch branches\n" +
-                            "✖ Cancel to stay on this branch"
-                        );
-                    
-                        if (!confirmSwitch) {
-                            return;
-                        }
-                    }
-
-                    this.switchBranch(currentBranch, branch);
-                });
-                branchList.appendChild(li);
-            });
+            this.renderBranchList();
 
             // Set up the filter logic for the branch search
             const branchSearch = document.getElementById("branch-search");
@@ -1115,6 +1084,54 @@ class EducationPlatformApp {
             console.error(error);
             this.errorHandler.notify("An error occurred while displaying the branches.");
         }
+    }
+
+    /**
+     * Renders a list of branches fetched from the repository
+     * Highlights the branch the user is currently on
+     */
+    renderBranchList() {
+        const currentBranch = utility.getCurrentBranch();
+
+        // Clear old list items
+        const branchList = document.getElementById("branch-list");
+        branchList.innerHTML = "";
+
+        // For each branch, we add <li> with the branch name
+        this.branches.forEach((branch) => {
+            let li = document.createElement("li");
+            li.textContent = branch;
+
+            // highlight the currently active branch
+            if (branch === currentBranch) {
+                li.classList.add("current-branch");
+            }
+
+            li.addEventListener("click", () => {
+
+                if (this.changesHaveBeenMade()) {
+                    const confirmSwitch = confirm(
+                        "⚠️ You have unsaved changes!\n\n" +
+                        "Switching branches will discard your unsaved work.\n" +
+                        "Do you want to continue?\n\n" +
+                        "✔ OK to switch branches\n" +
+                        "✖ Cancel to stay on this branch"
+                    );
+                
+                    if (!confirmSwitch) {
+                        this.confirmLeavePage = false;
+                        return;
+                    }
+                    else {
+                        // Change the flag to prevent the "Leave Page" warning
+                        this.confirmLeavePage = true;
+                    }
+                }
+
+                this.switchBranch(currentBranch, branch);
+            });
+            branchList.appendChild(li);
+        });
     }
 
     /**
@@ -1271,6 +1288,8 @@ class EducationPlatformApp {
         const container = document.getElementById("switch-branch-container");
         if (visibility) {
             await this.refreshBranches();
+            // Re-render the list of branches
+            this.renderBranchList();
         }
         container.style.display = visibility ? "block" : "none";
     }
