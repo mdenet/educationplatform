@@ -50,6 +50,8 @@ class EducationPlatformApp {
     preloader;
     panels;
     saveablePanels;
+    branches;
+    activityURL;
 
     errorHandler;
     fileHandler;
@@ -63,6 +65,7 @@ class EducationPlatformApp {
         this.preloader = new Preloader();
         this.panels = [];
         this.saveablePanels = [];
+        this.branches = [];
     }
 
     initialize( urlParameters, tokenHandlerUrl ){
@@ -183,7 +186,10 @@ class EducationPlatformApp {
     setupAuthenticatedState(urlParameters) {
         document.getElementById('save')?.classList.remove('hidden');
         document.getElementById('branch')?.classList.remove('hidden');
+        document.getElementById('review-changes')?.classList.remove('hidden');
+
         setAuthenticated(true);
+        this.activityURL = utility.getActivityURL();
         this.initializeActivity(urlParameters);
 
         this.setupEventListeners();
@@ -771,34 +777,18 @@ class EducationPlatformApp {
 
         this.closeAllModalsExcept("save-confirmation-container");
         this.toggleSaveConfirmationVisibility(true);
-
-        const panelsToSave = this.getPanelsWithChanges();
-        const panelDiffs = await this.getPanelDiffs();
-
-        const saveConfirmationText = document.getElementById("save-confirmation-text");
+       
+        const saveConfirmationText = document.getElementById("save-body-text");
         if (this.changesHaveBeenMade()) {
             saveConfirmationText.textContent = "Please review the panels with unsaved changes:";
+
+            // Render the anchor tag to review the changes
+            this.toggleReviewChangesLink(true);
         }
         else {
-            saveConfirmationText.textContent = "There are no changes to the panels.";
+            saveConfirmationText.textContent = "There are no changes to be saved.";
+            this.toggleReviewChangesLink(false);
         }
-
-        const panelList = document.getElementById("changed-panels-list");
-        panelList.innerHTML = ""; // Clear previous list items
-
-        // Populate the list of panels with unsaved changes
-        panelsToSave.forEach(panel => {
-            const panelID = panel.getId();
-
-            const li = document.createElement("li");
-            li.textContent = panel.getId();
-
-            li.addEventListener("click", () => {
-                this.displayPanelChanges(panelID, panelDiffs.get(panelID));
-            })
-
-            panelList.appendChild(li);
-        })
 
         const closeButton = document.getElementById("save-confirmation-close-button");
         closeButton.onclick = () => {
@@ -812,52 +802,9 @@ class EducationPlatformApp {
 
         const saveButton = document.getElementById("confirm-save-btn");
         saveButton.onclick = () => {
-            this.savePanelContents(panelsToSave);
+            this.savePanelContents();
             this.toggleSaveConfirmationVisibility(false);
         };
-    }
-
-    /**
-     * Displays a modal which shows the changes made to a given panel since the last save.
-     * @param {String} panelId - The ID of the panel to display changes for.
-     * @param {Array} panelDiff - The diffs of the panel contents.
-     */
-    displayPanelChanges(panelId, panelDiff) {
-
-        this.closeAllModalsExcept("panel-changes-container");
-        this.togglePanelChangeVisibility(true);
-
-        const closeButton = document.getElementById("panel-changes-close-button");
-        closeButton.onclick = () => {
-            this.togglePanelChangeVisibility(false);
-        };
-
-        const backButton = document.getElementById("panel-changes-back-button");
-        backButton.onclick = () => {
-            this.togglePanelChangeVisibility(false);
-            this.toggleSaveConfirmationVisibility(true);
-        };
-
-        const title = document.getElementById("panel-title");
-        title.textContent = panelId;
-
-        const diffContent = document.getElementById("diff-content");
-        diffContent.innerHTML = "";
-
-        // Render the panel changes
-        panelDiff.forEach(change => {
-            const diffLine = document.createElement("div");
-            diffLine.classList.add("diff-line");
-            if (change.added) {
-                diffLine.classList.add("diff-added");
-                diffLine.textContent = "+ " + change.added;
-            } 
-            else if (change.removed) {
-                diffLine.classList.add("diff-removed");
-                diffLine.textContent = "- " + change.removed;
-            }
-            diffContent.appendChild(diffLine);
-        })
     }
 
     /**
@@ -881,53 +828,74 @@ class EducationPlatformApp {
     }
 
     /**
-     * Saves the contents of the panels that have unsaved changes. 
-     * @param {SaveablePanel[]} panelsToSave - The list of panels to save.
+     * Gathers the commit message and calls to save the panel contents.
+     * Provides UI feedback on the success or failure of the save operation.
      */
-    savePanelContents(panelsToSave) {
+    savePanelContents() {
 
         if (!this.changesHaveBeenMade()) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
             return;
         }
 
-        let commitMessage = this.getCommitMessage();
+        const commitMessage = this.getCommitMessage();
         // If the user clicks "Cancel", stop execution
         if (commitMessage === null) {
             return;
         }
 
-        let files = [];
-        for (const panel of panelsToSave) {
-            const saveData = panel.exportSaveData();
-            files.push(saveData);
-        }
+        this.saveFiles(commitMessage)
+        .then(() => {
+            PlaygroundUtility.successNotification("The activity panel contents have been saved.");
+        })
+        .catch(error => {
+            console.error(error);
+            this.errorHandler.notify("An error occurred while trying to save the panel contents.");
+        });
+    }
 
-        this.fileHandler.storeFiles(files, commitMessage)
+    /**
+     * Saves the content of the panels to the remote repository.
+     * @param {String} commitMessage - The commit message to be used for the save.
+     * @param {String} branchName - Optional - by default the current branch is used.
+     * @returns {Promise<void>} A promise that resolves when the save is complete.
+     */
+    async saveFiles(commitMessage, branchName) {
+        return new Promise((resolve, reject) => {
+
+            const panelsToSave = this.getPanelsWithChanges();
+
+            // Build up the files to save
+            let files = [];
+            for (const panel of panelsToSave) {
+                files.push(panel.exportSaveData());
+            }
+
+            this.fileHandler.storeFiles(files, commitMessage, branchName)
             .then(response => {
                 // Returns a [ {path, sha} ] list corresponding to each file
                 let dataReturned = JSON.parse(response);
 
                 for (const panel of panelsToSave) {
                     const filePath = panel.getFilePath();
+
                     // Find the updated file that matches the panel's file path
                     const updatedFile = dataReturned.files.find(file => file.path === filePath);
-
-                    // Update the panel with the new SHA
                     const newSha = updatedFile.sha;
                     panel.setValueSha(newSha);
+                    panel.setLastSavedContent(panel.getValue());
 
                     // Mark the editor clean if the save completed
                     panel.getEditor().session.getUndoManager().markClean();
-                    panel.setLastSavedContent(panel.getValue());
 
-                    console.log("The contents of panel '" + panel.getId() + "' were saved successfully.");
+                    console.log(`The contents of panel '${panel.getId()}' were saved successfully.`);
                 }
-                PlaygroundUtility.successNotification("The activity panel contents have been saved.");
+                resolve();
             })
             .catch(error => {
-                this.errorHandler.notify("An error occurred while trying to save the panel contents.", error);
+                reject(error);
             });
+        })
     }
 
     /**
@@ -960,7 +928,8 @@ class EducationPlatformApp {
                         let change = {};
                         if (part.added) {
                             change.added = part.value;
-                        } else if (part.removed) {
+                        } 
+                        else if (part.removed) {
                             change.removed = part.value;
                         }
                         return change;
@@ -974,21 +943,112 @@ class EducationPlatformApp {
         } 
         catch (error) {
             console.error(error);
-            this.errorHandler.notify("An error occurred while computing the panel changes.", error);
+            this.errorHandler.notify("An error occurred while computing the panel changes.");
         }
+    }
+
+    /**
+     * Provide the user with a way to see their unsaved changes in a seperate tab.
+     */
+    async reviewChanges(event) {
+        event.preventDefault();
+
+        this.closeAllModalsExcept("review-changes-container");
+        this.toggleReviewChangesVisibility(true);
+
+        const closeButton = document.getElementById("review-changes-close-button");
+        closeButton.onclick = () => {
+            this.toggleReviewChangesVisibility(false);
+        };
+
+        const listTitle = document.getElementById("changed-panels-title");
+        listTitle.textContent = this.changesHaveBeenMade()
+            ? "Review the changes made to the panels:"
+            : "There are no changes to the panels.";
+
+        const panelList = document.getElementById("changed-panels-list");
+        panelList.innerHTML = ""; // Clear previous list items
+
+        const panelsToSave = this.getPanelsWithChanges();
+        const panelDiffs = await this.getPanelDiffs();
+
+        // Populate the list of panels with unsaved changes
+        panelsToSave.forEach(panel => {
+            const panelID = panel.getId();
+
+            const li = document.createElement("li");
+            li.textContent = panel.getId();
+
+            li.addEventListener("click", () => {
+                this.displayChangesForPanel(panelID, panelDiffs.get(panelID));
+            })
+
+            panelList.appendChild(li);
+        })
+    }
+
+    /**
+     * Refreshes the list of branches, so we always have the most up-to-date state.
+     */
+    async refreshBranches() {
+        try {
+            this.branches = await this.fileHandler.fetchBranches(this.activityURL);
+        } catch (error) {
+            console.error("Error fetching branches:", error);
+        }
+    }
+
+    /**
+     * Displays a modal which shows the changes made to a given panel since the last save.
+     * @param {String} panelId - The ID of the panel to display changes for.
+     * @param {Array} panelDiff - The diffs of the panel contents.
+     */
+    displayChangesForPanel(panelId, panelDiff) {
+
+        this.closeAllModalsExcept("panel-changes-container");
+        this.togglePanelChangeVisibility(true);
+
+        const closeButton = document.getElementById("panel-changes-close-button");
+        closeButton.onclick = () => {
+            this.togglePanelChangeVisibility(false);
+        };
+
+        const backButton = document.getElementById("panel-changes-back-button");
+        backButton.onclick = () => {
+            this.togglePanelChangeVisibility(false);
+            this.toggleReviewChangesVisibility(true);
+        };
+
+        const title = document.getElementById("panel-title");
+        title.textContent = panelId;
+
+        const diffContent = document.getElementById("diff-content");
+        diffContent.innerHTML = "";
+
+        // Render the panel changes
+        panelDiff.forEach(change => {
+            const diffLine = document.createElement("div");
+            diffLine.classList.add("diff-line");
+            if (change.added) {
+                diffLine.classList.add("diff-added");
+                diffLine.textContent = "+ " + change.added;
+            } 
+            else if (change.removed) {
+                diffLine.classList.add("diff-removed");
+                diffLine.textContent = "- " + change.removed;
+            }
+            diffContent.appendChild(diffLine);
+        })
     }
 
     async showBranches(event) {
         event.preventDefault();
 
-        const activityURL = utility.getActivityURL();
         try {
-            // Retrieve a list of branches in the repository
-            const branches = await this.fileHandler.fetchBranches(activityURL);
             const currentBranch = utility.getCurrentBranch();
 
             this.closeAllModalsExcept("switch-branch-container");
-            this.toggleSwitchBranchVisibility(true);
+            await this.toggleSwitchBranchVisibility(true);
 
             const closeButton = document.getElementById("switch-branch-close-button");
             closeButton.onclick = () => {
@@ -997,7 +1057,7 @@ class EducationPlatformApp {
 
             const createBranchButton = document.getElementById("new-branch-button");
             createBranchButton.onclick = () => {
-                this.showCreateBranchPrompt(branches, currentBranch, activityURL);
+                this.showCreateBranchPrompt(currentBranch);
             };
 
             // Clear old list items
@@ -1005,7 +1065,7 @@ class EducationPlatformApp {
             branchList.innerHTML = "";
 
             // For each branch, we add <li> with the branch name
-            branches.forEach((branch) => {
+            this.branches.forEach((branch) => {
                 let li = document.createElement("li");
                 li.textContent = branch;
 
@@ -1015,6 +1075,21 @@ class EducationPlatformApp {
                 }
 
                 li.addEventListener("click", () => {
+
+                    if (this.changesHaveBeenMade()) {
+                        const confirmSwitch = confirm(
+                            "⚠️ You have unsaved changes!\n\n" +
+                            "Switching branches will discard your unsaved work.\n" +
+                            "Do you want to continue?\n\n" +
+                            "✔ OK to switch branches\n" +
+                            "✖ Cancel to stay on this branch"
+                        );
+                    
+                        if (!confirmSwitch) {
+                            return;
+                        }
+                    }
+
                     this.switchBranch(currentBranch, branch);
                 });
                 branchList.appendChild(li);
@@ -1038,7 +1113,7 @@ class EducationPlatformApp {
         }
         catch (error) {
             console.error(error);
-            this.errorHandler.notify("An error occurred while displaying the branches.", error);
+            this.errorHandler.notify("An error occurred while displaying the branches.");
         }
     }
 
@@ -1057,24 +1132,24 @@ class EducationPlatformApp {
 
     /**
      * Displays a window to create and check out a new branch in the repository
-     * @param {Array} listOfBranches - the list of branches in the repository
      * @param {String} currentBranch - the current branch the user is on
-     * @param {String} activityURL - the URL of the activity
      */
-    showCreateBranchPrompt(listOfBranches, currentBranch, activityURL) {
+    async showCreateBranchPrompt(currentBranch) {
 
         this.closeAllModalsExcept("create-branch-container");
-        this.toggleCreateBranchVisibility(true);
+        await this.toggleCreateBranchVisibility(true);
 
         const closeButton = document.getElementById("create-branch-close-button");
         closeButton.onclick = () => {
+            this.hideSwitchToBranchLink();
             this.toggleCreateBranchVisibility(false);
         };
 
         const backButton = document.getElementById("create-branch-back-button");
-        backButton.onclick = () => {
+        backButton.onclick = async () => {
             this.toggleCreateBranchVisibility(false);
-            this.toggleSwitchBranchVisibility(true);
+            this.hideSwitchToBranchLink();
+            await this.toggleSwitchBranchVisibility(true);
         };
 
         document.getElementById("create-branch-based-on-text").textContent = currentBranch;
@@ -1085,71 +1160,96 @@ class EducationPlatformApp {
 
         const submitButton = document.getElementById("create-branch-submit-button");
         submitButton.onclick = () => {
-            const newBranch = newBranchInput.value.trim();
+            // Replace spaces with dashes
+            const newBranch = newBranchInput.value.trim().replace(/\s+/g, '-');
 
             // Check if the branch already exists
-            if (listOfBranches.includes(newBranch)) {
+            if (this.branches.includes(newBranch)) {
                 PlaygroundUtility.warningNotification("Branch " + newBranch + " already exists.");
                 return;
             }
 
             // Validate the branch name
-            if (!this.validateBranchName(newBranch)) {
+            if (!utility.validateBranchName(newBranch)) {
                 PlaygroundUtility.warningNotification("Invalid branch name. Please try again.");
                 return;
             }
 
-            // Create the new branch
-            this.fileHandler.createBranch(activityURL, newBranch)
+            // Check for unsaved changes
+            if(this.changesHaveBeenMade()) {
+                this.displayCreateBranchConfirmModal(currentBranch, newBranch);
+            }
+            else {
+                // No unsaved changes, simply create the branch and switch to it
+                this.fileHandler.createBranch(this.activityURL, newBranch)
+                .then(() => {
+                    PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
+                    this.displaySwitchToBranchLink(currentBranch, newBranch);
+                })
+                .catch((error) => {
+                    console.error(error);
+                    this.errorHandler.notify("An error occurred while creating a branch.");
+                });
+            }
+        };
+    }
+
+    displayCreateBranchConfirmModal(currentBranch, newBranch) {
+        this.toggleCreateBranchVisibility(false);
+        this.toggleCreateBranchConfirmVisibility(true);
+
+        const currentBranchHTML = document.querySelectorAll("#current-branch");
+        currentBranchHTML.forEach(element => element.textContent = currentBranch);
+
+        const newBranchHTML = document.querySelectorAll("#new-branch");
+        newBranchHTML.forEach(element => element.textContent = newBranch);
+
+        const closeButton = document.getElementById("create-branch-confirm-close-button");
+        closeButton.onclick = () => {
+            this.toggleCreateBranchConfirmVisibility(false);
+            this.hideSwitchToBranchLink();
+        };
+
+        const backButton = document.getElementById("create-branch-confirm-back-button");
+        backButton.onclick = async () => {
+            this.toggleCreateBranchConfirmVisibility(false);
+            this.hideSwitchToBranchLink();
+            await this.toggleCreateBranchVisibility(true);
+        };
+
+        const confirmButton = document.getElementById("confirm-bring-changes");
+        confirmButton.onclick = () => {
+            this.fileHandler.createBranch(this.activityURL, newBranch)
+            .then(() => {
+                // Save the changes to this new branch
+                this.saveFiles("Merge changes from " + currentBranch + " to " + newBranch, newBranch)
+                    .then(() => {
+                        PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
+                        this.displaySwitchToBranchLink(currentBranch, newBranch);
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        this.errorHandler.notify("An error occured while trying to bring the changes over to the new branch");
+                    });
+            })
+            .catch((error) => {
+                console.error(error);
+                this.errorHandler.notify("An error occurred while creating a branch.");
+            });
+        };
+
+        const discardButton = document.getElementById("discard-changes");
+        discardButton.onclick = () => {
+            this.fileHandler.createBranch(this.activityURL, newBranch)
             .then(() => {
                 PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
                 this.displaySwitchToBranchLink(currentBranch, newBranch);
             })
             .catch((error) => {
                 console.error(error);
-                this.errorHandler.notify("An error occurred while creating a branch.", error);
+                this.errorHandler.notify("An error occurred while creating a branch.");
             });
-        };
-    }
-
-    /**
-     * Validates a branch name:
-     * - Non-empty
-     * - Min length 3
-     * - Max length 100
-     * - No consecutive dots ("..")
-     * - Only [A-Za-z0-9._-] characters
-     *
-     * @param {String} branchName - The proposed branch name.
-     * @returns {boolean} true if valid, false otherwise.
-     */
-    validateBranchName(branchName) {
-        // Must not be empty or whitespace
-        if (!branchName || !branchName.trim()) {
-            return false;
         }
-
-        // Trim leading/trailing spaces
-        const trimmed = branchName.trim();
-
-        // Check length
-        if (trimmed.length > 100 || trimmed.length < 3) {
-            return false;
-        }
-
-        // Disallow consecutive dots
-        if (trimmed.includes('..')) {
-            return false;
-        }
-
-        // Only A-Z, a-z, 0-9, ., _, -
-        const allowedPattern = /^[A-Za-z0-9._-]+$/;
-        if (!allowedPattern.test(trimmed)) {
-            return false;
-        }
-
-        // Passes all checks
-        return true;
     }
 
     /**
@@ -1167,14 +1267,20 @@ class EducationPlatformApp {
         });
     }
 
-    toggleSwitchBranchVisibility(visibility) {
+    async toggleSwitchBranchVisibility(visibility) {
         const container = document.getElementById("switch-branch-container");
-        visibility ? container.style.display = "block" : container.style.display = "none";
+        if (visibility) {
+            await this.refreshBranches();
+        }
+        container.style.display = visibility ? "block" : "none";
     }
 
-    toggleCreateBranchVisibility(visibility) {
+    async toggleCreateBranchVisibility(visibility) {
         const container = document.getElementById("create-branch-container");
-        visibility ? container.style.display = "block" : container.style.display = "none";
+        if (visibility) {
+            await this.refreshBranches();
+        }
+        container.style.display = visibility ? "block" : "none";
     }
 
     toggleSaveConfirmationVisibility(visibility) {
@@ -1187,14 +1293,44 @@ class EducationPlatformApp {
         visibility ? container.style.display = "block" : container.style.display = "none";
     }
 
-    displaySwitchToBranchLink(currentBranch, branchToSwitchTo) {
-        document.getElementById("switch-branch-name").textContent = branchToSwitchTo;
-        document.getElementById("switch-to-branch-link").style.display = "block";
+    toggleReviewChangesVisibility(visibility) {
+        const container = document.getElementById("review-changes-container");
+        visibility ? container.style.display = "block" : container.style.display = "none";
+    }
 
-        document.getElementById("switch-branch-anchor").onclick = (event) => {
-            event.preventDefault();
-            this.switchBranch(currentBranch, branchToSwitchTo);
-        };
+    toggleCreateBranchConfirmVisibility(visibility) {
+        const container = document.getElementById("create-branch-confirm-container");
+        visibility ? container.style.display = "block" : container.style.display = "none";
+    }
+
+    toggleReviewChangesLink(visibility) {
+        const link = document.getElementById("review-changes-link");
+        visibility ? link.style.display = "block" : link.style.display = "none";
+    
+        if (visibility) {
+            document.getElementById("review-changes-anchor").onclick = (event) => {
+                event.preventDefault();
+                this.reviewChanges(event);
+            };
+        }
+    }
+
+    hideSwitchToBranchLink() {
+        document.querySelectorAll("#switch-branch-name").forEach(name => name.textContent = "");
+        document.querySelectorAll("#switch-to-branch-link").forEach(link => link.style.display = "none")
+        document.querySelectorAll("#switch-branch-anchor").forEach(anchor => anchor.onclick = null);
+    }
+
+    displaySwitchToBranchLink(currentBranch, branchToSwitchTo) {
+        document.querySelectorAll("#switch-branch-name").forEach(name => name.textContent = branchToSwitchTo);
+        document.querySelectorAll("#switch-to-branch-link").forEach(link => link.style.display = "block");
+
+        document.querySelectorAll("#switch-branch-anchor").forEach(anchor => {
+            anchor.onclick = (event) => {
+                event.preventDefault();
+                this.switchBranch(currentBranch, branchToSwitchTo);
+            };
+        });
     }
 
     /**

@@ -54,6 +54,10 @@
                         <span class="icon"><span class="mif-example-16 mif-branch"></span></span>
                         <span class="caption">Branch</span>
                     </a>
+                    <a href="#" onclick="reviewChanges(event)" id="review-changes" class="hidden">
+                        <span class="icon"><span class="mif-example-16 mif-review"></span></span>
+                        <span class="caption">Review Changes</span>
+                    </a>
                     <a href="https://mde-network.com/" target=”_blank” id="about">
                         <span class="icon"><span class="mif-example-16 mif-info"></span></span>
                         <span class="caption">About</span>
@@ -125,6 +129,40 @@
     </div>
 
 
+    <div id="create-branch-confirm-container" class="container-modal" style="display:none;">
+
+        <div class="container-header">
+            <button class="back-button" id="create-branch-confirm-back-button">
+                <span class="default-icon-left-arrow"></span>
+            </button>
+            <h6 class="container-title">Unsaved changes</span></h6>
+            <button class="close-button" id="create-branch-confirm-close-button">
+                <span class="default-icon-cross"></span>
+            </button>
+        </div>
+
+        <div class="container-body">
+            <p> You have unsaved changes in <strong id="current-branch"></strong>. </p>
+            <p> Would you like to bring these changes to <strong id="new-branch"></strong>? </p>
+
+            <p id="switch-to-branch-link" style="display:none;">
+                <a href="#" id="switch-branch-anchor">
+                    Go to 
+                    <span id="switch-branch-name">
+                        <!-- Render the text dynamically -->
+                    </span>
+                </a>
+            </p>
+        </div>
+
+        <div class="container-footer">
+            <button id="confirm-bring-changes" class="button primary round-button">Bring changes to&nbsp;<span id="new-branch"></span></button>
+            <button id="discard-changes" class="button round-button">Discard changes and continue</button>
+        </div>
+
+    </div>
+
+
     <div id="save-confirmation-container" class="container-modal" style="display:none;">
 
         <div class="container-header">
@@ -134,8 +172,36 @@
             </button>
         </div>
 
-        <div class="save-body">
-            <p id="save-confirmation-text">
+        <div class="container-body">
+            <p id="save-body-text">
+                <!-- Render the text dynamically -->
+            </p>
+            <p id="review-changes-link" style="display:none;">
+                <a href="#" id="review-changes-anchor">
+                    Review Changes
+                </a>
+            </p>
+        </div>
+
+        <div class="container-footer">
+            <button id="confirm-save-btn" class="button primary round-button">Save</button>
+            <button id="cancel-save-btn" class="button round-button">Cancel</button>
+        </div>
+
+    </div>
+
+
+    <div id="review-changes-container" class="container-modal" style="display:none;">
+
+        <div class="container-header">
+            <h6 class="container-title">Review Changes</h6>
+            <button class="close-button" id="review-changes-close-button">
+                <span class="default-icon-cross"></span>
+            </button>
+        </div>
+
+        <div class="changed-panels">
+            <p id="changed-panels-title">
                 <!-- Render the text dynamically -->
             </p>
             <div class="list-container">
@@ -143,11 +209,6 @@
                     <!-- Dynamically generated list of changed panels -->
                 </ul>
             </div>
-        </div>
-
-        <div class="save-footer">
-            <button id="confirm-save-btn" class="button primary round-button">Save</button>
-            <button id="cancel-save-btn" class="button round-button">Cancel</button>
         </div>
 
     </div>

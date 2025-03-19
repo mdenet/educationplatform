@@ -79,6 +79,7 @@ class FileHandler {
         }
         catch (error) {
             console.error("Failed to fetch branches: " + error);
+            throw error;
         }
     }
 
@@ -107,7 +108,7 @@ class FileHandler {
         return jsonRequest(requestUrl, JSON.stringify(requestParams), true);
     }
 
-    storeFiles(filesToSave, message){
+    storeFiles(filesToSave, message, overrideBranch){
 
         if (!isAuthenticated()) {
             throw new Error("Files could not be stored - not authenticated.");
@@ -127,6 +128,10 @@ class FileHandler {
             if (!fileParams) {
                 console.error(`Failed to generate request parameters for file: ${file.fileUrl}`);
                 throw new Error("Failed to generate request parameters");
+            }
+
+            if (overrideBranch) {
+                fileParams.ref = overrideBranch;
             }
 
             // Add the remaining parameters to the request

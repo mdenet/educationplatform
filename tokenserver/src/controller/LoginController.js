@@ -74,7 +74,7 @@ class LoginController {
             const badResponse = { authenticated: false };
 
             const authCookie = req.cookies[getAuthCookieName];
-            if (authCookie == null) {
+            if (!authCookie) {
                 console.log("No auth cookie found");
                 return res.status(200).json(badResponse);
             }
