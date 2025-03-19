@@ -13,12 +13,12 @@ import 'ace-builds/src-min-noconflict/ext-language_tools';
 
 import 'metro4/build/metro';
 
+import { GeneralEducationPlatformApp } from '../interfaces/GeneralEducationPlatformApp.js';
 import { FileHandler } from './FileHandler.js';
 import { ActivityManager } from './ActivityManager.js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
 import { EducationPlatformError } from './EducationPlatformError.js'
 import { ConfigValidationError } from './ConfigValidationError.js';
-import { ActivityValidator } from './ActivityValidator.js';
 
 import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
@@ -36,31 +36,19 @@ import { jsonRequest, urlParamPrivateRepo, utility } from './Utility.js';
 import { ErrorHandler } from './ErrorHandler.js';
 
 
-const COMMON_UTILITY_URL = utility.getWindowLocationHref().replace( utility.getWindowLocationSearch(), "" ) + "common/utility.json";
-const ACTION_FUNCTION_LANGUAGE_TYPE = "text";
+// const COMMON_UTILITY_URL = utility.getWindowLocationHref().replace( utility.getWindowLocationSearch(), "" ) + "common/utility.json";
+// const ACTION_FUNCTION_LANGUAGE_TYPE = "text";
 
-class EducationPlatformApp {
-    outputType;
-    outputLanguage;
-    activity;
+class EducationPlatformApp extends GeneralEducationPlatformApp {
     preloader;
-    panels;
-
-    errorHandler;
-    fileHandler;
-    activityManager;
-    toolsManager;
-    wsUri
 
     constructor() {
-        this.outputType = "text";
-        this.outputLanguage = "text";
-        this.errorHandler = new ErrorHandler();
+        const errorHandler = new ErrorHandler();
+        super(errorHandler);
         this.preloader = new Preloader();
-        this.panels = [];
     }
 
-    initialize( urlParameters, tokenHandlerUrl , wsUri){
+    async initialize( urlParameters, tokenHandlerUrl , wsUri){
         this.fileHandler = new FileHandler(tokenHandlerUrl);
         this.wsUri = wsUri;
 
@@ -80,7 +68,7 @@ class EducationPlatformApp {
 
         if (!urlParamPrivateRepo()){
             // Public repo so no need to authenticate
-            this.initializeActivity(urlParameters);
+            await this.initializeActivity(urlParameters);
             
         } else {
             PlaygroundUtility.showLogin();
@@ -113,10 +101,10 @@ class EducationPlatformApp {
             //TODO loading box
             let authDetails = jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/token",
                                         JSON.stringify(tokenRequest), true );
-            authDetails.then( () => {
+            authDetails.then( async () => {
                 document.getElementById('save')?.classList.remove('hidden');
                 window.sessionStorage.setItem("isAuthenticated", true);
-                this.initializeActivity(urlParameters);
+                await this.initializeActivity(urlParameters);
             } );
         }
 
@@ -146,7 +134,7 @@ class EducationPlatformApp {
 
 
 
-    initializeActivity(urlParameters){
+    async initializeActivity(urlParameters){
 
         let errors = [];
 
@@ -157,52 +145,24 @@ class EducationPlatformApp {
 
         if (errors.length==0){
             // An activity configuration has been provided
-            this.toolsManager = new ToolsManager(this.errorHandler.notify.bind(this.errorHandler));
-            this.activityManager = new ActivityManager( (this.toolsManager.getPanelDefinition).bind(this.toolsManager), this.fileHandler );
-            this.activityManager.initializeActivities();
-            errors = errors.concat(this.activityManager.getConfigErrors());
+            const toolsManager = new ToolsManager(this.errorHandler.notify.bind(this.errorHandler));
+            const activityManager = new ActivityManager( (toolsManager.getPanelDefinition).bind(toolsManager), this.fileHandler );
+            await super.initializeActivity(toolsManager, activityManager, errors);
         } 
+    }
 
-        if (errors.length==0){
-            // The activities have been validated
-            this.toolsManager.setToolsUrls( this.activityManager.getToolUrls().add(COMMON_UTILITY_URL) );
-            errors = errors.concat(this.toolsManager.getConfigErrors());
+    handleToolImports(toolImports){
+        for(let ipt of toolImports) {
+            ace.config.setModuleUrl(ipt.module, ipt.url);
         }
+    }
 
-        if (errors.length==0){
-            // The tools have been validated 
-            this.activityManager.showActivitiesNavEntries();
-
-            // Import tool grammar highlighting 
-            const  toolImports = this.toolsManager.getToolsGrammarImports(); 
-
-            for(let ipt of toolImports) {
-                ace.config.setModuleUrl(ipt.module, ipt.url);
-            }
-
-            // Add Tool styles for icons 
-           for (let toolUrl of this.toolsManager.toolsUrls){
-                let toolBaseUrl = toolUrl.url.substring(0, toolUrl.url.lastIndexOf("/"));
-                var link = document.createElement("link");
-                link.setAttribute("rel", 'stylesheet');
-                link.setAttribute("href", toolBaseUrl + "/icons.css");
-                document.head.appendChild(link);
-            }
-            
-            this.activity = this.activityManager.getSelectedActivity(); 
-
-            // Validate the resolved activity
-            errors = errors.concat( ActivityValidator.validate(this.activity, this.toolsManager.tools) );   
-        }
-
-        if  (errors.length==0){
-            // The resolved activity has been validated
-            this.initializePanels();
-        }
-
-        if (errors.length > 0) {
-            this.displayErrors(errors);
-        }
+    addToolIconStyles(toolUrl){
+        let toolBaseUrl = toolUrl.url.substring(0, toolUrl.url.lastIndexOf("/"));
+        var link = document.createElement("link");
+        link.setAttribute("rel", 'stylesheet');
+        link.setAttribute("href", toolBaseUrl + "/icons.css");
+        document.head.appendChild(link);
     }
 
     displayErrors(errors){
@@ -276,20 +236,9 @@ class EducationPlatformApp {
             }
     }
 
-    initializePanels() {
+    async initializePanels() {
         
-        if (this.activity.outputLanguage != null) {
-            this.outputLanguage = this.activity.outputLanguage;
-        }
-        
-        // Create panels for the given activities
-        for ( let apanel of this.activity.panels ){
-
-            var newPanel = this.createPanelForDefinitionId(apanel);
-            if (newPanel != null){
-                this.panels.push(newPanel);
-            }
-        }    
+        await super.initializePanels();  
 
 
         new Layout().createFrom2dArray("navview-content", this.panels, this.activity.layout.area);
@@ -310,112 +259,69 @@ class EducationPlatformApp {
         this.fit();
     }
 
+    createButtons(buttonConfigs, id){
+        return Button.createButtons(buttonConfigs, id);
+    }
 
-    /**
-     * Create a panel for a given panel config entry
-     * 
-     * @param {Object} panel - The activity config panel definition.
-     * @return {Panel} the platform Panel
-     */
-    createPanelForDefinitionId(panel){
-        const panelDefinition = panel.ref;
-        var newPanel = null;
+    async createPanel(panel, panelDefinition, newPanelId){
+        let newPanel = null;
+        switch(panelDefinition.panelclass) {
+            case "ProgramPanel": {
+                newPanel =  new ProgramPanel(newPanelId);
+                newPanel.initialize();
+                
+                // Set from the tool panel definition  
+                newPanel.setEditorMode(panelDefinition.language);
 
-        const newPanelId= panel.id;
+                newPanel.setType(panelDefinition.language);
 
-        if (panelDefinition != null){
+                // Set from the activity 
+                newPanel.setValue(panel.file);
+                newPanel.setValueSha(panel.sha); 
+                newPanel.setFileUrl(panel.url);
+                break;
+            }
+            case "ConsolePanel": {
+                newPanel =  new ConsolePanel(newPanelId);
+                newPanel.initialize();
+                break;
+            }
+            case "OutputPanel": {
+                newPanel =  new OutputPanel(newPanelId, panelDefinition.language, this.outputType, this.outputLanguage);
+                newPanel.initialize();
+                break;
+            }
+            case "XtextEditorPanel": {
+                let editorUrl = sessionStorage.getItem(newPanelId);
+                
+                newPanel = new XtextEditorPanel(newPanelId);
+                newPanel.initialize(editorUrl, panel.extension);
+                newPanel.setType(panelDefinition.language);
 
-            switch(panelDefinition.panelclass) {
-                case "ProgramPanel": {
-                    newPanel =  new ProgramPanel(newPanelId);
-                    newPanel.initialize();
-                    
-                    // Set from the tool panel definition  
-                    newPanel.setEditorMode(panelDefinition.language);
+                // Set from the activity 
+                newPanel.setValue(panel.file);
+                newPanel.setValueSha(panel.sha); 
+                newPanel.setFileUrl(panel.url)
 
-                    newPanel.setType(panelDefinition.language);
+                break;
+            }
+            case "CompositePanel": {
 
-                    // Set from the activity 
-                    newPanel.setValue(panel.file);
-                    newPanel.setValueSha(panel.sha); 
-                    newPanel.setFileUrl(panel.url);
-                    break;
-                }
-                case "ConsolePanel": {
-                    newPanel =  new ConsolePanel(newPanelId);
-                    newPanel.initialize();
-                    break;
-                }
-                case "OutputPanel": {
-                    newPanel =  new OutputPanel(newPanelId, panelDefinition.language, this.outputType, this.outputLanguage);
-                    newPanel.initialize();
-                    break;
-                }
-                case "XtextEditorPanel": {
-                    let editorUrl = sessionStorage.getItem(newPanelId);
-                    
-                    newPanel = new XtextEditorPanel(newPanelId);
-                    newPanel.initialize(editorUrl, panel.extension);
-                    newPanel.setType(panelDefinition.language);
-
-                    // Set from the activity 
-                    newPanel.setValue(panel.file);
-                    newPanel.setValueSha(panel.sha); 
-                    newPanel.setFileUrl(panel.url)
-
-                    break;
-                }
-                case "CompositePanel": {
-
-                    newPanel = new CompositePanel(newPanelId);
-                    if (panel.childPanels) {
-                        for (let childPanelConfig of panel.childPanels) {     
-                            var childPanel = this.createPanelForDefinitionId(childPanelConfig);
-                            newPanel.addPanel(childPanel);
-                        }
+                newPanel = new CompositePanel(newPanelId);
+                if (panel.childPanels) {
+                    for (let childPanelConfig of panel.childPanels) {     
+                        var childPanel = this.createPanelForDefinitionId(childPanelConfig);
+                        newPanel.addPanel(childPanel);
                     }
-                    newPanel.initialize();
-                    
-                    break;
                 }
-                // TODO create other panel types e.g. models and metamodels so the text is formatted correctly
-                default: {
-                    newPanel = new TestPanel(newPanelId);    
-                }            
+                newPanel.initialize();
+                
+                break;
             }
-        
-            // Add elements common to all panels
-            newPanel.setTitle(panel.name);
-
-            if(panel.icon != null){
-                newPanel.setIcon(panel.icon);
-            } else {
-                newPanel.setIcon(panelDefinition.icon);
-            }
-            
-            if (panel.buttons == null && panelDefinition.buttons != null){
-                // No activity defined buttons
-                newPanel.addButtons( Button.createButtons( panelDefinition.buttons, panel.id));
-
-            } else if (panel.buttons != null) {
-                // The activity has defined the buttons, some may be references to buttons defined in the tool spec
-                let resolvedButtonConfigs = panel.buttons.map(btn =>{    
-                    let resolvedButton;
-
-                    if (btn.ref){
-                        if (panelDefinition.buttons != null) {
-                            // button reference so resolve
-                            resolvedButton = panelDefinition.buttons.find((pdBtn)=> pdBtn.id===btn.ref);
-                        }
-                    } else {
-                        // activity defined button
-                        resolvedButton = btn;
-                    }
-                    return resolvedButton;
-                });
-                panel.buttons = resolvedButtonConfigs;
-                newPanel.addButtons( Button.createButtons( resolvedButtonConfigs, panel.id));
-            }
+            // TODO create other panel types e.g. models and metamodels so the text is formatted correctly
+            default: {
+                newPanel = new TestPanel(newPanelId);    
+            }            
         }
         return newPanel;
     }
@@ -424,115 +330,6 @@ class EducationPlatformApp {
     getPanelTitle(panelId) {
         return $("#" + panelId)[0].dataset.titleCaption;
     }
-
-   
-    /**
-     * Handle the response from the remote tool service
-     * 
-     * @param {Object} action 
-     * @param {Promise} requestPromise
-     */
-    handleResponseActionFunction(action, requestPromise){
-        
-        requestPromise.then( (responseText) => {
-
-            var response = JSON.parse(responseText);
-            const outputPanel = this.activityManager.findPanel( action.output.id, this.panels);
-
-            var outputConsole;
-            if (action.outputConsole != null){
-                outputConsole = this.activityManager.findPanel(action.outputConsole.id, this.panels);
-            } else {
-                outputConsole = outputPanel;
-            }
-
-            Metro.notify.killAll();
-
-            if ( Object.prototype.hasOwnProperty.call(response, "error")) {
-                outputConsole.setError(response.error);
-            } else {
-
-                var responseDiagram = Object.keys(response).find( key => key.toLowerCase().includes("diagram") );
-
-                if (response.output) {
-                    // Text
-                    outputConsole.setValue(response.output)  
-                }
-                
-                if (response.editorID) {
-                    // Language workbench
-                    PlaygroundUtility.longNotification("Building editor");
-
-                    this.checkEditorReady(response.editorID, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole);
-                    
-
-                } else if (responseDiagram != undefined) {
-                
-                    outputPanel.renderDiagram( response[responseDiagram] );
-                    
-                } else if (response.generatedFiles) {
-                    // Multiple text files
-                    outputPanel.setGeneratedFiles(response.generatedFiles);
-
-                } else if (response.generatedText) {
-                    // Generated file
-
-                    switch (action.outputType){
-                        case "code":
-                            // Text
-                            outputPanel.getEditor().setValue(response.generatedText.trim(), 1);
-                            break;
-
-                        case "html":
-                            // Html
-                            outputPanel.setOutput(response.output);
-                            var iframe = document.getElementById("htmlIframe");
-                            if (iframe == null) {
-                                iframe = document.createElement("iframe");
-                                iframe.id = "htmlIframe"
-                                iframe.style.height = "100%";
-                                iframe.style.width = "100%";
-                                document.getElementById(outputPanel.getId() + "Diagram").appendChild(iframe);
-                            }
-                            
-                            iframe.srcdoc = response.generatedText;
-                            break; 
-
-                        case "puml": 
-                        case "dot":
-                            // UML or Graph
-                            var krokiEndpoint = "";
-                            if (action.outputType == "puml") krokiEndpoint = "plantuml";
-                            else krokiEndpoint = "graphviz/svg"
-
-                            var krokiXhr = new XMLHttpRequest();
-                            krokiXhr.open("POST", "https://kroki.io/" + krokiEndpoint, true);
-                            krokiXhr.setRequestHeader("Accept", "image/svg+xml");
-                            krokiXhr.setRequestHeader("Content-Type", "text/plain");
-                            krokiXhr.onreadystatechange = function () {
-                                if (krokiXhr.readyState === 4) {
-                                    if (krokiXhr.status === 200) {
-
-                                        outputPanel.renderDiagram(krokiXhr.responseText);
-
-                                    }
-                                }
-                            };
-                            krokiXhr.send(response.generatedText);
-                            break;
-
-                            default:
-                                console.log("Unknown output type: " + action.outputType);
-                    }
-                }
-
-            } 
-        }).catch( (err) => {
-            this.errorHandler.notify("There was an error translating action function parameter types.", err);
-        });
-
-    }
-
 
     fit() {
         var splitter = document.getElementById(PANEL_HOLDER_ID);
@@ -544,68 +341,20 @@ class EducationPlatformApp {
         this.preloader.hide();
     }
 
+    getCustomError(message){
+        return new EducationPlatformError(message);
+    }
 
-    runAction(source, sourceButton) {
+    displayLongMessage(message){
+        PlaygroundUtility.longNotification(message);
+    }
 
-        // Get the action
-        var action = this.activityManager.getActionForCurrentActivity(source, sourceButton);
-       
-        if (!action){
-            let err = new EducationPlatformError(`Cannot find action given panel '${source}' and button '${sourceButton}'`);
-            this.errorHandler.notify("Failed to invoke action.", err);
+    displaySuccessMessage(message){
+        PlaygroundUtility.successNotification(message);
+    }
 
-        } else {
-            // Action found so try and invoke
-            let buttonConfig;
-            
-            if(action.source.buttons){
-                //Buttons defined by activity
-                buttonConfig = action.source.buttons.find (btn => btn.id == sourceButton);
-            } else {
-                //Buttons defined by tool
-                buttonConfig = action.source.ref.buttons.find (btn => btn.id == sourceButton);
-            }  
-
-            // Create map containing panel values
-            let parameterMap = new Map();
-
-            for (let paramName of Object.keys(action.parameters)){
-
-                let param = {};
-                const panelId = action.parameters[paramName].id;
-                
-                if (panelId) { 
-                    const panel = this.activityManager.findPanel(panelId, this.panels);
-                    param.type = panel.getType();
-                    param.value = panel.getValue();
-
-                } else {
-                    // No panel with ID so it use as the parameter value
-                    const parameterValue = action.parameters[paramName];
-                    param.type = 'text';
-                    param.value = parameterValue;
-                }
-
-                parameterMap.set(paramName, param);
-            }
-
-            // Add the platform language parameter
-            let languageParam = {};
-            languageParam.type = ACTION_FUNCTION_LANGUAGE_TYPE;
-            languageParam.value = action.source.ref.language; // Source panel language
-            parameterMap.set("language", languageParam);
-
-                // TODO support output and language 
-                //actionRequestData.outputType = outputType;
-                //actionRequestData.outputLanguage = outputLanguage;
-
-            // Call backend conversion and service functions
-            let actionResultPromise = this.toolsManager.invokeActionFunction(buttonConfig.actionfunction, parameterMap);
-
-            this.handleResponseActionFunction(action , actionResultPromise);
-        
-            PlaygroundUtility.longNotification("Executing program");
-        }
+    removeNotification(){
+        Metro.notify.killAll();
     }
 
 
@@ -702,49 +451,10 @@ class EducationPlatformApp {
         });
     }
 
-    /**
-     * Open a websockets connection to receive status updates on editor build. 
-     * @param {String} statusUrl - the url for checking the status of the editor panel.
-     * @param {String} editorInstanceUrl - the editor instance's url. 
-     * @param {String} editorPanelId - the id of the editor panel.
-     * @param {String} editorActivityId - TODO remove as this can be found using editorPanelId to save having to specify in config.
-     * @param {Panel} logPanel - the panel to log progress to.
-     */
-    checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel){
-        var socket = new WebSocket(this.wsUri);
-        var editorReady = false;
-        socket.onopen = function(){
-            socket.send(editorID);
-        };
-
-        socket.onmessage = function(e){
-            var resultData = JSON.parse(e.data);
-            if (resultData.output){
-                logPanel.setValue(resultData.output);
-            }
-            if(resultData.editorReady){
-                editorReady = true;
-                socket.close();
-                sessionStorage.setItem( editorPanelId , editorInstanceUrl );
-                this.activityManager.setActivityVisibility(editorActivityId, true);
-                Metro.notify.killAll();
-                PlaygroundUtility.successNotification("Building complete.");
-            }
-        }.bind(this);
-
-        socket.onclose = function(){
-            //If editor is not deployed, a new connection must be established.
-            if (!editorReady){
-                if(!socket || socket.readyState == 3){
-                    this.checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel);
-                }
-            }
-        }.bind(this);
-
-            
-        if(!socket || socket.readyState == 3){
-            this.checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel);
-        }
+    updateSessionInfo(editorPanelId, editorInstanceUrl){
+        //replace the origin of editorInstanceUrl with http://localhost:8080
+        // editorInstanceUrl = editorInstanceUrl.replace(/https:\/\/ep.mde-network\.org/,"http://localhost:8080");
+        sessionStorage.setItem(editorPanelId,editorInstanceUrl);
     }
 }
 

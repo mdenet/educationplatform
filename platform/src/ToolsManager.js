@@ -559,7 +559,7 @@ class ToolManager {
         } else {
             parameterPromise = null;
 
-            // this.errorNotification("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
+            this.errorNotification("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
         }
 
         return parameterPromise;
@@ -606,7 +606,7 @@ class ToolManager {
         } else {
             parameterPromise = null;
             
-            // this.errorNotification("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
+            this.errorNotification("No conversion function available for input types:" + Object.keys(typesPanelValuesMap).toString() )
         }
 
         return parameterPromise;

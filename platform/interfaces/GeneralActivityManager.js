@@ -161,25 +161,6 @@ class GeneralActivityManager {
         throw new Error("Override this method in the subclass");
     }
 
-
-    subMenuNumber = 0;
-
-    createActivitiesSubMenu(title, active = false) {
-        throw new Error("Override this method in the subclass");
-    }
-
-    openActiveActivitiesSubMenu() {
-        throw new Error("Override this method in the subclass");
-    }
-
-    createActivityMenuEntry(parent, activity) {  
-        throw new Error("Override this method in the subclass");
-    }
-
-    appendTopLevelActivityMenuItem(element) {
-        throw new Error("Override this method in the subclass");
-    }
-
     storeActivity(activity) {
 
         if (!this.activityId) {

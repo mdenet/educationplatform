@@ -26,6 +26,10 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
         }
     }
 
+    getCustomError(message){
+        return new Error(message);
+    }
+
     async createPanel(panel, panelDefinition, newPanelId){
         let newPanel = null;
         console.log("Creating panel", panelDefinition.panelclass);
@@ -96,8 +100,16 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
         return visiblePanels;
     }
 
-    displayMessage(message){
+    displayLongMessage(message){
         vscode.window.showInformationMessage(message);
+    }
+
+    displaySuccessMessage(message){
+        vscode.window.showInformationMessage(message);
+    }
+
+    removeNotifications(){
+       
     }
 
     updateSessionInfo(editorPanelId, editorInstanceUrl){

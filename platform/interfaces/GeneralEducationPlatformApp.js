@@ -13,7 +13,7 @@ class GeneralEducationPlatformApp{
     fileHandler;
     activityManager;
     toolsManager;
-    wsUri
+    wsUri;
 
     constructor(errorHandler) {
         this.outputType = "text";
@@ -22,9 +22,7 @@ class GeneralEducationPlatformApp{
         this.panels = [];
     }
 
-    async initializeActivity(toolsManager,activityManager){
-
-        let errors = [];
+    async initializeActivity(toolsManager,activityManager,errors){
 
         if (errors.length==0){
             // An activity configuration has been provided
@@ -51,7 +49,7 @@ class GeneralEducationPlatformApp{
             // Import tool grammar highlighting 
             const  toolImports = this.toolsManager.getToolsGrammarImports(); 
 
-            await this.handleToolImports(toolImports);
+            this.handleToolImports(toolImports);
 
             // Add Tool styles for icons 
            for (let toolUrl of this.toolsManager.toolsUrls){
@@ -112,43 +110,43 @@ class GeneralEducationPlatformApp{
 
         if (panelDefinition != null){
             newPanel = await this.createPanel(panel,panelDefinition, newPanelId);
-        }
+        
 
-        newPanel.setTitle(panel.name);
+            newPanel.setTitle(panel.name);
 
-        if(panel.icon != null){
-            newPanel.setIcon(panel.icon);
-        } else{
-            newPanel.setIcon(panelDefinition.icon);
-        }
+            if(panel.icon != null){
+                newPanel.setIcon(panel.icon);
+            } else{
+                newPanel.setIcon(panelDefinition.icon);
+            }
 
-        if (panel.buttons == null && panelDefinition.buttons != null){
-            // No activity defined buttons
-            newPanel.addButtons( this.createButtons( panelDefinition.buttons, panel.id));
+            if (panel.buttons == null && panelDefinition.buttons != null){
+                // No activity defined buttons
+                newPanel.addButtons( this.createButtons( panelDefinition.buttons, panel.id));
 
-        } else if (panel.buttons != null) {
-            // The activity has defined the buttons, some may be references to buttons defined in the tool spec
-            let resolvedButtonConfigs = panel.buttons.map(btn =>{    
-                let resolvedButton;
+            } else if (panel.buttons != null) {
+                // The activity has defined the buttons, some may be references to buttons defined in the tool spec
+                let resolvedButtonConfigs = panel.buttons.map(btn =>{    
+                    let resolvedButton;
 
-                if (btn.ref){
-                    if (panelDefinition.buttons != null) {
-                        // button reference so resolve
-                        resolvedButton = panelDefinition.buttons.find((pdBtn)=> pdBtn.id===btn.ref);
+                    if (btn.ref){
+                        if (panelDefinition.buttons != null) {
+                            // button reference so resolve
+                            resolvedButton = panelDefinition.buttons.find((pdBtn)=> pdBtn.id===btn.ref);
+                        }
+                    } else {
+                        // activity defined button
+                        resolvedButton = btn;
                     }
-                } else {
-                    // activity defined button
-                    resolvedButton = btn;
-                }
-                return resolvedButton;
-            });
-            panel.buttons = resolvedButtonConfigs;
-            newPanel.addButtons(this.createButtons( resolvedButtonConfigs, panel.id));
+                    return resolvedButton;
+                });
+                panel.buttons = resolvedButtonConfigs;
+                newPanel.addButtons(this.createButtons( resolvedButtonConfigs, panel.id));
+            }
+            if(newPanel != null ){
+                this.panels.push(newPanel);
+            }
         }
-        if(newPanel != null ){
-            this.panels.push(newPanel);
-        }
-        return newPanel;
     }
 
     async createPanel(panel,panelDefinition, newPanelId){
@@ -167,8 +165,8 @@ class GeneralEducationPlatformApp{
         console.log("Action: ", action);
         if (!action){
             console.log("Cannot find action given panel '" + source + "' and button '" + sourceButton + "'");
-            // let err = new EducationPlatformError(`Cannot find action given panel '${source}' and button '${sourceButton}'`);
-            // this.errorHandler.notify("Failed to invoke action.", err);
+            let err = this.getCustomError(`Cannot find action given panel '${source}' and button '${sourceButton}'`);
+            this.errorHandler.notify("Failed to invoke action.", err);
 
         } else {
             // Action found so try and invoke
@@ -225,10 +223,12 @@ class GeneralEducationPlatformApp{
             
             this.handleResponseActionFunction(action , actionResultPromise);
 
-            this.displayMessage("Executing action");
-        
-            // PlaygroundUtility.longNotification("Executing program");
+            this.displayLongMessage("Executing action");
         }
+    }
+
+    getCustomError(message){
+        return new Error("Implement getCustomError in subclass");
     }
 
     /**
@@ -253,6 +253,7 @@ class GeneralEducationPlatformApp{
             }
 
             // Metro.notify.killAll();
+            this.removeNotification();
 
             if ( Object.prototype.hasOwnProperty.call(response, "error")) {
                 outputConsole.setError(response.error);
@@ -268,7 +269,7 @@ class GeneralEducationPlatformApp{
                 if (response.editorID) {
                     // Language workbench
                     // PlaygroundUtility.longNotification("Building editor");
-                    this.displayMessage("Building editor");
+                    this.displayLongMessage("Building editor");
 
                     this.checkEditorReady(response.editorID, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole);
                     
@@ -350,7 +351,7 @@ class GeneralEducationPlatformApp{
          */
         checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel){
             
-            var socket = new WebSocket("ws://localhost:8080/tools/xtext/services/xtext/ws");   
+            var socket = new WebSocket(this.wsUri);   
             // var socket = new WebSocket("wss://ep.mde-network.org/tools/xtext/services/xtext/ws");
             var editorReady = false;
             socket.onopen = function(){
@@ -368,9 +369,9 @@ class GeneralEducationPlatformApp{
                     // sessionStorage.setItem( editorPanelId , editorInstanceUrl );
                     this.updateSessionInfo(editorPanelId, editorInstanceUrl);
                     this.activityManager.setActivityVisibility(editorActivityId, true);
-                    // Metro.notify.killAll();
+                    this.removeNotification();
                     // PlaygroundUtility.successNotification("Building complete.");
-                    this.displayMessage("Building complete");
+                    this.displaySuccessMessage("Building complete");
                     
                 }
             }.bind(this);
@@ -390,8 +391,16 @@ class GeneralEducationPlatformApp{
             }
         }
 
-    displayMessage(message){
+    displayLongMessage(message){
         throw new Error("Implement displayMessage in subclass");
+    }
+
+    displaySuccessMessage(message){
+        throw new Error("Implement displaySuccessMessage in subclass");
+    }
+
+    removeNotification(){
+        throw new Error("Implement removeNotification in subclass");
     }
 
     updateSessionInfo(editorPanelId, editorInstanceUrl){
