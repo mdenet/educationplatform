@@ -14,7 +14,6 @@ export function activate(context) {
 	const panelProvider = new PanelTreeDataProvider();
 	const localRepoManager = new LocalRepoManager();
 	let app = null;
-	let toolManager = null;
 	let activityManager = null;
 	const actionHandlers = {
 		openExternal: (data) => vscode.env.openExternal(vscode.Uri.parse(data.url)),
@@ -30,13 +29,8 @@ export function activate(context) {
 				vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
 				activityProvider.setPlaying(file);
-				toolManager = new ExtensionToolsManager();
-				activityManager = new ExtensionActivityManager((toolManager.getPanelDefinition).bind(toolManager), localRepoManager, taskProvider, context, file.label)
-				const errorHandler = new ExtensionErrorHandler();
-				app = new ExtensionEducationPlatformApp(errorHandler,context);
-				// app = new ExtensionEducationPlatformApp(context, taskProvider, file.label);
-				await app.initializeActivity(toolManager, activityManager, []);
-				// await app.initializeActivity();
+				app = new ExtensionEducationPlatformApp(context, taskProvider, file.label);
+				await app.initializeActivity();
 				const displayPanels = app.getVisiblePanels();
 				panelProvider.setPanels(displayPanels);
 				
@@ -52,7 +46,6 @@ export function activate(context) {
 			taskProvider.setTasks([]);
 			panelProvider.setPanels([]);
 			app = null;
-			toolManager = null;
 			activityManager = null;
 			vscode.window.showInformationMessage(`Stopped ${file.label}`);
 		}),
@@ -96,7 +89,7 @@ export function activate(context) {
 				console.log("Task already selected");
 				return;
 			}
-			if(app && toolManager && activityManager){
+			if(app){
 				try{
 					vscode.commands.executeCommand('workbench.action.closeAllEditors');
 					await app.switchActivityTask(task);

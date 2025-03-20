@@ -8,6 +8,7 @@ import { ExtensionErrorHandler } from "./ExtensionErorrHandler";
 import * as vscode from 'vscode';
 import { ExtensionToolsManager } from "./ExtensionToolsManager";
 import { ExtensionActivityManager } from "./ExtensionActivityManager";
+import { LocalRepoManager } from "./LocalRepoManager";
 
 class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     constructor(context, provider, activityLabel){;
@@ -17,13 +18,13 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
         this.context = context;
         this.provider = provider;
         this.activityLabel = activityLabel;
+        this.fileHandler = new LocalRepoManager();
     }
 
     async initializeActivity(){
-        let errors = [];
         const toolManager = new ExtensionToolsManager(this.errorHandler.notify.bind(this.errorHandler));
         const activityManager = new ExtensionActivityManager(toolManager.getPanelDefinition.bind(toolManager), this.fileHandler, this.provider, this.context, this.activityLabel);
-        await super.initializeActivity(toolManager, activityManager, errors);
+        await super.initializeActivity(toolManager, activityManager, []);
 
     }
 
