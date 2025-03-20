@@ -4,13 +4,27 @@ import { ExtensionProgramPanel } from "./ExtensionProgramPanel";
 import { ExtensionConsolePanel } from "./ExtensionConsolePanel";
 import { ExtensionOutputPanel } from "./ExtensionOutputPanel";
 import { ExtensionCompositePanel } from "./ExtensionCompositePanel"; 
+import { ExtensionErrorHandler } from "./ExtensionErorrHandler";
 import * as vscode from 'vscode';
+import { ExtensionToolsManager } from "./ExtensionToolsManager";
+import { ExtensionActivityManager } from "./ExtensionActivityManager";
 
 class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
-    constructor(errorHandler,context){;
+    constructor(context, provider, activityLabel){;
+        const errorHandler = new ExtensionErrorHandler();
         super(errorHandler);
         this.wsUri = "ws://localhost:8080/tools/xtext/services/xtext/ws";
         this.context = context;
+        this.provider = provider;
+        this.activityLabel = activityLabel;
+    }
+
+    async initializeActivity(){
+        let errors = [];
+        const toolManager = new ExtensionToolsManager(this.errorHandler.notify.bind(this.errorHandler));
+        const activityManager = new ExtensionActivityManager(toolManager.getPanelDefinition.bind(toolManager), this.fileHandler, this.provider, this.context, this.activityLabel);
+        await super.initializeActivity(toolManager, activityManager, errors);
+
     }
 
     handleToolImports(toolImports){

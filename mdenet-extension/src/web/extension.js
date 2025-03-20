@@ -34,7 +34,9 @@ export function activate(context) {
 				activityManager = new ExtensionActivityManager((toolManager.getPanelDefinition).bind(toolManager), localRepoManager, taskProvider, context, file.label)
 				const errorHandler = new ExtensionErrorHandler();
 				app = new ExtensionEducationPlatformApp(errorHandler,context);
+				// app = new ExtensionEducationPlatformApp(context, taskProvider, file.label);
 				await app.initializeActivity(toolManager, activityManager, []);
+				// await app.initializeActivity();
 				const displayPanels = app.getVisiblePanels();
 				panelProvider.setPanels(displayPanels);
 				
