@@ -131,11 +131,10 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     }
 
     async switchActivityTask(task){
+        await this.initializeActivity();
         this.activityManager.setSelectedActivity(task);
         this.activity = this.activityManager.getSelectedActivity();
-        await this.initializePanels()
-
-        
+        await this.initializePanels();
     }
 
 

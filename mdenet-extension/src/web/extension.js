@@ -2,17 +2,12 @@ import * as vscode from 'vscode';
 import { ActivityTreeDataProvider }  from './providers/ActivityTreeDataProvider';
 import { TaskTreeDataProvider } from './providers/TaskTreeDataProvider';
 import { PanelTreeDataProvider } from './providers/PanelTreeDataProvider';
-import { ExtensionActivityManager } from './ExtensionActivityManager';
-import { ExtensionToolsManager } from './ExtensionToolsManager';
-import { LocalRepoManager } from './LocalRepoManager';
 import { ExtensionEducationPlatformApp } from './ExtensionEducationPlatformApp';
-import { ExtensionErrorHandler } from './ExtensionErorrHandler';
 
 export function activate(context) {
 	const activityProvider = new ActivityTreeDataProvider();
 	const taskProvider = new TaskTreeDataProvider();
 	const panelProvider = new PanelTreeDataProvider();
-	const localRepoManager = new LocalRepoManager();
 	let app = null;
 	let activityManager = null;
 	const actionHandlers = {
