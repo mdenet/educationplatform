@@ -448,8 +448,6 @@ class EducationPlatformApp extends GeneralEducationPlatformApp {
     }
 
     updateSessionInfo(editorPanelId, editorInstanceUrl){
-        //replace the origin of editorInstanceUrl with http://localhost:8080
-        // editorInstanceUrl = editorInstanceUrl.replace(/https:\/\/ep.mde-network\.org/,"http://localhost:8080");
         sessionStorage.setItem(editorPanelId,editorInstanceUrl);
     }
 }

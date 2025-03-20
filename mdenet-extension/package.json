@@ -50,12 +50,20 @@
           "command": "panels.run",
           "group": "navigation"
         }
-      ]
+      ],
+      "view/title": [
+      {
+        "command": "activities.refresh",
+        "when": "view == activities",
+        "group": "navigation"
+      }
+  ]
     },
     "commands": [
       {
         "command": "activities.refresh",
-        "title": "Refresh Activities"
+        "title": "Refresh Activities",
+        "icon": "$(refresh)"
       },
       {
         "command": "tasks.refresh",

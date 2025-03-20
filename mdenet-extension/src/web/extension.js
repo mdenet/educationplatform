@@ -44,6 +44,10 @@ export function activate(context) {
 			activityManager = null;
 			vscode.window.showInformationMessage(`Stopped ${file.label}`);
 		}),
+		vscode.commands.registerCommand('activities.refresh', () => {
+			vscode.window.showInformationMessage('Refreshing activities');
+			activityProvider.refresh();
+		}),
 		vscode.commands.registerCommand('panels.displayPanel', async (panel) => {
 			console.log('Displaying panel:', panel);
 			panel.displayPanel();

@@ -11,12 +11,11 @@ class LocalRepoManager {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) {
             // console.log('No workspace is opened');
-            this.files = [];
         } else {
             this.rootUri = workspaceFolders[0].uri; // Use VS Code's Uri API
             // console.log('Root path:', this.rootUri.toString());
-            this.files = [];
         }
+        this.file = [];
 
         LocalRepoManager.instance = this;
     }
