@@ -803,19 +803,20 @@ class EducationPlatformApp {
         };
 
         const saveButton = document.getElementById("confirm-save-btn");
-        saveButton.onclick = () => {
-            this.savePanelContents();
+        saveButton.onclick = async () => {
+            await this.savePanelContents();
             this.toggleSaveConfirmationVisibility(false);
         };
     }
 
     /**
-     * Checks if the local environment is outdated compared to the remote repository.
+     * Checks if the changed files in the local environment is outdated compared to the remote repository.
      * @returns {boolean} true if the local environment is outdated, false otherwise.
      */
     async isLocalEnvironmentOutdated() {
-        for (const panel of this.saveablePanels) {
-            // Fetch the file from the remote repository
+        const panelsToSave = this.getPanelsWithChanges();
+        for (const panel of panelsToSave) {
+
             const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
 
             if (!remoteFile) {
@@ -853,14 +854,14 @@ class EducationPlatformApp {
      * Gathers the commit message and calls to save the panel contents.
      * Provides UI feedback on the success or failure of the save operation.
      */
-    savePanelContents() {
+    async savePanelContents() {
 
         if (!this.changesHaveBeenMade()) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
             return;
         }
 
-        if (this.isLocalEnvironmentOutdated()) {
+        if (await this.isLocalEnvironmentOutdated()) {
             PlaygroundUtility.warningNotification("There have been changes to the remote repository - please save your changes to a new branch.")
             return;
         }
