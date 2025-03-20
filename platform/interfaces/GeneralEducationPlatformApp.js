@@ -1,5 +1,5 @@
 import { ActivityValidator } from "../src/ActivityValidator";
-import { EducationPlatformApp } from "../src/EducationPlatformApp";
+import { EducationPlatformError} from "../src/EducationPlatformError";
 
 const COMMON_UTILITY_URL = "https://ep.mde-network.org/common/utility.json";
 const ACTION_FUNCTION_LANGUAGE_TYPE = "text";
@@ -163,7 +163,7 @@ class GeneralEducationPlatformApp{
         console.log("Action: ", action);
         if (!action){
             console.log("Cannot find action given panel '" + source + "' and button '" + sourceButton + "'");
-            let err = new EducationPlatformApp(`Cannot find action given panel '${source}' and button '${sourceButton}'`);
+            let err = new EducationPlatformError(`Cannot find action given panel '${source}' and button '${sourceButton}'`);
             this.errorHandler.notify("Failed to invoke action.", err);
 
         } else {
