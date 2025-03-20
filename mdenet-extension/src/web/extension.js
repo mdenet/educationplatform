@@ -91,7 +91,7 @@ export function activate(context) {
 		}),
 		vscode.commands.registerCommand('tasks.select', async (task) => {
 			if(app?.activity?.id == task){
-				console.log("Task already selected");x
+				console.log("Task already selected");
 				return;
 			}
 			if(app && toolManager && activityManager){

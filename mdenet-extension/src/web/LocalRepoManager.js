@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export class LocalRepoManager {
+class LocalRepoManager {
     static instance;
 
     constructor() {
@@ -59,3 +59,5 @@ export class LocalRepoManager {
         }
     }
 }
+
+export { LocalRepoManager };

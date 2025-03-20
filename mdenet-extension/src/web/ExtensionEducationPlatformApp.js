@@ -9,6 +9,7 @@ import * as vscode from 'vscode';
 class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     constructor(errorHandler,context){;
         super(errorHandler);
+        this.wsUri = "ws://localhost:8080/tools/xtext/services/xtext/ws";
         this.context = context;
     }
 
@@ -24,10 +25,6 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
         for (let error of errors){
             vscode.window.showErrorMessage(error.message);
         }
-    }
-
-    getCustomError(message){
-        return new Error(message);
     }
 
     async createPanel(panel, panelDefinition, newPanelId){
@@ -70,8 +67,7 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
 				break
 			}
 			default:{
-				console.log()
-				console.log("Panel class not found");
+				throw new Error("Panel class not found");
 				break;
 			}
 		}
@@ -108,8 +104,8 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
         vscode.window.showInformationMessage(message);
     }
 
-    removeNotifications(){
-       
+    removeNotification(){
+       console.log("Removing notification");
     }
 
     updateSessionInfo(editorPanelId, editorInstanceUrl){

@@ -341,10 +341,6 @@ class EducationPlatformApp extends GeneralEducationPlatformApp {
         this.preloader.hide();
     }
 
-    getCustomError(message){
-        return new EducationPlatformError(message);
-    }
-
     displayLongMessage(message){
         PlaygroundUtility.longNotification(message);
     }

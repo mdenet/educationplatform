@@ -1,4 +1,5 @@
 import { ActivityValidator } from "../src/ActivityValidator";
+import { EducationPlatformApp } from "../src/EducationPlatformApp";
 
 const COMMON_UTILITY_URL = "https://ep.mde-network.org/common/utility.json";
 const ACTION_FUNCTION_LANGUAGE_TYPE = "text";
@@ -89,10 +90,10 @@ class GeneralEducationPlatformApp{
 
         // Create panels for the given activities
         for ( let apanel of this.activity.panels ){
-            // var newPanel = await this.createPanelForDefinitionId(apanel);
-            // if (newPanel != null){
-            //     this.panels.push(newPanel);
-            // }
+            var newPanel = await this.createPanelForDefinitionId(apanel);
+            if (newPanel != null){
+                this.panels.push(newPanel);
+            }
             await this.createPanelForDefinitionId(apanel);
         }
 
@@ -110,8 +111,6 @@ class GeneralEducationPlatformApp{
 
         if (panelDefinition != null){
             newPanel = await this.createPanel(panel,panelDefinition, newPanelId);
-        
-
             newPanel.setTitle(panel.name);
 
             if(panel.icon != null){
@@ -143,10 +142,9 @@ class GeneralEducationPlatformApp{
                 panel.buttons = resolvedButtonConfigs;
                 newPanel.addButtons(this.createButtons( resolvedButtonConfigs, panel.id));
             }
-            if(newPanel != null ){
-                this.panels.push(newPanel);
-            }
         }
+        return newPanel;
+        // console.log("No panel definition found for panel: " + panel?.id);
     }
 
     async createPanel(panel,panelDefinition, newPanelId){
@@ -165,7 +163,7 @@ class GeneralEducationPlatformApp{
         console.log("Action: ", action);
         if (!action){
             console.log("Cannot find action given panel '" + source + "' and button '" + sourceButton + "'");
-            let err = this.getCustomError(`Cannot find action given panel '${source}' and button '${sourceButton}'`);
+            let err = new EducationPlatformApp(`Cannot find action given panel '${source}' and button '${sourceButton}'`);
             this.errorHandler.notify("Failed to invoke action.", err);
 
         } else {
@@ -227,10 +225,6 @@ class GeneralEducationPlatformApp{
         }
     }
 
-    getCustomError(message){
-        return new Error("Implement getCustomError in subclass");
-    }
-
     /**
      * Handle the response from the remote tool service
      * 
@@ -252,6 +246,7 @@ class GeneralEducationPlatformApp{
                 outputConsole = outputPanel;
             }
 
+            console.log("Output panel: ", outputPanel);
             // Metro.notify.killAll();
             this.removeNotification();
 
@@ -350,9 +345,8 @@ class GeneralEducationPlatformApp{
          * @param {Panel} logPanel - the panel to log progress to.
          */
         checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel){
-            
+            console.log("this.wsUri: ", this.wsUri);
             var socket = new WebSocket(this.wsUri);   
-            // var socket = new WebSocket("wss://ep.mde-network.org/tools/xtext/services/xtext/ws");
             var editorReady = false;
             socket.onopen = function(){
                 socket.send(editorID);

@@ -8,31 +8,38 @@ class ExtensionProgramPanel extends ExtensionPanel{
         this.doc = null;
         this.content = null;
     }
-    async initialize(){
-        let doc = null;
-        if (this.fileLocation && !this.fileLocation.startsWith('http') && !this.fileLocation.startsWith('https')){
-            console.log('Opening file: ' + vscode.workspace.workspaceFolders[0].uri.fsPath + '/' + this.fileLocation);
-            doc = await vscode.workspace.openTextDocument(vscode.workspace.workspaceFolders[0].uri.fsPath + '/' + this.fileLocation);
+    async initialize() {
+        if (this.fileLocation?.startsWith('http')) {
+            await this.fetchRemoteFile();
+        } else {
+            await this.openLocalFile();
         }
-        else{
-            console.log('Fetching URL: ' + this.fileLocation);
-            try {
-                const response = await fetch(this.fileLocation);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const content = await response.text();
-                this.content = content;
-            } catch (error) {
-                console.error('Error fetching URL content:', error);
-                // Create an empty document with error message
-                doc = await vscode.workspace.openTextDocument({
-                    content: `Error fetching URL content: ${error.message}`,
-                    language: 'plaintext'
-                });
-            }
+    }
+    
+    async openLocalFile() {
+        try {
+            const workspacePath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+            const filePath = `${workspacePath}/${this.fileLocation}`;
+            console.log(`Opening file: ${filePath}`);
+            this.doc = await vscode.workspace.openTextDocument(filePath);
+        } catch (error) {
+            console.error('Error opening local file:', error);
         }
-        this.doc = doc;
+    }
+    
+    async fetchRemoteFile() {
+        console.log(`Fetching URL: ${this.fileLocation}`);
+        try {
+            const response = await fetch(this.fileLocation);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            this.content = await response.text();
+        } catch (error) {
+            console.error('Error fetching URL content:', error);
+            this.doc = await vscode.workspace.openTextDocument({
+                content: `Error fetching URL content: ${error.message}`,
+                language: 'plaintext'
+            });
+        }
     }
 
     async displayPanel(targetColumn=vscode.ViewColumn.One){
