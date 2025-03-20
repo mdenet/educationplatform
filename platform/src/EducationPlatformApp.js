@@ -383,7 +383,7 @@ class EducationPlatformApp {
         const panelDefinition = panel.ref;
         var newPanel = null;
 
-        const newPanelId= panel.id;
+        const newPanelId = panel.id;
 
         if (panelDefinition != null){
 
@@ -448,6 +448,7 @@ class EducationPlatformApp {
         
             // Add elements common to all panels
             newPanel.setTitle(panel.name);
+            newPanel.setName(panel.name);
 
             if(panel.icon != null){
                 newPanel.setIcon(panel.icon);
@@ -782,7 +783,7 @@ class EducationPlatformApp {
        
         const saveConfirmationText = document.getElementById("save-body-text");
         if (this.changesHaveBeenMade()) {
-            saveConfirmationText.textContent = "Please review the panels with unsaved changes:";
+            saveConfirmationText.textContent = "You can review your changes before saving:";
 
             // Render the anchor tag to review the changes
             this.toggleReviewChangesLink(true);
@@ -820,7 +821,7 @@ class EducationPlatformApp {
             const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
 
             if (!remoteFile) {
-                throw new Error(`No remote file found for ${panel.getId()}`);
+                throw new Error(`No remote file found for ${panel.getName()}`);
             }
 
             // Compare the remote SHA with the panel's current SHA. If they differ, the local environment is outdated.
@@ -862,7 +863,7 @@ class EducationPlatformApp {
         }
 
         if (await this.isLocalEnvironmentOutdated()) {
-            PlaygroundUtility.warningNotification("There have been changes to the remote repository - please save your changes to a new branch.")
+            PlaygroundUtility.warningNotification("The changes made to the panels are outdated - please save your work to a new branch.")
             return;
         }
 
@@ -916,7 +917,7 @@ class EducationPlatformApp {
                     // Mark the editor clean if the save completed
                     panel.getEditor().session.getUndoManager().markClean();
 
-                    console.log(`The contents of panel '${panel.getId()}' were saved successfully.`);
+                    console.log(`The contents of panel '${panel.getName()}' were saved successfully.`);
                 }
                 resolve();
             })
@@ -941,7 +942,7 @@ class EducationPlatformApp {
                 // Fetch the file from the remote repository and await the result
                 const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
                 if (!remoteFile || !remoteFile.content) {
-                    throw new Error(`No remote file content returned for ${panel.getId()}`);
+                    throw new Error(`No remote file content returned for ${panel.getName()}`);
                 }
 
                 const remoteContent = remoteFile.content;
@@ -965,7 +966,7 @@ class EducationPlatformApp {
                     .filter(change => change.added || change.removed); // Only include meaningful changes
                 
                 // Store the changes in the Map with the panel's ID as key
-                panelDiffsMap.set(panel.getId(), changes);
+                panelDiffsMap.set(panel.getName(), changes);
             }
             return panelDiffsMap;
         } 
@@ -1002,13 +1003,13 @@ class EducationPlatformApp {
 
         // Populate the list of panels with unsaved changes
         panelsToSave.forEach(panel => {
-            const panelID = panel.getId();
+            const panelName = panel.getName();
 
             const li = document.createElement("li");
-            li.textContent = panel.getId();
+            li.textContent = panel.getName();
 
             li.addEventListener("click", () => {
-                this.displayChangesForPanel(panelID, panelDiffs.get(panelID));
+                this.displayChangesForPanel(panelName, panelDiffs.get(panelName));
             })
 
             panelList.appendChild(li);
@@ -1285,6 +1286,11 @@ class EducationPlatformApp {
         discardButton.onclick = () => {
             this.fileHandler.createBranch(this.activityURL, newBranch)
             .then(() => {
+                // Undo the changes made to the panels to keep the current branch clean
+                for (const panel of this.saveablePanels) {
+                    panel.setValue(panel.getLastSavedContent());
+                }
+
                 PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
                 this.displaySwitchToBranchLink(currentBranch, newBranch);
             })

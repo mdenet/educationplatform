@@ -10,7 +10,7 @@ class OutputPanel extends ProgramPanel {
     generatedFiles;
 
     constructor(id, language, outputType, outputLanguage) {
-        super(id, false, null);
+        super(id);
         this.outputType = outputType;
         this.outputLanguage = outputLanguage;
         this.language = language;

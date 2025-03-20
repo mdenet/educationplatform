@@ -3,6 +3,7 @@
 class Panel {
 
     id;
+    name;
     editor;
     element;
     visible;
@@ -10,7 +11,6 @@ class Panel {
 
     constructor(id) {
         this.id = id;
-        
     }
 
     initialize(editor) {
@@ -42,6 +42,10 @@ class Panel {
         return this.id;
     }
 
+    getName() {
+        return this.name;
+    }
+
     setTitleAndIcon(title, icon) {
         this.setTitle(title);
         this.setIcon(icon);
@@ -49,6 +53,10 @@ class Panel {
 
     setTitle(title) {
         this.element.dataset.titleCaption = title;
+    }
+
+    setName(name) {
+        this.name = name;
     }
 
     setIcon(icon) {
