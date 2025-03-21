@@ -231,7 +231,11 @@ export function getWindowLocationHref(){
  * @returns 
  */
 export function getBaseURL(){
-    return window.location.origin;
+    try{
+        return window.location.origin;
+    } catch(err){
+        return "http://localhost:8080";
+    }
 }
 
 /**

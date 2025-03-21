@@ -94,7 +94,6 @@ class GeneralEducationPlatformApp{
             if (newPanel != null){
                 this.panels.push(newPanel);
             }
-            await this.createPanelForDefinitionId(apanel);
         }
 
     }

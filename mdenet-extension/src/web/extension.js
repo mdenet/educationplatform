@@ -9,7 +9,6 @@ export function activate(context) {
 	const taskProvider = new TaskTreeDataProvider();
 	const panelProvider = new PanelTreeDataProvider();
 	let app = null;
-	let activityManager = null;
 	const actionHandlers = {
 		openExternal: (data) => vscode.env.openExternal(vscode.Uri.parse(data.url)),
 		runAppAction: (data) => app.runAction(data.parentPanel, data.buttonId),
@@ -22,7 +21,9 @@ export function activate(context) {
 		vscode.commands.registerCommand('activities.play', async (file) => {
 			try {
 				vscode.commands.executeCommand('workbench.action.closeAllEditors');
-
+				// context.workspaceState.keys().forEach(key => {
+				// 	context.workspaceState.update(key,null);
+				// });
 				activityProvider.setPlaying(file);
 				app = new ExtensionEducationPlatformApp(context, taskProvider, file.label);
 				await app.initializeActivity();
@@ -34,14 +35,10 @@ export function activate(context) {
 			}
 		}),
 		vscode.commands.registerCommand('activities.stop', async (file) => {
-			// context.workspaceState.keys().forEach(key => {
-			// 	context.workspaceState.update(key,null);
-			// });
 			activityProvider.setStopped();
 			taskProvider.setTasks([]);
 			panelProvider.setPanels([]);
 			app = null;
-			activityManager = null;
 			vscode.window.showInformationMessage(`Stopped ${file.label}`);
 		}),
 		vscode.commands.registerCommand('activities.refresh', () => {
@@ -56,11 +53,12 @@ export function activate(context) {
 			let options = [];
 			const selectedEditor = vscode.window.activeTextEditor;
 			if(!selectedEditor){
-				vscode.window.showInformationMessage("Press the buttons inside the panel");
+				vscode.window.showInformationMessage("Press the buttons inside the panel"); // This means that it is a Webview panel
 				return;
 			}
+
+			console.log("All panels", app.panels);
 			const selectedPanel = app.panels.find(panel => panel.doc === selectedEditor.document);
-			console.log("Selected panel", selectedPanel);
 			const buttonMap = new Map();
 
 			if (selectedPanel){
@@ -109,5 +107,4 @@ export function activate(context) {
 	);
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}

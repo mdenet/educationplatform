@@ -6,9 +6,9 @@ import { ExtensionOutputPanel } from "./ExtensionOutputPanel";
 import { ExtensionCompositePanel } from "./ExtensionCompositePanel"; 
 import { ExtensionErrorHandler } from "./ExtensionErorrHandler";
 import * as vscode from 'vscode';
-import { ExtensionToolsManager } from "./ExtensionToolsManager";
 import { ExtensionActivityManager } from "./ExtensionActivityManager";
 import { LocalRepoManager } from "./LocalRepoManager";
+import { ToolManager } from "../../../platform/src/ToolsManager";
 
 class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     constructor(context, provider, activityLabel){;
@@ -22,7 +22,7 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     }
 
     async initializeActivity(){
-        const toolManager = new ExtensionToolsManager(this.errorHandler.notify.bind(this.errorHandler));
+        const toolManager = new ToolManager(this.errorHandler.notify.bind(this.errorHandler));
         const activityManager = new ExtensionActivityManager(toolManager.getPanelDefinition.bind(toolManager), this.fileHandler, this.provider, this.context, this.activityLabel);
         await super.initializeActivity(toolManager, activityManager, []);
 
@@ -62,6 +62,7 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
 				if(panel.childPanels){
 					for (let childPanelConfig of panel.childPanels){
 						var childPanel = await this.createPanelForDefinitionId(childPanelConfig);
+                        this.panels.push(childPanel);
 						newPanel.addPanel(childPanel);
 					}
 				}
@@ -132,6 +133,7 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
 
     async switchActivityTask(task){
         await this.initializeActivity();
+        this.panels = [];
         this.activityManager.setSelectedActivity(task);
         this.activity = this.activityManager.getSelectedActivity();
         await this.initializePanels();
