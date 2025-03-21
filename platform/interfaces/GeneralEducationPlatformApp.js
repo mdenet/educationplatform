@@ -1,7 +1,8 @@
 import { ActivityValidator } from "../src/ActivityValidator";
 import { EducationPlatformError} from "../src/EducationPlatformError";
+import { utility } from "../src/Utility";
 
-const COMMON_UTILITY_URL = "https://ep.mde-network.org/common/utility.json";
+const COMMON_UTILITY_URL = utility.getBaseURL() + "/common/utility.json";
 const ACTION_FUNCTION_LANGUAGE_TYPE = "text";
 
 class GeneralEducationPlatformApp{
