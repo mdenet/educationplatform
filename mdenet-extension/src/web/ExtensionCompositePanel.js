@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import { ExtensionPanel } from './ExtensionPanel';
 
 class ExtensionCompositePanel extends ExtensionPanel{
@@ -22,12 +21,6 @@ class ExtensionCompositePanel extends ExtensionPanel{
     getChildren(){
         return this.childPanels;
     }
-
-    // async displayPanel(targetColumn=vscode.ViewColumn.One){
-    //     for (let panel of this.panels){
-    //         await panel.displayPanel(targetColumn);
-    //     }
-    // }
 
 
 }
