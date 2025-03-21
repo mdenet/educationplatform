@@ -18,7 +18,7 @@ const webExtensionConfig = {
 	target: 'webworker', // extensions run in a webworker context
 	entry: {
 		'extension': './src/web/extension.js',
-		'test/suite/index': './src/web/test/suite/index.ts'
+		'test/suite/index': './src/web/test/suite/index.js'
 	},
 	output: {
 		filename: '[name].js',
@@ -40,13 +40,20 @@ const webExtensionConfig = {
 		}
 	},
 	module: {
-		rules: [{
+		rules: [
+			{
 			test: /\.ts$/,
 			exclude: /node_modules/,
 			use: [{
 				loader: 'ts-loader'
-			}]
-		}]
+				},]
+			},
+			{
+			test: /\.js$/,
+			exclude: /node_modules/,
+			use: []
+			}
+		]
 	},
 	plugins: [
 		new webpack.optimize.LimitChunkCountPlugin({
