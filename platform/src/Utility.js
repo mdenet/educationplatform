@@ -121,7 +121,7 @@ export function jsonRequestConversion(url, json, parameterName){
 
 
 /**
- * HTTP GET request to the specified with optional query parameters.
+ * HTTP GET request to the specified URL
  * 
  * @param {String} url The destination URL.
  * @param {boolean} useCredentials Whether to send credentials.

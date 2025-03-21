@@ -29,12 +29,23 @@ class ActivityManager {
 
         this.configValidator = new ActivityConfigValidator();
 
-        this.accessPanelDef = panelDefAccessor; // Obtain tool panel definitions from thier ID
+        this.accessPanelDef = panelDefAccessor; // Obtain tool panel definitions from their ID
         this.fileHandler = fileHandler;
 
         // Retrieve the url of the activities configuration
         this.activitiesUrl = utility.getActivityURL();
         this.activitiesUrl ? this.customActivitiesUrl = true : this.customActivitiesUrl = false;
+
+        const parameters = new URLSearchParams(utility.getWindowLocationSearch());
+        const parameterKeys = Array.from(parameters.keys());
+
+        // Retrieve selected activity from the url parameters 
+        for (const key of parameterKeys) {
+            if (!parameters.get(key)) {
+                this.activityId = key;
+                break;
+            }
+        }
     }
 
     /**
