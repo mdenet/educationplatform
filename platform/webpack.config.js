@@ -23,6 +23,7 @@ module.exports = (env) => {
       new DefinePlugin({
         'TOKEN_SERVER_URL': JSON.stringify(env.tokenServerUrl),
         'FEEDBACK_SURVEY_URL': JSON.stringify(env.feedbackSurveyUrl),
+        'WEBSOCKETS_URI': JSON.stringify(env.websocketsUri)
       }),
     ]
   };

@@ -58,6 +58,7 @@ class EducationPlatformApp {
     fileHandler;
     activityManager;
     toolsManager;
+    wsUri
 
     constructor() {
         this.outputType = "text";
@@ -70,8 +71,9 @@ class EducationPlatformApp {
         this.confirmLeavePage = false;
     }
 
-    initialize( urlParameters, tokenHandlerUrl ){
+    initialize( urlParameters, tokenHandlerUrl , wsUri){
         this.fileHandler = new FileHandler(tokenHandlerUrl);
+        this.wsUri = wsUri;
         setAuthenticated(false);
 
         /* 
@@ -522,10 +524,11 @@ class EducationPlatformApp {
                     outputConsole.setValue(response.output)  
                 }
                 
-                if (response.editorUrl) {
+                if (response.editorID) {
                     // Language workbench
                     PlaygroundUtility.longNotification("Building editor");
-                    this.checkEditorReady( response.editorStatusUrl, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole);
+
+                    this.checkEditorReady(response.editorID, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole);
                     
 
                 } else if (responseDiagram != undefined) {
@@ -1385,48 +1388,47 @@ class EducationPlatformApp {
     }
 
     /**
-     * Poll for editor to become available. 
+     * Open a websockets connection to receive status updates on editor build. 
      * @param {String} statusUrl - the url for checking the status of the editor panel.
      * @param {String} editorInstanceUrl - the editor instance's url. 
      * @param {String} editorPanelId - the id of the editor panel.
      * @param {String} editorActivityId - TODO remove as this can be found using editorPanelId to save having to specify in config.
      * @param {Panel} logPanel - the panel to log progress to.
      */
-    async checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId, logPanel){
+    checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel){
+        var socket = new WebSocket(this.wsUri);
+        var editorReady = false;
+        socket.onopen = function(){
+            socket.send(editorID);
+        };
 
-        let response  = await fetch(statusUrl);
-
-        if (response.status == 200){ 
-            const result = await response.json();
-
-            if (result.output){
-                logPanel.setValue(result.output);
+        socket.onmessage = function(e){
+            var resultData = JSON.parse(e.data);
+            if (resultData.output){
+                logPanel.setValue(resultData.output);
             }
-            
-            if (result.error){
-                // Unsuccessful
-                console.log("Editor failed start.");
-                sessionStorage.removeItem(editorPanelId);
-                this.activityManager.setActivityVisibility(editorActivityId, false);
-                Metro.notify.killAll();
-                PlaygroundUtility.notification("Build Failed", result.error, "ribbed-lightAmber");
-
-            } else if (!result.editorReady){
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                await this.checkEditorReady(statusUrl, editorInstanceUrl, editorPanelId, editorActivityId, logPanel);
-
-            } else {
-                // Successful 
-                console.log("Editor ready.");
+            if(resultData.editorReady){
+                editorReady = true;
+                socket.close();
                 sessionStorage.setItem( editorPanelId , editorInstanceUrl );
                 this.activityManager.setActivityVisibility(editorActivityId, true);
                 Metro.notify.killAll();
                 PlaygroundUtility.successNotification("Building complete.");
             }
+        }.bind(this);
 
-        } else {
-            console.log("ERROR: The editor response could not be checked: " + statusUrl);
-            PlaygroundUtility.errorNotification("Failed to start the editor.");
+        socket.onclose = function(){
+            //If editor is not deployed, a new connection must be established.
+            if (!editorReady){
+                if(!socket || socket.readyState == 3){
+                    this.checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel);
+                }
+            }
+        }.bind(this);
+
+            
+        if(!socket || socket.readyState == 3){
+            this.checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel);
         }
     }
 }
