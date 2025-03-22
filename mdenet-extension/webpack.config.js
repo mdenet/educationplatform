@@ -42,16 +42,34 @@ const webExtensionConfig = {
 	module: {
 		rules: [
 			{
-			test: /\.ts$/,
-			exclude: /node_modules/,
-			use: [{
-				loader: 'ts-loader'
-				},]
+				test: /\.ts$/,
+				exclude: /node_modules/,
+				use: [{
+					loader: 'ts-loader'
+				}]
 			},
 			{
-			test: /\.js$/,
-			exclude: /node_modules/,
-			use: []
+				test: /\.js$/,
+				include: path.resolve(__dirname, 'src/web'),
+				exclude: [/node_modules/, /test/],
+				use: {
+					loader: 'babel-loader',
+					options: {
+						presets: ['@babel/preset-env'],
+						plugins: ['istanbul']
+					}
+				}
+			},
+			{
+				test: /\.js$/,
+				include: path.resolve(__dirname, 'src/web/test'),
+				exclude: /node_modules/,
+				use: {
+					loader: 'babel-loader',
+					options: {
+						presets: ['@babel/preset-env']
+					}
+				}
 			}
 		]
 	},

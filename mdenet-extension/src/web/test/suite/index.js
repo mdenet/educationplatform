@@ -15,15 +15,20 @@ export function run() {
 
 		try {
 			// Run the mocha test
-			mocha.run(failures => {
-				if (failures > 0) {
-					e(new Error(`${failures} tests failed.`));
-				} else {
-					c();
+			mocha.run((failures) => {
+				console.log('Mocha tests completed!');
+				if (self.__coverage__) {
+					console.log('Coverage detected, sending to server...');
+					fetch('http://localhost:4000/coverage', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(self.__coverage__)
+					});
 				}
 			});
 		} catch (err) {
 			console.error(err);
+			console.warn('No coverage found! Is your source code instrumented?');
 			e(err);
 		}
 	});

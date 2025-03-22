@@ -14,15 +14,25 @@
   "contributes": {
     "languages": [
       {
-        "id":"xtext",
-        "aliases": ["Xtext", "xtext"],
-        "extensions": [".xtext"],
+        "id": "xtext",
+        "aliases": [
+          "Xtext",
+          "xtext"
+        ],
+        "extensions": [
+          ".xtext"
+        ],
         "configuration": "./language-config/xtext-language-config.json"
       },
       {
-        "id":"xtend",
-        "aliases": ["Xtend", "xtend"],
-        "extensions": [".xtend"],
+        "id": "xtend",
+        "aliases": [
+          "Xtend",
+          "xtend"
+        ],
+        "extensions": [
+          ".xtend"
+        ],
         "configuration": "./language-config/xtend-language-config.json"
       }
     ],
@@ -52,12 +62,12 @@
         }
       ],
       "view/title": [
-      {
-        "command": "activities.refresh",
-        "when": "view == activities",
-        "group": "navigation"
-      }
-  ]
+        {
+          "command": "activities.refresh",
+          "when": "view == activities",
+          "group": "navigation"
+        }
+      ]
     },
     "commands": [
       {
@@ -133,23 +143,50 @@
     "watch-web": "webpack --watch",
     "package-web": "webpack --mode production --devtool hidden-source-map",
     "lint": "eslint src",
-    "run-in-browser": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. ."
+    "run-in-browser": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. .",
+    "coverage": "nyc npm run test",
+    "start-coverage-server": "node coverage-server.js",
+    "test-with-coverage": "concurrently \"npm run start-coverage-server\" \"npm run test\"",
+    "coverage-report": "nyc report --reporter=html && npx open-cli ./coverage/index.html"
   },
   "devDependencies": {
-    "@types/vscode": "^1.98.0",
-    "@types/mocha": "^10.0.10",
+    "@babel/core": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
     "@types/assert": "^1.5.11",
-    "eslint": "^9.21.0",
+    "@types/mocha": "^10.0.10",
+    "@types/vscode": "^1.98.0",
+    "@types/webpack-env": "^1.18.8",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",
-    "mocha": "^11.1.0",
-    "typescript": "^5.7.3",
     "@vscode/test-web": "^0.0.67",
-    "ts-loader": "^9.5.2",
-    "webpack": "^5.98.0",
-    "webpack-cli": "^6.0.1",
-    "@types/webpack-env": "^1.18.8",
     "assert": "^2.1.0",
-    "process": "^0.11.10"
+    "babel-loader": "^10.0.0",
+    "babel-plugin-istanbul": "^7.0.0",
+    "c8": "^10.1.3",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.21.0",
+    "mocha": "^11.1.0",
+    "process": "^0.11.10",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.7.3",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  },
+  "nyc": {
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "all": true,
+    "include": [
+      "src/web/**/*.js"
+    ],
+    "exclude": [
+      "**/test/**",
+      "**/*.test.js"
+    ],
+    "extension": [
+      ".js"
+    ]
   }
 }
