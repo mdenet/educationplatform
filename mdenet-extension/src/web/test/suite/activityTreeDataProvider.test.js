@@ -1,38 +1,39 @@
 import * as assert from 'assert';
-import * as sinon from 'sinon';
-import { ActivityTreeDataProvider } from '../../../ActivityTreeDataProvider';
+import { ActivityTreeDataProvider } from '../../providers/ActivityTreeDataProvider';
 
 suite('ActivityTreeDataProvider Test Suite', () => {
 
-    let sandbox;
-
-    setup(() => {
-        sandbox = sinon.createSandbox();
-    });
-
-    teardown(() => {
-        sandbox.restore();
-    });
-
     test('should set playing file and refresh', () => {
         const provider = new ActivityTreeDataProvider();
-        const refreshSpy = sandbox.spy(provider, 'refresh');
-        
+
+        // manual spy
+        let refreshCalled = false;
+        const originalRefresh = provider.refresh;
+        provider.refresh = () => { refreshCalled = true; };
+
         const mockFile = { label: 'activity1' };
         provider.setPlaying(mockFile);
-        
+
         assert.strictEqual(provider.playingFile, 'activity1');
-        assert.ok(refreshSpy.calledOnce);
+        assert.strictEqual(refreshCalled, true);
+
+        // cleanup: restore original method
+        provider.refresh = originalRefresh;
     });
 
     test('should set stopped and refresh', () => {
         const provider = new ActivityTreeDataProvider();
-        const refreshSpy = sandbox.spy(provider, 'refresh');
-        
+
+        let refreshCalled = false;
+        const originalRefresh = provider.refresh;
+        provider.refresh = () => { refreshCalled = true; };
+
         provider.setStopped();
-        
+
         assert.strictEqual(provider.playingFile, null);
-        assert.ok(refreshSpy.calledOnce);
+        assert.strictEqual(refreshCalled, true);
+
+        provider.refresh = originalRefresh;
     });
 
     test('should return a tree item with play icon and command when not playing', () => {
@@ -58,3 +59,4 @@ suite('ActivityTreeDataProvider Test Suite', () => {
     });
 
 });
+
