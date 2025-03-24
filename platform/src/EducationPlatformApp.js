@@ -968,7 +968,7 @@ class EducationPlatformApp {
                     })
                     .filter(change => change.added || change.removed); // Only include meaningful changes
                 
-                // Store the changes in the Map with the panel's ID as key
+                // Store the changes in the Map with the panel's name as key
                 panelDiffsMap.set(panel.getName(), changes);
             }
             return panelDiffsMap;

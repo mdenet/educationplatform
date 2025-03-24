@@ -136,7 +136,6 @@ class FileHandler {
 
             // Add the remaining parameters to the request
             fileParams.content = file.newFileContent;
-            fileParams.sha = file.valueSha;
 
             // Add the file to the batch request
             request.files.push(fileParams);

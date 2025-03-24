@@ -52,7 +52,6 @@ class SaveablePanel extends Panel {
     exportSaveData() {
         return {
             url: this.getFileUrl(),
-            valueSha: this.getValueSha(),
             newFileContent: this.getValue()
         };
     }
