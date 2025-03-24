@@ -1092,6 +1092,7 @@ class EducationPlatformApp {
                 this.showCreateBranchPrompt(currentBranch);
             };
 
+            const branchList = document.getElementById("branch-list");
             this.renderBranchList();
 
             // Set up the filter logic for the branch search
