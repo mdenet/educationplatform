@@ -1092,6 +1092,8 @@ class EducationPlatformApp {
                 this.showCreateBranchPrompt(currentBranch);
             };
 
+            this.setCurrentBranchText(currentBranch);
+
             const branchList = document.getElementById("branch-list");
             this.renderBranchList();
 
@@ -1246,8 +1248,7 @@ class EducationPlatformApp {
         this.toggleCreateBranchVisibility(false);
         this.toggleCreateBranchConfirmVisibility(true);
 
-        const currentBranchHTML = document.querySelectorAll("#current-branch");
-        currentBranchHTML.forEach(element => element.textContent = currentBranch);
+        this.setCurrentBranchText(currentBranch);
 
         const newBranchHTML = document.querySelectorAll("#new-branch");
         newBranchHTML.forEach(element => element.textContent = newBranch);
@@ -1318,6 +1319,11 @@ class EducationPlatformApp {
                 container.style.display = "none";
             }
         });
+    }
+
+    setCurrentBranchText(currentBranch) {
+        const currentBranchElements = document.querySelectorAll("#current-branch");
+        currentBranchElements.forEach(element => element.textContent = currentBranch);
     }
 
     async toggleSwitchBranchVisibility(visibility) {
