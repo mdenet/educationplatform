@@ -138,16 +138,16 @@ class StorageController {
         const { owner, repo, ref: branch } = files[0];
 
         try {
-            // Get the latest commit SHA
-            const { data: branchData } = await octokit.request('GET /repos/{owner}/{repo}/git/refs/heads/{branch}', {
+            // Get the latest commit SHA from the current branch
+            const { data: branchData } = await octokit.request('GET /repos/{owner}/{repo}/branches/{current_branch}', {
                 owner,
                 repo,
-                branch,
+                current_branch: branch,
                 headers: {
                     'X-GitHub-Api-Version': config.githubApiVersion
                 }
             });
-            const latestCommitSha = branchData.object.sha;
+            const latestCommitSha = branchData.commit.sha;
 
             // Get the latest commit's tree SHA 
             const { data: commitData } = await octokit.request('GET /repos/{owner}/{repo}/git/commits/{commit_sha}', {

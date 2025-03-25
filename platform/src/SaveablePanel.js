@@ -55,6 +55,13 @@ class SaveablePanel extends Panel {
             newFileContent: this.getValue()
         };
     }
+
+    /**
+     * Bring the panel state back to the last saved state.
+     */
+    resetChanges() {
+        this.setValue(this.getLastSavedContent());
+    }
 }
 
 export { SaveablePanel };

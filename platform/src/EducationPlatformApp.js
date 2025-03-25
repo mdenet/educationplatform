@@ -889,10 +889,10 @@ class EducationPlatformApp {
     /**
      * Saves the content of the panels to the remote repository.
      * @param {String} commitMessage - The commit message to be used for the save.
-     * @param {String} branchName - Optional - by default the current branch is used.
+     * @param {String} overrideBranch - Optional - by default the current branch is used.
      * @returns {Promise<void>} A promise that resolves when the save is complete.
      */
-    async saveFiles(commitMessage, branchName) {
+    async saveFiles(commitMessage, overrideBranch) {
         return new Promise((resolve, reject) => {
 
             const panelsToSave = this.getPanelsWithChanges();
@@ -903,24 +903,27 @@ class EducationPlatformApp {
                 files.push(panel.exportSaveData());
             }
 
-            this.fileHandler.storeFiles(files, commitMessage, branchName)
+            this.fileHandler.storeFiles(files, commitMessage, overrideBranch)
             .then(response => {
-                // Returns a [ {path, sha} ] list corresponding to each file
-                let dataReturned = JSON.parse(response);
+                // If the save was to a new branch, skip the panel value updates - this is done in the branch switch
+                if (!overrideBranch) {
+                    // Returns a [ {path, sha} ] list corresponding to each file
+                    let dataReturned = JSON.parse(response);
 
-                for (const panel of panelsToSave) {
-                    const filePath = panel.getFilePath();
+                    for (const panel of panelsToSave) {
+                        const filePath = panel.getFilePath();
 
-                    // Find the updated file that matches the panel's file path
-                    const updatedFile = dataReturned.files.find(file => file.path === filePath);
-                    const newSha = updatedFile.sha;
-                    panel.setValueSha(newSha);
-                    panel.setLastSavedContent(panel.getValue());
+                        // Find the updated file that matches the panel's file path
+                        const updatedFile = dataReturned.files.find(file => file.path === filePath);
+                        const newSha = updatedFile.sha;
+                        panel.setValueSha(newSha);
+                        panel.setLastSavedContent(panel.getValue());
 
-                    // Mark the editor clean if the save completed
-                    panel.getEditor().session.getUndoManager().markClean();
+                        // Mark the editor clean if the save completed
+                        panel.getEditor().session.getUndoManager().markClean();
 
-                    console.log(`The contents of panel '${panel.getName()}' were saved successfully.`);
+                        console.log(`The contents of panel '${panel.getName()}' were saved successfully.`);
+                    }
                 }
                 resolve();
             })
@@ -931,7 +934,7 @@ class EducationPlatformApp {
     }
 
     /**
-     * Computes the differences between the remote file content and the panel contents
+     * Computes the differences between the last saved content and the current panel content
      * @returns {Map} A map of panel IDs to their respective changes
      */
     async getPanelDiffs() {
@@ -942,17 +945,11 @@ class EducationPlatformApp {
 
             for (const panel of panelsToSave) {
 
-                // Fetch the file from the remote repository and await the result
-                const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
-                if (!remoteFile || !remoteFile.content) {
-                    throw new Error(`No remote file content returned for ${panel.getName()}`);
-                }
-
-                const remoteContent = remoteFile.content;
+                const lastSavedContent = panel.getLastSavedContent();
                 const panelContent = panel.getValue();
     
                 // Generate diff using jsdiff
-                const diff = Diff.diffLines(remoteContent, panelContent);
+                const diff = Diff.diffLines(lastSavedContent, panelContent);
     
                 // Process diff parts to only include added or removed segments
                 const changes = diff
@@ -1275,6 +1272,9 @@ class EducationPlatformApp {
                     .then(() => {
                         PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
                         this.displaySwitchToBranchLink(currentBranch, newBranch);
+
+                        // Undo the changes made to the panels to keep the current branch clean
+                        this.undoPanelChanges();
                     })
                     .catch((error) => {
                         console.error(error);
@@ -1292,9 +1292,7 @@ class EducationPlatformApp {
             this.fileHandler.createBranch(this.activityURL, newBranch)
             .then(() => {
                 // Undo the changes made to the panels to keep the current branch clean
-                for (const panel of this.saveablePanels) {
-                    panel.setValue(panel.getLastSavedContent());
-                }
+                this.undoPanelChanges();
 
                 PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
                 this.displaySwitchToBranchLink(currentBranch, newBranch);
@@ -1324,6 +1322,10 @@ class EducationPlatformApp {
     setCurrentBranchText(currentBranch) {
         const currentBranchElements = document.querySelectorAll("#current-branch");
         currentBranchElements.forEach(element => element.textContent = currentBranch);
+    }
+
+    undoPanelChanges() {
+        this.saveablePanels.forEach(panel => panel.resetChanges());
     }
 
     async toggleSwitchBranchVisibility(visibility) {
