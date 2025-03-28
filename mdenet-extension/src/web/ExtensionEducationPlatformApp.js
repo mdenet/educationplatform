@@ -4,7 +4,7 @@ import { ExtensionProgramPanel } from "./ExtensionProgramPanel";
 import { ExtensionConsolePanel } from "./ExtensionConsolePanel";
 import { ExtensionOutputPanel } from "./ExtensionOutputPanel";
 import { ExtensionCompositePanel } from "./ExtensionCompositePanel"; 
-import { ExtensionErrorHandler } from "./ExtensionErorrHandler";
+import { ExtensionErrorHandler } from "./ExtensionErrorHandler";
 import * as vscode from 'vscode';
 import { ExtensionActivityManager } from "./ExtensionActivityManager";
 import { LocalRepoManager } from "./LocalRepoManager";
@@ -29,11 +29,11 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     }
 
     handleToolImports(toolImports){
-        console.log("Handling tool imports");
+        //TODO: Implement tool imports
     }
 
     addToolIconStyles(toolUrl){
-        console.log("Adding tool icon styles");
+        //TODO: Implement tool icon styles
     }
 
     displayErrors(errors){
@@ -84,7 +84,6 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
 			}
 			default:{
 				throw new Error("Panel class not found");
-				break;
 			}
 		}
         return newPanel;
@@ -121,7 +120,6 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     }
 
     removeNotification(){
-       console.log("Removing notification");
     }
 
     updateSessionInfo(editorPanelId, editorInstanceUrl){

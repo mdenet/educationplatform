@@ -2,10 +2,11 @@ import * as vscode from 'vscode';
 import { LocalRepoManager } from '../LocalRepoManager';
 
 export class ActivityTreeDataProvider {
-    constructor() {
+    constructor(localRepoManager) {
         this.playingFile = null;
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+        this.localRepoManager = localRepoManager
     }
 
     refresh() {
@@ -40,9 +41,8 @@ export class ActivityTreeDataProvider {
     }
 
     async getChildren() {
-        const localRepoManager = new LocalRepoManager();
-        await localRepoManager.initialize();
-        const files = localRepoManager.getFiles();
+        await this.localRepoManager.initialize();
+        const files = this.localRepoManager.getFiles();
         return files.map(file => ({ label: file }));
     }
 }

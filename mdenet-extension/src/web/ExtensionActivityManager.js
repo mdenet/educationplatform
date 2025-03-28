@@ -43,17 +43,18 @@ class ExtensionActivityManager extends GeneralActivityManager {
     }
 
     createActivitiesMenu(config){
+        if(!config.activities){
+            vscode.window.showWarningMessage('No activities found in the file.');
+            return;
+        }
         for (const activity of config.activities){
             if (activity.id) {
                 this.storeActivity(activity);
             }
         }
-        if (config.activities) {
-            this.provider.setTasks(config.activities);
-            this.provider.hideAllTasks();
-        } else {
-            vscode.window.showWarningMessage('No activities found in the file.');
-        }
+        this.provider.setTasks(config.activities);
+        this.provider.hideAllTasks();
+
     }
 
     setActivityVisibility(activityId, visible){

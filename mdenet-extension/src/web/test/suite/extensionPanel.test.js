@@ -33,7 +33,7 @@ suite('ExtensionPanel Test Suite', () => {
         assert.strictEqual(panel.getType(), 'output-panel');
     });
 
-    test('should throw if setType is called twice', () => {
+    test('should throw error if setType is called twice', () => {
         const panel = new ExtensionPanel('panel-1');
         panel.setType('output-panel');
 

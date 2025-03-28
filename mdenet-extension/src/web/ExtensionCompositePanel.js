@@ -8,10 +8,10 @@ class ExtensionCompositePanel extends ExtensionPanel{
         this.panels = [];
     }
 
-    initialize(){
-        this.childPanels.forEach(panel => async () => {
+    async initialize() {
+        for (const panel of this.childPanels) {
             await panel.initialize();
-        });
+        }
     }
 
     addPanel(panel){

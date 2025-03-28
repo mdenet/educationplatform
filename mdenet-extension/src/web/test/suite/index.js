@@ -18,7 +18,6 @@ export function run() {
 			mocha.run((failures) => {
 				console.log('Mocha tests completed!');
 				if (self.__coverage__) {
-					console.log('Coverage detected, sending to server...');
 					fetch('http://localhost:4000/coverage', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
@@ -28,7 +27,6 @@ export function run() {
 			});
 		} catch (err) {
 			console.error(err);
-			console.warn('No coverage found! Is your source code instrumented?');
 			e(err);
 		}
 	});

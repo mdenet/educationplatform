@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 http.createServer((req, res) => {
-    console.log(`➡️ Incoming request: ${req.method} ${req.url}`); // DEBUG LINE
+    console.log(`Incoming request: ${req.method} ${req.url}`);
 
     if (req.method === 'OPTIONS') {
         res.writeHead(204, {
@@ -27,15 +27,15 @@ http.createServer((req, res) => {
                 'Access-Control-Allow-Origin': '*'
             });
             res.end('Coverage data saved.');
-            console.log('✅ Coverage data saved!');
+            console.log('Coverage data saved!');
         });
     } else {
         res.writeHead(404, {
             'Access-Control-Allow-Origin': '*'
         });
         res.end();
-        console.warn('⚠️ 404 for', req.url);
+        console.warn('404 for', req.url);
     }
 }).listen(4000, () => {
-    console.log('📡 Coverage server listening on http://localhost:4000');
+    console.log('Coverage server listening on http://localhost:4000');
 });

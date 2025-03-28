@@ -3,15 +3,17 @@ import { ActivityTreeDataProvider }  from './providers/ActivityTreeDataProvider'
 import { TaskTreeDataProvider } from './providers/TaskTreeDataProvider';
 import { PanelTreeDataProvider } from './providers/PanelTreeDataProvider';
 import { ExtensionEducationPlatformApp } from './ExtensionEducationPlatformApp';
+import { LocalRepoManager } from './LocalRepoManager';
 
-export function activate(context) {
-	const activityProvider = new ActivityTreeDataProvider();
+export function activate(context, injectedApp = null) {
+	const localRepoManager = new LocalRepoManager();
+	const activityProvider = new ActivityTreeDataProvider(localRepoManager);
 	const taskProvider = new TaskTreeDataProvider();
 	const panelProvider = new PanelTreeDataProvider();
-	let app = null;
+	let app = injectedApp;
 	const actionHandlers = {
 		openExternal: (data) => vscode.env.openExternal(vscode.Uri.parse(data.url)),
-		runAppAction: (data) => app.runAction(data.parentPanel, data.buttonId),
+		runAppAction: (data) => app?.runAction(data.parentPanel, data.buttonId),
 	};
 	
 	vscode.window.registerTreeDataProvider('activities', activityProvider);
@@ -21,9 +23,9 @@ export function activate(context) {
 		vscode.commands.registerCommand('activities.play', async (file) => {
 			try {
 				vscode.commands.executeCommand('workbench.action.closeAllEditors');
-				// context.workspaceState.keys().forEach(key => {
-				// 	context.workspaceState.update(key,null);
-				// });
+				context.workspaceState.keys().forEach(key => {
+					context.workspaceState.update(key,null);
+				});
 				activityProvider.setPlaying(file);
 				app = new ExtensionEducationPlatformApp(context, taskProvider, file.label);
 				await app.initializeActivity();
@@ -51,7 +53,7 @@ export function activate(context) {
 		}),
 		vscode.commands.registerCommand('panels.run', async () => {
 			let options = [];
-			const selectedEditor = vscode.window.activeTextEditor;
+			const selectedEditor = getActiveEditor();
 			if(!selectedEditor){
 				vscode.window.showInformationMessage("Press the buttons inside the panel"); // This means that it is a Webview panel
 				return;
@@ -78,8 +80,10 @@ export function activate(context) {
 			}
 		}),
 		vscode.commands.registerCommand('button.run', (button) => {
-			console.log("Running button", button.action);
-			actionHandlers[button.actionData.type](button.actionData);
+			// console.log("Running button", button.action);
+			const selectedButton = button;
+    		actionHandlers[selectedButton.actionData.type](selectedButton.actionData);
+			// actionHandlers[button.actionData.type](button.actionData);
 		}),
 		vscode.commands.registerCommand('tasks.select', async (task) => {
 			if(app?.activity?.id == task){
@@ -99,7 +103,7 @@ export function activate(context) {
 		}),
 		vscode.commands.registerCommand('extension.insertGuillemets', () => {
 			console.log('Inserting guillemets');
-			const editor = vscode.window.activeTextEditor;
+			const editor = getActiveEditor();
 			if (editor) {
 				editor.insertSnippet(new vscode.SnippetString('«$0»'));
 			}
@@ -108,3 +112,7 @@ export function activate(context) {
 }
 
 export function deactivate() {}
+
+export function getActiveEditor() {
+    return vscode.window.activeTextEditor;
+}

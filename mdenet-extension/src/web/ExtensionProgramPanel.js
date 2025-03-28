@@ -23,7 +23,7 @@ class ExtensionProgramPanel extends ExtensionPanel{
             console.log(`Opening file: ${filePath}`);
             this.doc = await vscode.workspace.openTextDocument(filePath);
         } catch (error) {
-            console.error('Error opening local file:', error);
+            vscode.window.showErrorMessage(`Error opening local file: ${error.message}`);
         }
     }
     

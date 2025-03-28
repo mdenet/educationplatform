@@ -79,7 +79,7 @@ class ExtensionOutputPanel extends ExtensionPanel {
         if (buttonObj) {
             vscode.commands.executeCommand('button.run', buttonObj);
         } else {
-            console.error(`Button ${buttonId} not found`);
+            vscode.window.showErrorMessage(`Button ${buttonId} not found`);
         }
     }
 

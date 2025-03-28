@@ -6,7 +6,6 @@ suite('ActivityTreeDataProvider Test Suite', () => {
     test('should set playing file and refresh', () => {
         const provider = new ActivityTreeDataProvider();
 
-        // manual spy
         let refreshCalled = false;
         const originalRefresh = provider.refresh;
         provider.refresh = () => { refreshCalled = true; };
@@ -17,7 +16,6 @@ suite('ActivityTreeDataProvider Test Suite', () => {
         assert.strictEqual(provider.playingFile, 'activity1');
         assert.strictEqual(refreshCalled, true);
 
-        // cleanup: restore original method
         provider.refresh = originalRefresh;
     });
 
@@ -58,5 +56,24 @@ suite('ActivityTreeDataProvider Test Suite', () => {
         assert.strictEqual(treeItem.command.command, 'activities.stop');
     });
 
-});
+    test('should return children from LocalRepoManager', async () => {
+        // This will mock the LocalRepoManager class
+        const stubLocalRepoManager = {
+            async initialize(){ 
+                // do nothing
+             },
+            getFiles() {
+                return ['activity1', 'activity2'];
+            }
+        };
+    
+        const provider = new ActivityTreeDataProvider(stubLocalRepoManager);
+        const children = await provider.getChildren();
+    
+        assert.deepStrictEqual(children, [
+            { label: 'activity1' },
+            { label: 'activity2' }
+        ]);
+    });
 
+});

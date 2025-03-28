@@ -79,13 +79,12 @@ suite('TaskTreeDataProvider Test Suite', () => {
         assert.deepStrictEqual(children, [{ label: 'Task Two', id: '2' }]);
     });
 
-    test('showTask should be a no-op if task is already visible', () => {
+    test('showTask should not do anything if task is already visible', () => {
         const provider = new TaskTreeDataProvider();
         const tasks = [{ id: '1', title: 'Task One' }];
         provider.setTasks(tasks);
     
-        // Task '1' is not hidden
-        provider.showTask('1'); // should not throw or change anything
+        provider.showTask('1');
         assert.ok(!provider.hiddenTasks.has('1'));
     });
 
