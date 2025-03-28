@@ -1,4 +1,5 @@
 import { Panel } from "./Panel.js";
+import * as Diff from 'diff';
 
 class SaveablePanel extends Panel {
     fileUrl;
@@ -67,6 +68,27 @@ class SaveablePanel extends Panel {
             fileUrl: this.getFileUrl(),
             newFileContent: this.getValue()
         };
+    }
+
+    /**
+     * Compare the current content of the panel with the last saved content.
+     * @returns {Promise<Array>} A promise that resolves to an array of diff objects.
+     * * Each object contains the following properties:
+     * - `added`: The added content (if any).
+     * - `removed`: The removed content (if any).
+     * - `value`: The content itself.
+     */
+    computeDiff() {
+        return Promise.resolve(
+            Diff.diffLines(this.lastSavedContent, this.getValue())
+                .map(part => {
+                    let change = {};
+                    if (part.added) change.added = part.value;
+                    else if (part.removed) change.removed = part.value;
+                    return change;
+                })
+                .filter(change => change.added || change.removed)
+        );
     }
 
     /**

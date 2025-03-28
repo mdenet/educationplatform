@@ -13,8 +13,6 @@ import 'ace-builds/src-min-noconflict/ext-language_tools';
 
 import 'metro4/build/metro';
 
-import * as Diff from 'diff';
-
 import { FileHandler } from './FileHandler.js';
 import { ActivityManager } from './ActivityManager.js';
 import { ToolManager as ToolsManager } from './ToolsManager.js';
@@ -926,41 +924,22 @@ class EducationPlatformApp {
 
     /**
      * Computes the differences between the last saved content and the current panel content
-     * @returns {Map} A map of panel IDs to their respective changes
+     * @returns {Map} A map of panels and their respective changes
      */
     async getPanelDiffs() {
-        const panelDiffsMap = new Map();
-
         try {
+            const panelDiffsMap = new Map();
             const panelsToSave = this.getPanelsWithChanges();
-
-            for (const panel of panelsToSave) {
-
-                const lastSavedContent = panel.getLastSavedContent();
-                const panelContent = panel.getValue();
     
-                // Generate diff using jsdiff
-                const diff = Diff.diffLines(lastSavedContent, panelContent);
+            await Promise.all(
+                panelsToSave.map(async (panel) => {
+                    const diff = await panel.computeDiff();
+                    panelDiffsMap.set(panel.getTitle(), diff);
+                })
+            )
     
-                // Process diff parts to only include added or removed segments
-                const changes = diff
-                    .map(part => {
-                        let change = {};
-                        if (part.added) {
-                            change.added = part.value;
-                        } 
-                        else if (part.removed) {
-                            change.removed = part.value;
-                        }
-                        return change;
-                    })
-                    .filter(change => change.added || change.removed); // Only include meaningful changes
-                
-                // Store the changes in the Map with the panel's name as key
-                panelDiffsMap.set(panel.getTitle(), changes);
-            }
             return panelDiffsMap;
-        } 
+        }
         catch (error) {
             console.error(error);
             this.errorHandler.notify("An error occurred while computing the panel changes.");
@@ -972,8 +951,6 @@ class EducationPlatformApp {
      */
     async reviewChanges(event) {
         event.preventDefault();
-        console.log("Saveable Panels: ");
-        console.dir(this.saveablePanels);
 
         this.closeAllModalsExcept("review-changes-container");
         this.toggleReviewChangesVisibility(true);
