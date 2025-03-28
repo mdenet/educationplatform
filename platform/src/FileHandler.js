@@ -124,10 +124,9 @@ class FileHandler {
 
         // Collect the request parameters in the url for each file (owner, repo, ref, path)
         for (let file of filesToSave) {
-            let fileParams = this.getPrivateFileUpdateParams(file.url);
+            let fileParams = this.getPrivateFileUpdateParams(file.fileUrl);
             if (!fileParams) {
-                console.error(`Failed to generate request parameters for file: ${file.fileUrl}`);
-                throw new Error("Failed to generate request parameters");
+                throw new Error(`Failed to generate request parameters for file: ${file.fileUrl}`);
             }
 
             if (overrideBranch) {
