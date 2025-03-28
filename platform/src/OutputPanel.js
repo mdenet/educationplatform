@@ -1,8 +1,8 @@
 /*global Metro ace -- Metro and ace are externally imported*/
-import { ProgramPanel } from "./ProgramPanel.js";
+import { Panel } from "./Panel.js";
 import { Button } from "./Button.js";
 import svgPanZoom from 'svg-pan-zoom';
-class OutputPanel extends ProgramPanel {
+class OutputPanel extends Panel {
 
     outputType;
     outputLanguage;
@@ -109,7 +109,6 @@ class OutputPanel extends ProgramPanel {
     createElement() {
         var root = super.createElement();
         root.setAttribute("style", "padding: 0px");
-
         return root;
     }
 

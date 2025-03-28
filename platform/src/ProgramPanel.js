@@ -24,22 +24,6 @@ class ProgramPanel extends SaveablePanel {
         }
         this.editor.resize();
     }
-
-
-    // TODO: Identical to ConsolePanel.createElement()
-    createElement() {
-        var root = document.createElement("div");
-        root.setAttribute("data-role", "panel");
-        root.setAttribute("id", this.id + "Panel");
-
-        var editor = document.createElement("div");
-        editor.setAttribute("class", "editor");
-        editor.setAttribute("id", this.id + "Editor");
-
-        root.appendChild(editor);
-        
-        return root;
-    }
 }
 
 export { ProgramPanel };

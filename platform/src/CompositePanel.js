@@ -26,11 +26,8 @@ class CompositePanel extends Panel {
     }
 
     createElement() {
-        var root = document.createElement("div");
+        var root = super.createRootElement();
         root.setAttribute("class", "compositePanel");
-        root.setAttribute("data-role", "panel");
-        root.setAttribute("id", this.id + "Panel");
-
         root.style.display = "flex";
         root.style.flexDirection = "column";
         root.style.flex = "1";

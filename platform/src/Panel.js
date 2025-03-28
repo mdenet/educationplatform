@@ -3,7 +3,7 @@
 class Panel {
 
     id;
-    name;
+    title;
     editor;
     element;
     visible;
@@ -42,8 +42,8 @@ class Panel {
         return this.id;
     }
 
-    getName() {
-        return this.name;
+    getTitle() {
+        return this.title;
     }
 
     setTitleAndIcon(title, icon) {
@@ -52,11 +52,8 @@ class Panel {
     }
 
     setTitle(title) {
+        this.title = title;
         this.element.dataset.titleCaption = title;
-    }
-
-    setName(name) {
-        this.name = name;
     }
 
     setIcon(icon) {
@@ -118,7 +115,13 @@ class Panel {
 
     fit() {}
 
-    createElement() {}
+    createElement() {
+        var root = this.createRootElement();
+        var editor = this.createEditorElement();
+        root.appendChild(editor);
+
+        return root;
+    }
 
     getElement() {
         if (!this.element) {
@@ -126,6 +129,22 @@ class Panel {
         }
         return this.element;
     }
+
+    createRootElement() {
+        var root = document.createElement("div");
+        root.setAttribute("data-role", "panel");
+        root.setAttribute("id", this.id + "Panel");
+
+        return root;
+    }
+
+    createEditorElement() {
+        var editor = document.createElement("div");
+        editor.setAttribute("class", "editor");
+        editor.setAttribute("id", this.id + "Editor");
+
+        return editor;
+    }   
 
 }
 

@@ -38,6 +38,19 @@ class SaveablePanel extends Panel {
     }
 
     /**
+     * Define the saveable panel metadata in one function.
+     * @param {*} fileUrl 
+     * @param {*} fileContent 
+     * @param {*} fileSha 
+     */
+    defineSaveMetaData(fileUrl, fileContent, fileSha) {
+        this.setFileUrl(fileUrl);
+        this.setValue(fileContent);
+        this.setLastSavedContent(fileContent);
+        this.setValueSha(fileSha);
+    }
+
+    /**
      * Has the contents of this panel changed since the last save?
      * @returns {boolean} true if the content has changed since the last save
      */

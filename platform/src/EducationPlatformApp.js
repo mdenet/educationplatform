@@ -26,7 +26,7 @@ import { ConsolePanel } from "./ConsolePanel.js";
 import { ProgramPanel } from "./ProgramPanel.js";
 import { OutputPanel } from "./OutputPanel.js";
 import { TestPanel } from './TestPanel.js';
-import { BlankPanel } from './BlankPanel .js';
+import { BlankPanel } from './BlankPanel.js';
 import { XtextEditorPanel } from './XtextEditorPanel.js';
 import { CompositePanel } from './CompositePanel.js';
 import { SaveablePanel } from './SaveablePanel.js';
@@ -398,11 +398,7 @@ class EducationPlatformApp {
                     newPanel.setEditorMode(panelDefinition.language);
                     newPanel.setType(panelDefinition.language);
 
-                    // Set from the activity 
-                    newPanel.setValue(panel.file);
-                    newPanel.setLastSavedContent(panel.file);
-                    newPanel.setValueSha(panel.sha); 
-                    newPanel.setFileUrl(panel.url);
+                    newPanel.defineSaveMetaData(panel.url, panel.file, panel.sha);
                     break;
                 }
                 case "ConsolePanel": {
@@ -422,11 +418,7 @@ class EducationPlatformApp {
                     newPanel.initialize(editorUrl, panel.extension);
                     newPanel.setType(panelDefinition.language);
 
-                    // Set from the activity 
-                    newPanel.setValue(panel.file);
-                    newPanel.setLastSavedContent(panel.file);
-                    newPanel.setValueSha(panel.sha); 
-                    newPanel.setFileUrl(panel.url)
+                    newPanel.defineSaveMetaData(panel.url, panel.file, panel.sha);
                     break;
                 }
                 case "CompositePanel": {
@@ -450,7 +442,6 @@ class EducationPlatformApp {
         
             // Add elements common to all panels
             newPanel.setTitle(panel.name);
-            newPanel.setName(panel.name);
 
             if(panel.icon != null){
                 newPanel.setIcon(panel.icon);
@@ -824,7 +815,7 @@ class EducationPlatformApp {
             const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
 
             if (!remoteFile) {
-                throw new Error(`No remote file found for ${panel.getName()}`);
+                throw new Error(`No remote file found for ${panel.getTitle()}`);
             }
 
             // Compare the remote SHA with the panel's current SHA. If they differ, the local environment is outdated.
@@ -922,7 +913,7 @@ class EducationPlatformApp {
                         // Mark the editor clean if the save completed
                         panel.getEditor().session.getUndoManager().markClean();
 
-                        console.log(`The contents of panel '${panel.getName()}' were saved successfully.`);
+                        console.log(`The contents of panel '${panel.getTitle()}' were saved successfully.`);
                     }
                 }
                 resolve();
@@ -966,7 +957,7 @@ class EducationPlatformApp {
                     .filter(change => change.added || change.removed); // Only include meaningful changes
                 
                 // Store the changes in the Map with the panel's name as key
-                panelDiffsMap.set(panel.getName(), changes);
+                panelDiffsMap.set(panel.getTitle(), changes);
             }
             return panelDiffsMap;
         } 
@@ -981,6 +972,8 @@ class EducationPlatformApp {
      */
     async reviewChanges(event) {
         event.preventDefault();
+        console.log("Saveable Panels: ");
+        console.dir(this.saveablePanels);
 
         this.closeAllModalsExcept("review-changes-container");
         this.toggleReviewChangesVisibility(true);
@@ -1003,10 +996,10 @@ class EducationPlatformApp {
 
         // Populate the list of panels with unsaved changes
         panelsToSave.forEach(panel => {
-            const panelName = panel.getName();
+            const panelName = panel.getTitle();
 
             const li = document.createElement("li");
-            li.textContent = panel.getName();
+            li.textContent = panelName;
 
             li.addEventListener("click", () => {
                 this.displayChangesForPanel(panelName, panelDiffs.get(panelName));

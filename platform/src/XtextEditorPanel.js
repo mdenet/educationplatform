@@ -53,17 +53,9 @@ class XtextEditorPanel extends SaveablePanel {
         this.editor.resize();
     }
 
-
-    // TODO: Identical to ConsolePanel.createElement()
     createElement() {
-        var root = document.createElement("div");
-        root.setAttribute("data-role", "panel");
-        root.setAttribute("id", this.id + "Panel");
-
-        var editor = document.createElement("div");
-        editor.setAttribute("id", this.id + "Editor");
-        editor.setAttribute("class", "editor");
-
+        var root = super.createRootElement();
+        var editor = super.createEditorElement();
 
         let htmlObject = document.createElement("object");
         htmlObject.setAttribute( "type", "text/html" );
