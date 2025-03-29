@@ -121,8 +121,6 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     }
 
     updateSessionInfo(editorPanelId, editorInstanceUrl){
-        //replace the origin of editorInstanceUrl with http://localhost:8080 for development. This will not be need if backend return {{BASE_URL}} in the URL
-        editorInstanceUrl = editorInstanceUrl.replace(/https:\/\/ep.mde-network\.org/,"http://localhost:8080");
         this.context.workspaceState.update(editorPanelId,editorInstanceUrl);
     }
 

@@ -9,11 +9,13 @@ class ExtensionProgramPanel extends ExtensionPanel{
         this.content = null;
     }
     async initialize() {
-        if (this.fileLocation?.startsWith('http')) {
-            await this.fetchRemoteFile();
-        } else {
+        if(this.fileLocation instanceof vscode.Uri) {
             await this.openLocalFile();
         }
+        else {
+            await this.fetchRemoteFile();
+        }
+
     }
     
     async openLocalFile() {

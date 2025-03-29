@@ -38,6 +38,7 @@ export function activate(context, injectedApp = null) {
 			}
 		}),
 		vscode.commands.registerCommand('activities.stop', async (file) => {
+			vscode.commands.executeCommand('workbench.action.closeAllEditors');
 			activityProvider.setStopped();
 			taskProvider.setTasks([]);
 			panelProvider.setPanels([]);

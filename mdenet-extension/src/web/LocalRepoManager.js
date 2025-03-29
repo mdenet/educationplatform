@@ -66,11 +66,7 @@ class LocalRepoManager {
     }
 
     getPath(filePath) {
-        const workspacePath = this.rootUri.fsPath;
-        if(filePath.startsWith(workspacePath)){
-            return filePath;
-        }
-        return `${workspacePath}/${filePath}`;
+        return vscode.Uri.joinPath(this.rootUri, filePath);
     }
 }
 
