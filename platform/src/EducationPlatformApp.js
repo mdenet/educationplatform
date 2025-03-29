@@ -310,7 +310,7 @@ class EducationPlatformApp extends GeneralEducationPlatformApp {
                 newPanel = new CompositePanel(newPanelId);
                 if (panel.childPanels) {
                     for (let childPanelConfig of panel.childPanels) {     
-                        var childPanel = this.createPanelForDefinitionId(childPanelConfig);
+                        var childPanel = await this.createPanelForDefinitionId(childPanelConfig);
                         newPanel.addPanel(childPanel);
                     }
                 }

@@ -1,25 +1,30 @@
 import * as vscode from 'vscode';
 
+/**
+ * Manages the local repository and fetches files from the workspace.
+*/
 class LocalRepoManager {
     static instance;
 
+    /**
+     * Creates an instance of LocalRepoManager.
+     * @returns {LocalRepoManager} The instance of the LocalRepoManager.
+     */
     constructor() {
         if (LocalRepoManager.instance) {
             return LocalRepoManager.instance;
         }
 
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders || workspaceFolders.length === 0) {
-            // console.log('No workspace is opened');
-        } else {
-            this.rootUri = workspaceFolders[0].uri; // Use VS Code's Uri API
-            // console.log('Root path:', this.rootUri.toString());
-        }
+        const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+        this.rootUri = workspaceFolders[0]?.uri ?? null;
         this.files = [];
 
         LocalRepoManager.instance = this;
     }
 
+    /**
+     * Initialises the local repository by fetching activity files from the workspace folder.
+     */
     async initialize() {
         if (!this.rootUri) {
             return;
@@ -32,10 +37,8 @@ class LocalRepoManager {
                 .map(([file]) => file)
                 .filter(file => file.endsWith('activity.json') || file.endsWith('activity.yml'));
 
-            // console.log('Files:', this.files);
         } catch (error) {
-            // console.error('Error reading workspace directory:', error);
-            return;
+            vscode.window.showErrorMessage("Error reading workspace folder.");
         }
     }
 
@@ -43,9 +46,14 @@ class LocalRepoManager {
         return this.files;
     }
 
+    /**
+     * @param {String} fileName - The name of the file to fetch.
+     * @returns {String} The content of the file.
+     */
     async fetchActivityFile(fileName) {
         if (!this.rootUri) {
-            throw new Error("No workspace folder is open.");
+            vscode.window.showErrorMessage("No workspace folder found.");
+            return;
         }
 
         try {
@@ -53,9 +61,16 @@ class LocalRepoManager {
             const fileData = await vscode.workspace.fs.readFile(fileUri);
             return new TextDecoder("utf-8").decode(fileData);
         } catch (error) {
-            // console.error(`Error reading file ${fileName}:`, error);
-            throw error;
+            vscode.window.showErrorMessage("Error reading activity file.");
         }
+    }
+
+    getPath(filePath) {
+        const workspacePath = this.rootUri.fsPath;
+        if(filePath.startsWith(workspacePath)){
+            return filePath;
+        }
+        return `${workspacePath}/${filePath}`;
     }
 }
 

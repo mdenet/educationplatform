@@ -1,6 +1,10 @@
 import * as vscode from 'vscode';
 
 
+/**
+ * Provides data for the tasks tree view in the VS Code extension.
+ * This tree view displays all the subactivites for the current activity.
+ */
 class TaskTreeDataProvider {
   constructor() {
     this.tasks = [];
@@ -60,16 +64,16 @@ class TaskTreeDataProvider {
       command: {
         command: 'tasks.select',
         title: 'Select Task',
-        arguments: [element.id] // Pass the task object
+        arguments: [element.id]
       }
     };
   }
 
   /**
    * Returns the children for the tree view.
-   * @returns {Promise<Array>}
+   * @returns {Array} The children of the tree view.
    */
-  async getChildren() {
+    getChildren() {
     return this.tasks
               .filter((task) => !this.hiddenTasks.has(task.id))      
               .map((task) => ({label: task.title, id: task.id}));

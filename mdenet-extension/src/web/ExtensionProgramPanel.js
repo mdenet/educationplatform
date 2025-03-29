@@ -18,27 +18,18 @@ class ExtensionProgramPanel extends ExtensionPanel{
     
     async openLocalFile() {
         try {
-            const workspacePath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-            const filePath = `${workspacePath}/${this.fileLocation}`;
-            console.log(`Opening file: ${filePath}`);
-            this.doc = await vscode.workspace.openTextDocument(filePath);
+            this.doc = await vscode.workspace.openTextDocument(this.fileLocation);
         } catch (error) {
             vscode.window.showErrorMessage(`Error opening local file: ${error.message}`);
         }
     }
     
     async fetchRemoteFile() {
-        console.log(`Fetching URL: ${this.fileLocation}`);
         try {
             const response = await fetch(this.fileLocation);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             this.content = await response.text();
         } catch (error) {
-            console.error('Error fetching URL content:', error);
-            this.doc = await vscode.workspace.openTextDocument({
-                content: `Error fetching URL content: ${error.message}`,
-                language: 'plaintext'
-            });
+            vscode.window.showErrorMessage(`Error fetching remote file: ${error.message}`);
         }
     }
 
@@ -47,6 +38,10 @@ class ExtensionProgramPanel extends ExtensionPanel{
             this.doc = await vscode.workspace.openTextDocument({
                 content: this.content,
             });
+        }
+        if (!this.doc) {
+            vscode.window.showErrorMessage("Unable to display panel: no content or document.");
+            return;
         }
         await vscode.window.showTextDocument(this.doc, { preview: false, viewColumn: targetColumn });
     }

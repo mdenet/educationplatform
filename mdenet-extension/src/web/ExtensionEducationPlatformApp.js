@@ -44,7 +44,6 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
 
     async createPanel(panel, panelDefinition, newPanelId){
         let newPanel = null;
-        console.log("Creating panel", panelDefinition.panelclass);
         switch(panelDefinition.panelclass){
 			case "ProgramPanel":{
 				newPanel = new ExtensionProgramPanel(newPanelId,panel.file);
@@ -95,7 +94,6 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     
     getVisiblePanels(){
         let visiblePanels = [];
-        console.log("Getting visible panels for activity", this.activity);
         const layout = this.activity.layout.area;
         for(let i = 0; i < layout.length; i++){
             for(let j = 0; j < layout[i].length; j++){
@@ -123,10 +121,9 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     }
 
     updateSessionInfo(editorPanelId, editorInstanceUrl){
-        //replace the origin of editorInstanceUrl with http://localhost:8080
+        //replace the origin of editorInstanceUrl with http://localhost:8080 for development. This will not be need if backend return {{BASE_URL}} in the URL
         editorInstanceUrl = editorInstanceUrl.replace(/https:\/\/ep.mde-network\.org/,"http://localhost:8080");
         this.context.workspaceState.update(editorPanelId,editorInstanceUrl);
-        console.log("Updated session info",this.context.workspaceState);
     }
 
     async switchActivityTask(task){

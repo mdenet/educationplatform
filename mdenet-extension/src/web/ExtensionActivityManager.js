@@ -39,7 +39,12 @@ class ExtensionActivityManager extends GeneralActivityManager {
 
     fetchFile(filePath){
         //if filePath starts with http or https, it is a URL so just return it
-        return filePath
+        if(filePath.startsWith('http')){
+            return filePath
+        }
+        else{
+            return this.fileHandler.getPath(filePath);
+        }
     }
 
     createActivitiesMenu(config){

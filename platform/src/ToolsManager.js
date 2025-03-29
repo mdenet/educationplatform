@@ -156,6 +156,11 @@ class ToolManager {
         let errors = [];
 
         for (let toolUrl of this.toolsUrls) {
+            // Check if the url is a placeholder, if so, skip it
+            if (this.isIDPlaceHolder(toolUrl.url)){
+                continue;
+            }
+
 
             let xhr = new XMLHttpRequest();
             xhr.open("GET", toolUrl.url, false);
@@ -164,9 +169,9 @@ class ToolManager {
                 xhr.send();
             } catch (err) {
                 if (err instanceof DOMException){
-                    // errors.push( new EducationPlatformError(`A tool configuration file was not accessible at: ${toolUrl.url}. 
-                    //                                         Check the tool's url given in the activity file is correct and the tool 
-                    //                                         service is still available.`) );
+                    errors.push( new EducationPlatformError(`A tool configuration file was not accessible at: ${toolUrl.url}. 
+                                                            Check the tool's url given in the activity file is correct and the tool 
+                                                            service is still available.`) );
                 } else {
                     throw err;
                 }

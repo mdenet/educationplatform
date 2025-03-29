@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 
-
+/**
+ * Provides data for the panels tree view in the VS Code extension.
+ */
 class PanelTreeDataProvider {
   constructor() {
     this.panels = [];
@@ -9,8 +11,8 @@ class PanelTreeDataProvider {
   }
 
   /**
-   * Updates the tasks to display in the tree view.
-   * @param {Array} tasks - The list of tasks (activities) from the activity.json file.
+   * Updates the panels to display in the tree view.
+   * @param {Array} tasks - The list of panels.
    */
   setPanels(panels) {
     this.panels = panels;
@@ -30,10 +32,10 @@ class PanelTreeDataProvider {
   }
 
    /**
-   * Returns a TreeItem for the given element.
-   * @param {Object} element - The tree element (panel or parent node).
-   * @returns {vscode.TreeItem}
-   */
+     * Gets a tree item representation for the given element.
+     * @param {Object} element - The element to create a tree item for.
+     * @returns {vscode.TreeItem} The tree item representing the element.
+     */
    getTreeItem(element) {
     const treeItem = new vscode.TreeItem(
       element.label,
@@ -55,18 +57,22 @@ class PanelTreeDataProvider {
     return treeItem;
   }
 
+  
   /**
-   * Returns the children for the tree view.
-   * @param {Object} element - The parent node.
-   * @returns {Promise<Array>}
+   * Retrieves the children of a given element in the panel tree structure.
+   * If no element is provided, it returns the root-level panels.
+   *
+   * @param {Object} [element] - The parent element whose children are to be retrieved.
+   *                             If undefined, the root-level panels are returned.
+   * @returns {Array<Object>} An array of objects representing the children.
    */
-  async getChildren(element) {
+  getChildren(element) {
     if (!element) {
       // Root level panels
       return this.panels.map((panel) => ({
         label: panel.getTitle(),
         object: panel,
-        children: panel.getChildren ? panel.getChildren() : [] // Retrieve children if available
+        children: panel.getChildren ? panel.getChildren() : []
       }));
     }
 

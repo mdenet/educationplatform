@@ -6,6 +6,7 @@ import { ExtensionEducationPlatformApp } from './ExtensionEducationPlatformApp';
 import { LocalRepoManager } from './LocalRepoManager';
 
 export function activate(context, injectedApp = null) {
+	console.log("MDENet extension is now active!");
 	const localRepoManager = new LocalRepoManager();
 	const activityProvider = new ActivityTreeDataProvider(localRepoManager);
 	const taskProvider = new TaskTreeDataProvider();

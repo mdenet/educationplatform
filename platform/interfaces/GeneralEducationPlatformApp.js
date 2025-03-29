@@ -144,7 +144,6 @@ class GeneralEducationPlatformApp{
             }
         }
         return newPanel;
-        // console.log("No panel definition found for panel: " + panel?.id);
     }
 
     async createPanel(panel,panelDefinition, newPanelId){
@@ -210,9 +209,9 @@ class GeneralEducationPlatformApp{
             languageParam.value = action.source.ref.language; // Source panel language
             parameterMap.set("language", languageParam);
 
-                // TODO support output and language 
-                //actionRequestData.outputType = outputType;
-                //actionRequestData.outputLanguage = outputLanguage;
+            // TODO support output and language 
+            //actionRequestData.outputType = outputType;
+            //actionRequestData.outputLanguage = outputLanguage;
 
             // Call backend conversion and service functions
             console.log("Invoking action function: " + buttonConfig.actionfunction);
@@ -335,6 +334,10 @@ class GeneralEducationPlatformApp{
         });
 
     }
+
+    // renderHtml( html, panelId) {
+    //     throw new Error("Implement renderHtml in subclass");
+    // }
 
     /**
          * Open a websockets connection to receive status updates on editor build. 

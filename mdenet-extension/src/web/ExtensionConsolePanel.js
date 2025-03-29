@@ -22,7 +22,11 @@ class ExtensionConsolePanel extends ExtensionPanel{
         this.outputChannel.show(true);
     }
 
-    setValue(str){
+    setValue(value){
+        this.setOutput(value+"");
+    }
+
+    setOutput(str){
         this.outputChannel.appendLine(str);
         this.outputChannel.show(true);
     }
