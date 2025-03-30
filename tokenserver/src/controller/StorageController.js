@@ -117,22 +117,13 @@ class StorageController {
             });
             const comparison = response.data;
 
-            // OPTIONAL: Filter out github actions bot commits if needed
-            // If we wish to not ignore GitHub Actions commits, we can remove this block
-            // This block checks if all commits are from the GitHub Actions bot and sets the status to "identical"
-            const filteredCommits = comparison.commits.filter(
-                commit => commit.author?.login !== "github-actions[bot]"
-            );
-            const isBotOnly = filteredCommits.length === 0;
-            if (isBotOnly && comparison.ahead_by > 0) {
-                // Override the comparison object to treat the branches as identical
-                comparison.status = "identical";
-                comparison.ahead_by = 0;
-                comparison.behind_by = 0;
-                comparison.total_commits = 0;
-                comparison.commits = [];
-            }
-        
+            
+            /**
+             * Optionally filter out bot commits and adjust the comparison status accordingly.
+             * Remove this if we want to treat all commits equally.
+             */
+            await this.applyOptionalBotFiltering(comparison, octokit, owner, repo, baseBranch);
+
             res.status(200).json(comparison);
         }
         catch (error) {
@@ -340,6 +331,67 @@ class StorageController {
 
         return octokit;
     }
+
+/**
+ * Optionally filters out bot commits and adjusts the comparison status accordingly.
+ * 
+ * This method modifies the GitHub comparison object to ignore commits made by known bots
+ * like GitHub Actions, Dependabot, etc. Remove this if we want to treat all commits equally.
+ * 
+ * @param {object} comparison - The original comparison object
+ */
+async applyOptionalBotFiltering(comparison, octokit, owner, repo, baseBranch) {
+    const IGNORED_BOTS = ["github-actions[bot]", "renovate[bot]", "dependabot[bot]"];
+
+    const humanCommits = comparison.commits.filter(
+        commit => !IGNORED_BOTS.includes(commit.author?.login)
+    );
+
+    const headHasHumanCommits = humanCommits.length > 0;
+    const behindBy = comparison.behind_by;
+
+    const baseCommitsResponse = await octokit.request('GET /repos/{owner}/{repo}/commits', {
+        owner,
+        repo,
+        sha: baseBranch,
+        per_page: 10
+    });
+
+    const baseCommits = baseCommitsResponse.data;
+    const baseHasOnlyBotCommits = baseCommits.every(
+        commit => IGNORED_BOTS.includes(commit.author?.login)
+    );
+
+    if (!headHasHumanCommits && behindBy === 0) {
+        comparison.status = "identical";
+        comparison.ahead_by = 0;
+        comparison.total_commits = 0;
+        comparison.commits = [];
+    } 
+    else if (!headHasHumanCommits && behindBy > 0) {
+        comparison.status = "behind";
+        comparison.ahead_by = 0;
+        comparison.total_commits = behindBy;
+        comparison.commits = [];
+    } 
+    else if (headHasHumanCommits && behindBy === 0) {
+        comparison.status = "ahead";
+        comparison.ahead_by = humanCommits.length;
+        comparison.total_commits = humanCommits.length;
+        comparison.commits = humanCommits;
+    } 
+    else {
+        if (baseHasOnlyBotCommits) {
+            comparison.status = "ahead";
+            comparison.ahead_by = humanCommits.length;
+            comparison.total_commits = humanCommits.length;
+            comparison.commits = humanCommits;
+        } 
+        else {
+            comparison.status = "diverged";
+        }
+    }
+}
 
 }
 

@@ -187,16 +187,24 @@ class EducationPlatformApp {
      * @param {URLSearchParams} urlParameters - The URL parameters.
      */
     setupAuthenticatedState(urlParameters) {
-        document.getElementById('save')?.classList.remove('hidden');
-        document.getElementById('branch')?.classList.remove('hidden');
-        document.getElementById('review-changes')?.classList.remove('hidden');
+        try {
+            this.initializeActivity(urlParameters);
+        }
+        catch (error) {
+            console.error("Error during activity initialization:", error);
+            PlaygroundUtility.showLogin();
+            return;
+        }
 
         setAuthenticated(true);
+        this.setupEventListeners();
+
+        document.getElementById('save').classList.remove('hidden');
+        document.getElementById('branch').classList.remove('hidden');
+        document.getElementById('review-changes').classList.remove('hidden');
+
         this.activityURL = utility.getActivityURL();
         this.currentBranch = utility.getCurrentBranch();
-        this.initializeActivity(urlParameters);
-
-        this.setupEventListeners();
     }
 
     setupEventListeners() {
