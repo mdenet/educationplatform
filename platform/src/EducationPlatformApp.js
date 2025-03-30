@@ -1060,17 +1060,32 @@ class EducationPlatformApp {
     }
 
     /**
-     * Renders a list of branches fetched from the repository.
+     * Renders a list of branches fetched from the repository
+     * * @param {string} listSelector - The ID of the list element (<ul>) to populate.
+     * * @param {function} createListItem - A function that creates a list item for each branch.
      */
-    renderSwitchBranchList() {
+    renderBranchList(listSelector, createListItem) {
 
         // Clear old list items
-        const branchList = document.getElementById("switch-branch-list");
+        const branchList = document.getElementById(listSelector);
         branchList.innerHTML = "";
 
         // For each branch, we add <li> with the branch name
         this.branches.forEach((branch) => {
-            let li = document.createElement("li");
+            const li = createListItem(branch);
+            if (li) {
+                branchList.appendChild(li);
+            }
+        });
+    }
+
+    /**
+     * Renders a list of branches fetched from the repository.
+     */
+    renderSwitchBranchList() {
+
+        const createListItem = (branch) => {
+            const li = document.createElement("li");
             li.textContent = branch;
 
             // Highlight the current branch, and disable the click event to prevent switching to the same branch
@@ -1105,20 +1120,21 @@ class EducationPlatformApp {
                     this.switchBranch(branch);
                 });
             }
-            branchList.appendChild(li);
-        });
+            return li;
+        }
+        this.renderBranchList("switch-branch-list", createListItem);
     }
 
+    /**
+     * Renders a list of branches to merge with, excluding the current branch.
+     */
     renderMergeBranchList() {
-        // Clear old list items
         const branchList = document.getElementById("merge-branch-list");
-        branchList.innerHTML = "";
 
-        // For each branch, we add <li> with the branch name
-        this.branches.forEach((branch) => {
-            if (branch === this.currentBranch) return; // Skip the current branch
+        const createListItem = (branch) => {
+            if (branch === this.currentBranch) return null; // Skip the current branch
 
-            let li = document.createElement("li");
+            const li = document.createElement("li");
             li.textContent = branch;
 
             li.addEventListener("click", () => {
@@ -1140,9 +1156,9 @@ class EducationPlatformApp {
                     branchList.dataset.selectedBranch = branch;
                 }
             });
-            
-            branchList.appendChild(li);
-        });
+            return li;
+        }
+        this.renderBranchList("merge-branch-list", createListItem);
     }
 
     /**
@@ -1182,7 +1198,7 @@ class EducationPlatformApp {
     async showMergeBranchPrompt() {
 
         this.closeAllModalsExcept("merge-branch-container");
-        this.toggleMergeBranchVisibility(true);
+        await this.toggleMergeBranchVisibility(true);
 
         const closeButton = document.getElementById("merge-branch-close-button");
         closeButton.onclick = () => {
@@ -1373,8 +1389,14 @@ class EducationPlatformApp {
         container.style.display = visibility ? "block" : "none";
     }
 
-    toggleMergeBranchVisibility(visibility) {
+    async toggleMergeBranchVisibility(visibility) {
         const container = document.getElementById("merge-branch-container");
+        if (visibility) {
+            // Branches already refreshed when navigating through switch branch modal
+            // await this.refreshBranches();
+            // Re-render the list of branches
+            this.renderMergeBranchList();
+        }
         container.style.display = visibility ? "block" : "none";
     }
 
@@ -1422,7 +1444,7 @@ class EducationPlatformApp {
         document.querySelectorAll("#switch-branch-anchor").forEach(anchor => {
             anchor.onclick = (event) => {
                 event.preventDefault();
-                this.switchBranch(this.currentBranch, branchToSwitchTo);
+                this.switchBranch(branchToSwitchTo);
             };
         });
     }

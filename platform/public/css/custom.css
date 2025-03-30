@@ -300,7 +300,7 @@ body {
     background-color: #fafafa;
 }
 
-.current-branch {
+.current-branch, .selected-branch {
     background-color: #d9edf7;
     border-left: 4px solid #46b8da;
 }
@@ -412,11 +412,6 @@ body {
     background-color: #ffeef0;
     color: #cb2431;
     border-left: 4px solid #d73a49;
-}
-
-.selected-branch {
-    background-color: #d9edf7;
-    border-left: 4px solid #46b8da;
 }
 
 
