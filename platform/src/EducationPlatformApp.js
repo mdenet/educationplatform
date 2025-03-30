@@ -923,30 +923,6 @@ class EducationPlatformApp {
     }
 
     /**
-     * Computes the differences between the last saved content and the current panel content
-     * @returns {Map} A map of panels and their respective changes
-     */
-    async getPanelDiffs() {
-        try {
-            const panelDiffsMap = new Map();
-            const panelsToSave = this.getPanelsWithChanges();
-    
-            await Promise.all(
-                panelsToSave.map(async (panel) => {
-                    const diff = await panel.computeDiff();
-                    panelDiffsMap.set(panel.getTitle(), diff);
-                })
-            )
-    
-            return panelDiffsMap;
-        }
-        catch (error) {
-            console.error(error);
-            this.errorHandler.notify("An error occurred while computing the panel changes.");
-        }
-    }
-
-    /**
      * Provide the user with a way to see their unsaved changes in a seperate tab.
      */
     async reviewChanges(event) {
@@ -969,17 +945,14 @@ class EducationPlatformApp {
         panelList.innerHTML = ""; // Clear previous list items
 
         const panelsToSave = this.getPanelsWithChanges();
-        const panelDiffs = await this.getPanelDiffs();
 
         // Populate the list of panels with unsaved changes
         panelsToSave.forEach(panel => {
-            const panelName = panel.getTitle();
-
             const li = document.createElement("li");
-            li.textContent = panelName;
+            li.textContent = panel.getTitle();
 
             li.addEventListener("click", () => {
-                this.displayChangesForPanel(panelName, panelDiffs.get(panelName));
+                this.displayChangesForPanel(panel);
             })
 
             panelList.appendChild(li);
@@ -999,13 +972,17 @@ class EducationPlatformApp {
 
     /**
      * Displays a modal which shows the changes made to a given panel since the last save.
-     * @param {String} panelId - The ID of the panel to display changes for.
-     * @param {Array} panelDiff - The diffs of the panel contents.
+     * @param {SaveablePanel} panel - The panel to display changes for.
      */
-    displayChangesForPanel(panelId, panelDiff) {
+    displayChangesForPanel(panel) {
 
         this.closeAllModalsExcept("panel-changes-container");
         this.togglePanelChangeVisibility(true);
+
+        // Reset any manual resizing of the panel container
+        const panelContainer = document.getElementById("panel-changes-container");
+        panelContainer.style.removeProperty("width");
+        panelContainer.style.removeProperty("height");
 
         const closeButton = document.getElementById("panel-changes-close-button");
         closeButton.onclick = () => {
@@ -1019,12 +996,15 @@ class EducationPlatformApp {
         };
 
         const title = document.getElementById("panel-title");
-        title.textContent = panelId;
+        title.textContent = panel.getTitle();
 
+        // Clear the previous diff content
         const diffContent = document.getElementById("diff-content");
         diffContent.innerHTML = "";
 
         // Render the panel changes
+        const panelDiff = panel.getDiff();
+
         panelDiff.forEach(change => {
             const diffLine = document.createElement("div");
             diffLine.classList.add("diff-line");

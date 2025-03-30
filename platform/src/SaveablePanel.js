@@ -5,9 +5,50 @@ class SaveablePanel extends Panel {
     fileUrl;
     valueSha;
     lastSavedContent;
+    diff;
 
     constructor(id) {
         super(id);
+    }
+
+    initialize(editor) {
+        super.initialize(editor);
+
+        // Add an event listener to the editor to update the diff on change
+        this.editor.session.on("change", () => {
+            this.updatePanelDiff();
+        })
+    }
+
+    /**
+     * Updates the internal diff state of the panel.
+     * 
+     * Compares the current panel content with the last saved content
+     * and stores the resulting differences in the `diff` property.
+     * 
+     * This method is typically triggered whenever the editor content changes.
+     * The computed diff is a filtered list of added or removed lines,
+     * ignoring unchanged lines.
+     * 
+     * Uses jsdiff's `diffLines` to compute the differences.
+     */
+    updatePanelDiff() {
+        this.diff = Diff.diffLines(this.lastSavedContent, this.getValue())
+            .map(part => {
+                let change = {};
+                if (part.added) {
+                    change.added = part.value;
+                }
+                else if (part.removed) {
+                    change.removed = part.value;
+                }
+                return change;
+            })
+            .filter(change => change.added || change.removed);
+    }
+
+    getDiff() {
+        return this.diff;
     }
 
     getFileUrl() {
@@ -46,9 +87,9 @@ class SaveablePanel extends Panel {
      */
     defineSaveMetaData(fileUrl, fileContent, fileSha) {
         this.setFileUrl(fileUrl);
-        this.setValue(fileContent);
         this.setLastSavedContent(fileContent);
         this.setValueSha(fileSha);
+        this.setValue(fileContent);
     }
 
     /**
@@ -68,27 +109,6 @@ class SaveablePanel extends Panel {
             fileUrl: this.getFileUrl(),
             newFileContent: this.getValue()
         };
-    }
-
-    /**
-     * Compare the current content of the panel with the last saved content.
-     * @returns {Promise<Array>} A promise that resolves to an array of diff objects.
-     * * Each object contains the following properties:
-     * - `added`: The added content (if any).
-     * - `removed`: The removed content (if any).
-     * - `value`: The content itself.
-     */
-    computeDiff() {
-        return Promise.resolve(
-            Diff.diffLines(this.lastSavedContent, this.getValue())
-                .map(part => {
-                    let change = {};
-                    if (part.added) change.added = part.value;
-                    else if (part.removed) change.removed = part.value;
-                    return change;
-                })
-                .filter(change => change.added || change.removed)
-        );
     }
 
     /**

@@ -379,7 +379,12 @@ body {
 #panel-changes-container {
     resize: both;
     overflow: auto;
-    min-width: 400px;
+    min-width: fit-content;
+    max-width: 90vw;
+    width: fit-content;
+    min-height: fit-content;
+    max-height: 80vh;
+    height: fit-content;
 }
 
 .diff-content {
