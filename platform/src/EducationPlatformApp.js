@@ -1020,6 +1020,10 @@ class EducationPlatformApp {
         })
     }
 
+    /**
+     * Display the "Branches" modal, allowing the user to switch branches, create new branches, or merge branches.
+     * @param {*} event 
+     */
     async showBranches(event) {
         event.preventDefault();
 
@@ -1037,6 +1041,11 @@ class EducationPlatformApp {
             const createBranchButton = document.getElementById("new-branch-button");
             createBranchButton.onclick = () => {
                 this.showCreateBranchPrompt(currentBranch);
+            };
+
+            const mergeBranchButton = document.getElementById("merge-branch-button");
+            mergeBranchButton.onclick = () => {
+                this.showMergeBranchPrompt(currentBranch);
             };
 
             this.setCurrentBranchText(currentBranch);
@@ -1127,6 +1136,23 @@ class EducationPlatformApp {
         utility.setWindowLocationHref(targetURL);
     }
 
+    async showMergeBranchPrompt(currentBranch) {
+
+        this.closeAllModalsExcept("merge-branch-container");
+        this.toggleMergeBranchVisibility(true);
+
+        const closeButton = document.getElementById("merge-branch-close-button");
+        closeButton.onclick = () => {
+            this.toggleMergeBranchVisibility(false);
+        };
+
+        const backButton = document.getElementById("merge-branch-back-button");
+        backButton.onclick = async () => {
+            this.toggleMergeBranchVisibility(false);
+            await this.toggleSwitchBranchVisibility(true);
+        };
+    }
+
     /**
      * Displays a window to create and check out a new branch in the repository
      * @param {String} currentBranch - the current branch the user is on
@@ -1134,7 +1160,7 @@ class EducationPlatformApp {
     async showCreateBranchPrompt(currentBranch) {
 
         this.closeAllModalsExcept("create-branch-container");
-        await this.toggleCreateBranchVisibility(true);
+        this.toggleCreateBranchVisibility(true);
 
         const closeButton = document.getElementById("create-branch-close-button");
         closeButton.onclick = () => {
@@ -1195,8 +1221,6 @@ class EducationPlatformApp {
         this.toggleCreateBranchVisibility(false);
         this.toggleCreateBranchConfirmVisibility(true);
 
-        this.setCurrentBranchText(currentBranch);
-
         const newBranchHTML = document.querySelectorAll("#new-branch");
         newBranchHTML.forEach(element => element.textContent = newBranch);
 
@@ -1210,7 +1234,7 @@ class EducationPlatformApp {
         backButton.onclick = async () => {
             this.toggleCreateBranchConfirmVisibility(false);
             this.hideSwitchToBranchLink();
-            await this.toggleCreateBranchVisibility(true);
+            this.toggleCreateBranchVisibility(true);
         };
 
         const confirmButton = document.getElementById("confirm-bring-changes");
@@ -1288,11 +1312,13 @@ class EducationPlatformApp {
         container.style.display = visibility ? "block" : "none";
     }
 
-    async toggleCreateBranchVisibility(visibility) {
+    toggleCreateBranchVisibility(visibility) {
         const container = document.getElementById("create-branch-container");
-        if (visibility) {
-            await this.refreshBranches();
-        }
+        container.style.display = visibility ? "block" : "none";
+    }
+
+    toggleMergeBranchVisibility(visibility) {
+        const container = document.getElementById("merge-branch-container");
         container.style.display = visibility ? "block" : "none";
     }
 
@@ -1337,7 +1363,6 @@ class EducationPlatformApp {
     displaySwitchToBranchLink(currentBranch, branchToSwitchTo) {
         document.querySelectorAll("#switch-branch-name").forEach(name => name.textContent = branchToSwitchTo);
         document.querySelectorAll("#switch-to-branch-link").forEach(link => link.style.display = "block");
-
         document.querySelectorAll("#switch-branch-anchor").forEach(anchor => {
             anchor.onclick = (event) => {
                 event.preventDefault();
