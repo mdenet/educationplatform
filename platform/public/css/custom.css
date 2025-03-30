@@ -296,7 +296,7 @@ body {
     cursor: pointer;
 }
 
-.ul-list li:hover {
+.ul-list li:not(.current-branch):not(.selected-branch):hover {
     background-color: #fafafa;
 }
 
@@ -413,6 +413,12 @@ body {
     color: #cb2431;
     border-left: 4px solid #d73a49;
 }
+
+.selected-branch {
+    background-color: #d9edf7;
+    border-left: 4px solid #46b8da;
+}
+
 
 
 

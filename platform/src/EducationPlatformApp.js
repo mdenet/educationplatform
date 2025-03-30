@@ -49,6 +49,7 @@ class EducationPlatformApp {
     panels;
     saveablePanels;
     branches;
+    currentBranch;
     activityURL;
     confirmLeavePage;
 
@@ -192,6 +193,7 @@ class EducationPlatformApp {
 
         setAuthenticated(true);
         this.activityURL = utility.getActivityURL();
+        this.currentBranch = utility.getCurrentBranch();
         this.initializeActivity(urlParameters);
 
         this.setupEventListeners();
@@ -1028,8 +1030,6 @@ class EducationPlatformApp {
         event.preventDefault();
 
         try {
-            const currentBranch = utility.getCurrentBranch();
-
             this.closeAllModalsExcept("switch-branch-container");
             await this.toggleSwitchBranchVisibility(true);
 
@@ -1040,34 +1040,18 @@ class EducationPlatformApp {
 
             const createBranchButton = document.getElementById("new-branch-button");
             createBranchButton.onclick = () => {
-                this.showCreateBranchPrompt(currentBranch);
+                this.showCreateBranchPrompt();
             };
 
             const mergeBranchButton = document.getElementById("merge-branch-button");
             mergeBranchButton.onclick = () => {
-                this.showMergeBranchPrompt(currentBranch);
+                this.showMergeBranchPrompt();
             };
 
-            this.setCurrentBranchText(currentBranch);
+            this.setCurrentBranchText();
 
-            const branchList = document.getElementById("branch-list");
-            this.renderBranchList();
-
-            // Set up the filter logic for the branch search
-            const branchSearch = document.getElementById("branch-search");
-            branchSearch.oninput = function (event) {
-                const filterText = event.target.value.toLowerCase();
-
-                // Filter through the <li> items and show/hide based on the search text
-                const listItems = branchList.querySelectorAll("li");
-                listItems.forEach(li => {
-                    const branchName = li.textContent.toLowerCase();
-                    li.style.display = branchName.includes(filterText)
-                        ? ""
-                        : "none";
-                });
-            };
-
+            this.setupSearchInput("switch-branch-search", "switch-branch-list");
+            this.renderSwitchBranchList();
         }
         catch (error) {
             console.error(error);
@@ -1076,14 +1060,12 @@ class EducationPlatformApp {
     }
 
     /**
-     * Renders a list of branches fetched from the repository
-     * Highlights the branch the user is currently on
+     * Renders a list of branches fetched from the repository.
      */
-    renderBranchList() {
-        const currentBranch = utility.getCurrentBranch();
+    renderSwitchBranchList() {
 
         // Clear old list items
-        const branchList = document.getElementById("branch-list");
+        const branchList = document.getElementById("switch-branch-list");
         branchList.innerHTML = "";
 
         // For each branch, we add <li> with the branch name
@@ -1091,52 +1073,113 @@ class EducationPlatformApp {
             let li = document.createElement("li");
             li.textContent = branch;
 
-            // highlight the currently active branch
-            if (branch === currentBranch) {
+            // Highlight the current branch, and disable the click event to prevent switching to the same branch
+            if (branch === this.currentBranch) {
                 li.classList.add("current-branch");
+
+                li.addEventListener("click", () => {
+                    PlaygroundUtility.warningNotification("You are already on this branch.");
+                });
             }
+            else {
+                li.addEventListener("click", () => {
+                    if (this.changesHaveBeenMade()) {
+                        const confirmSwitch = confirm(
+                            "⚠️ You have unsaved changes!\n\n" +
+                            "Switching branches will discard your unsaved work.\n" +
+                            "Do you want to continue?\n\n" +
+                            "✔ OK to switch branches\n" +
+                            "✖ Cancel to stay on this branch"
+                        );
+                    
+                        if (!confirmSwitch) {
+                            this.confirmLeavePage = false;
+                            return;
+                        }
+                        else {
+                            // Change the flag to prevent the "Leave Page" warning
+                            this.confirmLeavePage = true;
+                        }
+                    }
+    
+                    this.switchBranch(branch);
+                });
+            }
+            branchList.appendChild(li);
+        });
+    }
+
+    renderMergeBranchList() {
+        // Clear old list items
+        const branchList = document.getElementById("merge-branch-list");
+        branchList.innerHTML = "";
+
+        // For each branch, we add <li> with the branch name
+        this.branches.forEach((branch) => {
+            if (branch === this.currentBranch) return; // Skip the current branch
+
+            let li = document.createElement("li");
+            li.textContent = branch;
 
             li.addEventListener("click", () => {
-
-                if (this.changesHaveBeenMade()) {
-                    const confirmSwitch = confirm(
-                        "⚠️ You have unsaved changes!\n\n" +
-                        "Switching branches will discard your unsaved work.\n" +
-                        "Do you want to continue?\n\n" +
-                        "✔ OK to switch branches\n" +
-                        "✖ Cancel to stay on this branch"
+                const selected = branchList.dataset.selectedBranch;
+    
+                // If clicking the already selected one, unselect it
+                if (selected === branch) {
+                    li.classList.remove("selected-branch");
+                    delete branchList.dataset.selectedBranch;
+                } 
+                else {
+                    // Remove highlight from all
+                    branchList.querySelectorAll("li").forEach(item =>
+                        item.classList.remove("selected-branch")
                     );
-                
-                    if (!confirmSwitch) {
-                        this.confirmLeavePage = false;
-                        return;
-                    }
-                    else {
-                        // Change the flag to prevent the "Leave Page" warning
-                        this.confirmLeavePage = true;
-                    }
+    
+                    // Highlight current
+                    li.classList.add("selected-branch");
+                    branchList.dataset.selectedBranch = branch;
                 }
-
-                this.switchBranch(currentBranch, branch);
             });
+            
             branchList.appendChild(li);
         });
     }
 
     /**
-     * Switch to a different branch in the repository
-     * Changes the branch parameter in the URL 
-     * @param {String} currentBranch 
+     * Attaches live search filtering to a list based on input field text.
+     * @param {string} searchInputSelector - The ID of the input element to listen for user input.
+     * @param {string} listSelector - The ID of the list element (<ul>) containing <li> items to filter.
+     */
+    setupSearchInput(searchInputSelector, listSelector) {
+        const searchInput = document.getElementById(searchInputSelector);
+        const list = document.getElementById(listSelector);
+
+        searchInput.oninput = function (event) {
+            const filterText = event.target.value.toLowerCase();
+
+            // Filter through the <li> items and show/hide based on the search text
+            const listItems = list.querySelectorAll("li");
+            listItems.forEach(li => {
+                const branchName = li.textContent.toLowerCase();
+                li.style.display = branchName.includes(filterText)
+                    ? ""
+                    : "none";
+            });
+        };
+    }
+
+    /**
+     * Switch to a different branch in the repository by changing the branch parameter in the URL.
      * @param {String} branchToSwitchTo 
      */
-    switchBranch(currentBranch, branchToSwitchTo) {
+    switchBranch(branchToSwitchTo) {
         const currentURL = utility.getWindowLocationHref();
-        const targetURL = currentURL.replace("/" + currentBranch + "/", "/" + branchToSwitchTo + "/");
+        const targetURL = currentURL.replace("/" + this.currentBranch + "/", "/" + branchToSwitchTo + "/");
 
         utility.setWindowLocationHref(targetURL);
     }
 
-    async showMergeBranchPrompt(currentBranch) {
+    async showMergeBranchPrompt() {
 
         this.closeAllModalsExcept("merge-branch-container");
         this.toggleMergeBranchVisibility(true);
@@ -1151,13 +1194,28 @@ class EducationPlatformApp {
             this.toggleMergeBranchVisibility(false);
             await this.toggleSwitchBranchVisibility(true);
         };
+
+        this.setupSearchInput("merge-branch-search", "merge-branch-list");
+        this.renderMergeBranchList();
+
+        const mergeButton = document.getElementById("confirm-merge-button");
+        mergeButton.onclick = () => {
+            const branchList = document.getElementById("merge-branch-list");
+            const selectedBranch = branchList.dataset.selectedBranch;
+            if (selectedBranch) {
+                console.log("Merging with branch " + selectedBranch);
+            }
+            else {
+                PlaygroundUtility.warningNotification("Please select a branch to merge with.");
+                return;
+            }
+        };
     }
 
     /**
      * Displays a window to create and check out a new branch in the repository
-     * @param {String} currentBranch - the current branch the user is on
      */
-    async showCreateBranchPrompt(currentBranch) {
+    async showCreateBranchPrompt() {
 
         this.closeAllModalsExcept("create-branch-container");
         this.toggleCreateBranchVisibility(true);
@@ -1174,8 +1232,6 @@ class EducationPlatformApp {
             this.hideSwitchToBranchLink();
             await this.toggleSwitchBranchVisibility(true);
         };
-
-        document.getElementById("create-branch-based-on-text").textContent = currentBranch;
 
         // Clear the input
         const newBranchInput = document.getElementById("new-branch-name");
@@ -1200,14 +1256,14 @@ class EducationPlatformApp {
 
             // Check for unsaved changes
             if(this.changesHaveBeenMade()) {
-                this.displayCreateBranchConfirmModal(currentBranch, newBranch);
+                this.displayCreateBranchConfirmModal(newBranch);
             }
             else {
                 // No unsaved changes, simply create the branch and switch to it
                 this.fileHandler.createBranch(this.activityURL, newBranch)
                 .then(() => {
                     PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
-                    this.displaySwitchToBranchLink(currentBranch, newBranch);
+                    this.displaySwitchToBranchLink(newBranch);
                 })
                 .catch((error) => {
                     console.error(error);
@@ -1217,7 +1273,7 @@ class EducationPlatformApp {
         };
     }
 
-    displayCreateBranchConfirmModal(currentBranch, newBranch) {
+    displayCreateBranchConfirmModal(newBranch) {
         this.toggleCreateBranchVisibility(false);
         this.toggleCreateBranchConfirmVisibility(true);
 
@@ -1242,10 +1298,10 @@ class EducationPlatformApp {
             this.fileHandler.createBranch(this.activityURL, newBranch)
             .then(() => {
                 // Save the changes to this new branch
-                this.saveFiles("Merge changes from " + currentBranch + " to " + newBranch, newBranch)
+                this.saveFiles("Merge changes from " + this.currentBranch + " to " + newBranch, newBranch)
                     .then(() => {
                         PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
-                        this.displaySwitchToBranchLink(currentBranch, newBranch);
+                        this.displaySwitchToBranchLink(newBranch);
 
                         // Undo the changes made to the panels to keep the current branch clean
                         this.undoPanelChanges();
@@ -1269,7 +1325,7 @@ class EducationPlatformApp {
                 this.undoPanelChanges();
 
                 PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
-                this.displaySwitchToBranchLink(currentBranch, newBranch);
+                this.displaySwitchToBranchLink(newBranch);
             })
             .catch((error) => {
                 console.error(error);
@@ -1293,9 +1349,9 @@ class EducationPlatformApp {
         });
     }
 
-    setCurrentBranchText(currentBranch) {
+    setCurrentBranchText() {
         const currentBranchElements = document.querySelectorAll("#current-branch");
-        currentBranchElements.forEach(element => element.textContent = currentBranch);
+        currentBranchElements.forEach(element => element.textContent = this.currentBranch);
     }
 
     undoPanelChanges() {
@@ -1307,7 +1363,7 @@ class EducationPlatformApp {
         if (visibility) {
             await this.refreshBranches();
             // Re-render the list of branches
-            this.renderBranchList();
+            this.renderSwitchBranchList();
         }
         container.style.display = visibility ? "block" : "none";
     }
@@ -1360,13 +1416,13 @@ class EducationPlatformApp {
         document.querySelectorAll("#switch-branch-anchor").forEach(anchor => anchor.onclick = null);
     }
 
-    displaySwitchToBranchLink(currentBranch, branchToSwitchTo) {
+    displaySwitchToBranchLink(branchToSwitchTo) {
         document.querySelectorAll("#switch-branch-name").forEach(name => name.textContent = branchToSwitchTo);
         document.querySelectorAll("#switch-to-branch-link").forEach(link => link.style.display = "block");
         document.querySelectorAll("#switch-branch-anchor").forEach(anchor => {
             anchor.onclick = (event) => {
                 event.preventDefault();
-                this.switchBranch(currentBranch, branchToSwitchTo);
+                this.switchBranch(this.currentBranch, branchToSwitchTo);
             };
         });
     }

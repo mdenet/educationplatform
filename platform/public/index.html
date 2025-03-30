@@ -79,12 +79,12 @@
         </div>
 
         <div class="branch-input-container">
-            <input type="text" id="branch-search" placeholder="Filter branches..." data-role="input">
+            <input type="text" id="switch-branch-search" placeholder="Filter..." data-role="input">
             <button class="button primary round-button" id="new-branch-button">New Branch</button>
         </div>
 
         <div class="list-container">
-            <ul id="branch-list" class="ul-list">
+            <ul id="switch-branch-list" class="ul-list">
                 <!-- Branch items will be added dynamically -->
             </ul>
         </div>
@@ -121,10 +121,7 @@
 
         <div class="create-branch-based-on-container">
             <p class="create-branch-based-on">
-                This branch will be based on: 
-                <strong id="create-branch-based-on-text">
-                    <!-- Render the text dynamically -->
-                </strong>
+                This branch will be based on: <strong id="current-branch"></strong>
             </p>
             <p id="switch-to-branch-link" style="display:none;">
                 <a href="#" id="switch-branch-anchor">
@@ -185,7 +182,23 @@
             </button>
         </div>
 
-        
+        <div class="branch-input-container">
+            <input type="text" id="merge-branch-search" placeholder="Filter..." data-role="input">
+        </div>
+
+        <div class="list-container">
+            <ul id="merge-branch-list" class="ul-list">
+                <!-- Branch items will be added dynamically -->
+            </ul>
+        </div>
+
+        <div class="container-footer">
+            <p id="merge-branch-info-text">
+                Select a branch to merge into <strong id="current-branch"></strong>
+            </p>
+            <br>
+            <button id="confirm-merge-button" class="button primary round-button">Complete merge</button>
+        </div>
 
     </div>
 
