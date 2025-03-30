@@ -135,6 +135,24 @@ class FileHandler {
         }
     }
 
+    async mergeBranches(url, branchToMergeFrom) {
+
+        if (!isAuthenticated()) {
+            throw new Error("Not authenticated to merge branches.");
+        }
+
+        const requestUrl = new URL(this.tokenHandlerUrl);
+        requestUrl.pathname = "/mdenet-auth/github/merge-branches";
+
+        const requestParams = this.mergeBranchRequestParams(url, branchToMergeFrom);
+        if (!requestParams) {
+            throw new Error("Failed to merge branches - invalid URL");
+        }
+
+        const response = jsonRequest(requestUrl, JSON.stringify(requestParams), true);
+        return JSON.parse(response);
+    }
+
     storeFiles(filesToSave, message, overrideBranch){
 
         if (!isAuthenticated()) {
@@ -308,13 +326,13 @@ class FileHandler {
     }
 
     githubRawUrlToCompareBranchesRequestUrl(githubUrlPath, branchToCompare) {
-        const params = this.getPathParts(githubUrlPath);
-        // Rename the ref parameter to baseBranch for the request
-        params.baseBranch = params.ref;
-        delete params.ref;
-
-        params.compareBranch = branchToCompare;
-
+        const pathParts = this.getPathParts(githubUrlPath);
+        const params = {
+            owner: pathParts.owner,
+            repo: pathParts.repo,
+            baseBranch: pathParts.ref,
+            headBranch: branchToCompare
+        }
         return this.constructRequestUrl("/mdenet-auth/github/compare-branches", params);
     }
 
@@ -357,6 +375,33 @@ class FileHandler {
         return fileRequestUrl;
     }
 
+    mergeBranchRequestParams(fileUrl, branchToMergeFrom) {
+        let fileSourceUrl = new URL(fileUrl);
+        let fileRequestUrl;
+
+        switch(fileSourceUrl.host) {
+            case 'raw.githubusercontent.com':
+                fileRequestUrl = this.githubRawUrlToMergeBranchRequestParams(fileSourceUrl.pathname, branchToMergeFrom);
+                break;
+            default:
+                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
+                fileRequestUrl = null;
+                break;
+        }
+
+        return fileRequestUrl;
+    }
+
+    githubRawUrlToMergeBranchRequestParams(githubUrlPath, branchToMergeFrom) {
+        const pathParts = this.getPathParts(githubUrlPath);
+        const requestParams = {
+            owner: pathParts.owner,
+            repo: pathParts.repo,
+            baseBranch: pathParts.ref,
+            headBranch: branchToMergeFrom,
+        }
+        return requestParams;
+    }
 
     githubRawUrlToStoreRequestParams(githubUrlPath){
         const requestParams = this.getPathParts(githubUrlPath);

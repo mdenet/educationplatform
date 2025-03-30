@@ -1,7 +1,7 @@
 import * as express from "express";
 
 import {InvalidRequestException} from "../exceptions/InvalidRequestException.js";
-import { GihubException } from "../exceptions/GithubException.js";
+import { GitHubException } from "../exceptions/GitHubException.js";
 import {asyncCatch} from "../middleware/ErrorHandlingMiddleware.js";
 import {getAuthCookieName} from "../cookieName.js";
 import {decryptCookie} from "../lib-curity/cookieEncrypter";
@@ -20,6 +20,7 @@ class StorageController {
         this.router.post('/file', asyncCatch(this.storeFiles));
         this.router.post('/fork', asyncCatch(this.forkRepository));
         this.router.post('/create-branch', asyncCatch(this.createBranch));
+        this.router.post('/merge-branches', asyncCatch(this.mergeBranches));
     }
 
     getFile = async (req, res) => { 
@@ -91,7 +92,7 @@ class StorageController {
         catch (error) {
             console.log("we entered catch");
             console.error("Error creating branch:", error);
-            throw new GihubException(error.status);
+            throw new GitHubException(error.status);
         }
     }
 
@@ -99,9 +100,9 @@ class StorageController {
         const encryptedAuthCookie = req.cookies[getAuthCookieName];
         const octokit = this.initOctokit(encryptedAuthCookie);
 
-        const { owner, repo, baseBranch, compareBranch } = req.query;
+        const { owner, repo, baseBranch, headBranch } = req.query;
 
-        if (!owner || !repo || !baseBranch || !compareBranch) {
+        if (!owner || !repo || !baseBranch || !headBranch) {
             throw new InvalidRequestException();
         }
 
@@ -110,7 +111,7 @@ class StorageController {
                 owner: owner,
                 repo: repo,
                 base: baseBranch,
-                head: compareBranch,
+                head: headBranch,
                 headers: {
                     'X-GitHub-Api-Version': config.githubApiVersion
                 }
@@ -122,13 +123,72 @@ class StorageController {
              * Optionally filter out bot commits and adjust the comparison status accordingly.
              * Remove this if we want to treat all commits equally.
              */
-            await this.applyOptionalBotFiltering(comparison, octokit, owner, repo, baseBranch, compareBranch);
+            await this.applyOptionalBotFiltering(comparison, octokit, owner, repo, baseBranch, headBranch);
 
             res.status(200).json(comparison);
         }
         catch (error) {
             console.error("Error while comparing branches:", error);
-            throw new GihubException(error.status);
+            throw new GitHubException(error.status);
+        }
+    }
+
+    mergeBranches = async (req, res) => {
+        const encryptedAuthCookie = req.cookies[getAuthCookieName];
+        const octokit = this.initOctokit(encryptedAuthCookie);
+
+        const { owner, repo, base, head } = req.body;
+
+        if (!owner || !repo || !base || !head) {
+            throw new InvalidRequestException();
+        }
+
+        try {
+            const result = await octokit.request('POST /repos/{owner}/{repo}/merges', {
+                owner: owner,
+                repo: repo,
+                base: base,
+                head: head,
+                commit_message: `Merge ${head} into ${base}`,
+                headers: {
+                    'X-GitHub-Api-Version': config.githubApiVersion
+                }
+            });
+
+            const mergeCommitSha = result.data.sha;
+
+            // Get all the files in the merge commit tree
+            const { data: treeData } = await octokit.request(
+                'GET /repos/{owner}/{repo}/git/trees/{tree_sha}?recursive=1',
+                {
+                    owner,
+                    repo,
+                    tree_sha: mergeCommitSha,
+                    headers: {
+                        'X-GitHub-Api-Version': config.githubApiVersion
+                    }
+                }
+            );
+
+            // Extract the file paths and SHAs from the tree data
+            const updatedFiles = treeData.tree
+                .filter(file => file.type === 'blob')
+                .map(file => (
+                    {path: file.path, sha: file.sha}
+                ));
+
+            res.status(201).json({ success: true, files: updatedFiles});
+        }
+        catch (error) {
+            
+            if (error.status === 409) {
+                // Merge conflict detected
+                res.status(200).json({ success: false, conflict: true });
+            }
+            else {
+                console.error("Error while merging branches:", error);
+                throw new GitHubException(error.status);
+            }
         }
     }
     
@@ -159,7 +219,7 @@ class StorageController {
         }
         catch (error) {
             console.error("Error while fetching branches:", error);
-            throw new GihubException(error.status);
+            throw new GitHubException(error.status);
         }
     }
 
@@ -264,7 +324,7 @@ class StorageController {
         }
         catch (error) {
             console.error("Error while storing files:", error);
-            throw new GihubException(error.status);
+            throw new GitHubException(error.status);
         }
     }
 
@@ -337,14 +397,14 @@ class StorageController {
      * This filtering is **optional** and can be removed if bot commits should be treated as meaningful.
      * @param {object} comparison - The original comparison object
      */
-    async applyOptionalBotFiltering(comparison, octokit, owner, repo, baseBranch, compareBranch) {
+    async applyOptionalBotFiltering(comparison, octokit, owner, repo, baseBranch, headBranch) {
         const IGNORED_BOTS = ["github-actions[bot]", "renovate[bot]", "dependabot[bot]"];
     
-        // Fetch HEAD (compareBranch) commits
+        // Fetch head branch commits
         const headCommitsResponse = await octokit.request('GET /repos/{owner}/{repo}/commits', {
             owner,
             repo,
-            sha: compareBranch,
+            sha: headBranch,
             per_page: 20,
         });
         const headCommits = headCommitsResponse.data;
