@@ -113,7 +113,7 @@ class FileHandler {
      * @param {String} url 
      * @param {String} branchToCompare 
      */
-    compareBranches(url, branchToCompare) {
+    async compareBranches(url, branchToCompare) {
 
         if (!isAuthenticated()) {
             throw new Error("Not authenticated to compare branches.");
@@ -125,7 +125,7 @@ class FileHandler {
         }
 
         try {
-            const response = getRequest(requestUrl, true);
+            const response = await getRequest(requestUrl, true);
             const comparison = JSON.parse(response);
             return comparison;
         }

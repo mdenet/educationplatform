@@ -1130,6 +1130,7 @@ class EducationPlatformApp {
      */
     renderMergeBranchList() {
         const branchList = document.getElementById("merge-branch-list");
+        const infoText = document.getElementById("merge-branch-info-text")
 
         const createListItem = (branch) => {
             if (branch === this.currentBranch) return null; // Skip the current branch
@@ -1137,13 +1138,15 @@ class EducationPlatformApp {
             const li = document.createElement("li");
             li.textContent = branch;
 
-            li.addEventListener("click", () => {
+            li.addEventListener("click", async () => {
                 const selected = branchList.dataset.selectedBranch;
     
                 // If clicking the already selected one, unselect it
                 if (selected === branch) {
                     li.classList.remove("selected-branch");
                     delete branchList.dataset.selectedBranch;
+
+                    infoText.textContent = "Select a branch to merge into " + this.currentBranch;
                 } 
                 else {
                     // Remove highlight from all
@@ -1154,11 +1157,66 @@ class EducationPlatformApp {
                     // Highlight current
                     li.classList.add("selected-branch");
                     branchList.dataset.selectedBranch = branch;
+
+                     // Retrieve comparison information between the current branch and the selected branch
+                    try {
+                        const comparison = await this.fileHandler.compareBranches(this.activityURL, branch);
+                        this.updateMergeInfoText(comparison, branch)
+                    }
+                    catch (error) {
+                        console.error(`Comparison between ${this.currentBranch} and ${branch} failed:`, error);
+                        infoText.textContent = "There was an error comparing the branches.";
+                    }
                 }
             });
             return li;
         }
         this.renderBranchList("merge-branch-list", createListItem);
+    }
+
+    /**
+     * Update the merge information text based on the comparison info.
+     * @param {Object} comparisonInfo - The comparison information between branches.
+     * @param {string} branchCompared - The name of the selected branch (head).
+     */
+    updateMergeInfoText(comparisonInfo, branchCompared) {
+        const infoText = document.getElementById("merge-branch-info-text");
+        const mergeButton = document.getElementById("confirm-merge-button");
+
+        const head = comparisonInfo.head?.ref ?? branchCompared;
+        const base = comparisonInfo.base?.ref ?? this.currentBranch;
+        const status = comparisonInfo.status;
+
+        if (!comparisonInfo || !comparisonInfo.status) {
+            infoText.textContent = "ℹ️ Unable to determine merge status.";
+            return;
+        }
+
+        // Default: assume merge is allowed
+        mergeButton.disabled = false;
+
+        switch (status) {
+            case "identical":
+                infoText.innerHTML = `✅<br><strong>${head}</strong> is up to date with <strong>${base}</strong>.<br>No merge needed.`;
+                mergeButton.disabled = true;
+                break;
+            case "ahead":
+                infoText.innerHTML = `🔀<br><strong>${head}</strong> is ahead of <strong>${base}</strong> by ${comparisonInfo.ahead_by} commit(s) and can be merged.`;
+                mergeButton.disabled = false;
+                break;
+            case "behind":
+                infoText.innerHTML = `⚠️<br><strong>${head}</strong> is behind <strong>${base}</strong> by ${comparisonInfo.behind_by} commit(s).<br>Nothing new to merge.`;
+                mergeButton.disabled = true;
+                break;
+            case "diverged":
+                infoText.innerHTML = `⚠️<br><strong>${head}</strong> and <strong>${base}</strong> have diverged.<br>Merge conflicts are likely.`;
+                mergeButton.disabled = false;
+                break;
+            default:
+                infoText.innerHTML = `ℹ️<br>Merge status: ${status}`;
+                mergeButton.disabled = true;
+                break;
+        }
     }
 
     /**
@@ -1396,6 +1454,11 @@ class EducationPlatformApp {
             // await this.refreshBranches();
             // Re-render the list of branches
             this.renderMergeBranchList();
+        }
+        else {
+            // Reset the merge branch info text
+            const infoText = document.getElementById("merge-branch-info-text");
+            infoText.textContent = "Select a branch to merge into " + this.currentBranch;
         }
         container.style.display = visibility ? "block" : "none";
     }

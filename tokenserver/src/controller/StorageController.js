@@ -115,8 +115,25 @@ class StorageController {
                     'X-GitHub-Api-Version': config.githubApiVersion
                 }
             });
+            const comparison = response.data;
 
-            res.status(200).json(response.data);
+            // OPTIONAL: Filter out github actions bot commits if needed
+            // If we wish to not ignore GitHub Actions commits, we can remove this block
+            // This block checks if all commits are from the GitHub Actions bot and sets the status to "identical"
+            const filteredCommits = comparison.commits.filter(
+                commit => commit.author?.login !== "github-actions[bot]"
+            );
+            const isBotOnly = filteredCommits.length === 0;
+            if (isBotOnly && comparison.ahead_by > 0) {
+                // Override the comparison object to treat the branches as identical
+                comparison.status = "identical";
+                comparison.ahead_by = 0;
+                comparison.behind_by = 0;
+                comparison.total_commits = 0;
+                comparison.commits = [];
+            }
+        
+            res.status(200).json(comparison);
         }
         catch (error) {
             console.error("Error while comparing branches:", error);

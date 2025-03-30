@@ -414,6 +414,14 @@ body {
     border-left: 4px solid #d73a49;
 }
 
+.button.primary:disabled,
+.button.primary[disabled] {
+    background-color: #267acc; /* slightly darker blue */
+    color: #e0e0e0;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
 
 
 
