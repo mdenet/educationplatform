@@ -158,9 +158,7 @@ class StorageController {
             const mergeCommitSha = result.data.sha;
 
             // Get all the files in the merge commit tree
-            const { data: treeData } = await octokit.request(
-                'GET /repos/{owner}/{repo}/git/trees/{tree_sha}?recursive=1',
-                {
+            const { data: treeData } = await octokit.request('GET /repos/{owner}/{repo}/git/trees/{tree_sha}?recursive=1', {
                     owner,
                     repo,
                     tree_sha: mergeCommitSha,
@@ -170,17 +168,34 @@ class StorageController {
                 }
             );
 
-            // Extract the file paths and SHAs from the tree data
-            const updatedFiles = treeData.tree
-                .filter(file => file.type === 'blob')
-                .map(file => (
-                    {path: file.path, sha: file.sha}
-                ));
+            // Filter out the blob files (actual files) from the tree data and retrieve their content
+            const blobFiles = treeData.tree.filter(file => file.type === 'blob');
+            
+            const updatedFiles = await Promise.all(
+                blobFiles.map(async file => {
+                    const blob = await octokit.request('GET /repos/{owner}/{repo}/git/blobs/{file_sha}', {
+                        owner,
+                        repo,
+                        file_sha: file.sha,
+                        headers: {
+                            'X-GitHub-Api-Version': config.githubApiVersion
+                        }
+                    });
+
+                    const content = Buffer.from(blob.data.content, 'base64').toString();
+
+                    return {
+                        path: file.path,
+                        sha: file.sha,
+                        content: content
+                    };
+                })
+            );
 
             res.status(201).json({ success: true, files: updatedFiles});
         }
         catch (error) {
-            
+
             if (error.status === 409) {
                 // Merge conflict detected
                 res.status(200).json({ success: false, conflict: true });

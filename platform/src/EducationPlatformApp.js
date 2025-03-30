@@ -1290,15 +1290,40 @@ class EducationPlatformApp {
         this.renderMergeBranchList();
 
         const mergeButton = document.getElementById("confirm-merge-button");
-        mergeButton.onclick = () => {
+        mergeButton.onclick = async () => {
             const branchList = document.getElementById("merge-branch-list");
             const selectedBranch = branchList.dataset.selectedBranch;
-            if (selectedBranch) {
-                console.log("Merging with branch " + selectedBranch);
-            }
-            else {
-                PlaygroundUtility.warningNotification("Please select a branch to merge with.");
+
+            if (!selectedBranch) {
+                PlaygroundUtility.warningNotification("Please select a branch to merge.");
                 return;
+            }
+
+            try {
+                // Retrieve a {path, sha, content} list of all files in the selected branch
+                const response = await this.fileHandler.mergeBranches(this.activityURL, selectedBranch);
+                if (response.success) {
+                    // Sync file SHAs after successful merge
+                    const updatedFiles = response.files;
+
+                    for (const panel of this.saveablePanels) {
+                        const filePath = panel.getFilePath();
+                        const match = updatedFiles.find(file => file.path === filePath);
+
+                        panel.setValueSha(match.sha);
+                        panel.setLastSavedContent(match.content);
+                        panel.setValue(match.content);
+                        panel.getEditor().session.getUndoManager().markClean();
+                    }
+                    PlaygroundUtility.successNotification("Branches merged successfully.");
+                }
+                else if (response.conflict) {
+                    
+                }
+            }
+            catch (error) {
+                console.error("Error merging branches:", error);
+                this.errorHandler.notify("An error occurred while merging branches.");
             }
         };
     }
