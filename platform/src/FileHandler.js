@@ -108,6 +108,33 @@ class FileHandler {
         return jsonRequest(requestUrl, JSON.stringify(requestParams), true);
     }
 
+    /**
+     * Compare two branches in the repository - by default the base branch is the current branch
+     * @param {String} url 
+     * @param {String} branchToCompare 
+     */
+    compareBranches(url, branchToCompare) {
+
+        if (!isAuthenticated()) {
+            throw new Error("Not authenticated to compare branches.");
+        }
+
+        const requestUrl = this.getCompareBranchesRequestUrl(url, branchToCompare);
+        if (!requestUrl) {
+            throw new Error("Failed to compare branches - invalid URL");
+        }
+
+        try {
+            const response = getRequest(requestUrl, true);
+            const comparison = JSON.parse(response);
+            return comparison;
+        }
+        catch (error) {
+            console.error("Failed to compare branches: " + error);
+            throw error;
+        }
+    }
+
     storeFiles(filesToSave, message, overrideBranch){
 
         if (!isAuthenticated()) {
@@ -241,6 +268,29 @@ class FileHandler {
 
         return fileRequestUrl;
     }
+
+    /**
+     * Converts file urls from different hosts into requests for the token server
+     * @param {String} fileUrl the url of the file
+     * @param {String} branchToCompare the branch to compare with the current one
+     * @returns {String} request url
+     */
+    getCompareBranchesRequestUrl(fileUrl, branchToCompare) {
+        let fileSourceUrl = new URL(fileUrl);
+        let fileRequestUrl;
+
+        switch(fileSourceUrl.host) {
+            case 'raw.githubusercontent.com':
+                fileRequestUrl = this.githubRawUrlToCompareBranchesRequestUrl(fileSourceUrl.pathname, branchToCompare);
+                break;
+            default:
+                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
+                fileRequestUrl = null;
+                break;
+        }
+
+        return fileRequestUrl;
+    }
     
     /**
      * Convert github raw file url path into request url
@@ -255,6 +305,17 @@ class FileHandler {
     githubRawUrlToGetBranchesRequestUrl(githubUrlPath) {
         const params = this.getPathParts(githubUrlPath);
         return this.constructRequestUrl("/mdenet-auth/github/branches", params);
+    }
+
+    githubRawUrlToCompareBranchesRequestUrl(githubUrlPath, branchToCompare) {
+        const params = this.getPathParts(githubUrlPath);
+        // Rename the ref parameter to baseBranch for the request
+        params.baseBranch = params.ref;
+        delete params.ref;
+
+        params.compareBranch = branchToCompare;
+
+        return this.constructRequestUrl("/mdenet-auth/github/compare-branches", params);
     }
 
     getPrivateFileUpdateParams(fileUrl){

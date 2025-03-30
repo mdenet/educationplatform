@@ -16,6 +16,7 @@ class StorageController {
     constructor() {
         this.router.get('/file', asyncCatch(this.getFile));
         this.router.get('/branches', asyncCatch(this.getBranches));
+        this.router.get('/compare-branches', asyncCatch(this.compareBranches));
         this.router.post('/file', asyncCatch(this.storeFiles));
         this.router.post('/fork', asyncCatch(this.forkRepository));
         this.router.post('/create-branch', asyncCatch(this.createBranch));
@@ -90,6 +91,35 @@ class StorageController {
         catch (error) {
             console.log("we entered catch");
             console.error("Error creating branch:", error);
+            throw new GihubException(error.status);
+        }
+    }
+
+    compareBranches = async (req, res) => {
+        const encryptedAuthCookie = req.cookies[getAuthCookieName];
+        const octokit = this.initOctokit(encryptedAuthCookie);
+
+        const { owner, repo, baseBranch, compareBranch } = req.query;
+
+        if (!owner || !repo || !baseBranch || !compareBranch) {
+            throw new InvalidRequestException();
+        }
+
+        try {
+            const response = await octokit.request('GET /repos/{owner}/{repo}/compare/{base}...{head}', {
+                owner: owner,
+                repo: repo,
+                base: baseBranch,
+                head: compareBranch,
+                headers: {
+                    'X-GitHub-Api-Version': config.githubApiVersion
+                }
+            });
+
+            res.status(200).json(response.data);
+        }
+        catch (error) {
+            console.error("Error while comparing branches:", error);
             throw new GihubException(error.status);
         }
     }
