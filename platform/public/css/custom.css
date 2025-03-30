@@ -279,7 +279,7 @@ body {
 .list-container {
     max-height: 300px;
     overflow-y: auto;
-    margin: 0 1rem;
+    margin: 0 1rem 1rem 1rem;
     border: 1px solid #ddd;
     border-radius: 4px;
 }
@@ -365,12 +365,8 @@ body {
     text-align: center; 
 }
 
-.changed-panels {
-    padding: 1rem;
-}
-
 .changed-panels p {
-    margin: 0 0 1rem;
+    margin: 1rem 0;
     font-size: 0.95rem;
     color: #333;
 	text-align: center;
