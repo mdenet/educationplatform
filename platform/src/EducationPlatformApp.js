@@ -124,10 +124,11 @@ class EducationPlatformApp {
 
         try {
             //TODO loading box
-            const authDetails = await jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/token",
+            await jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/token",
                 JSON.stringify(tokenRequest), true );
             
-            this.setupAuthenticatedState(urlParameters);
+            const success = this.setupAuthenticatedState(urlParameters);
+            success ? PlaygroundUtility.hideLogin() : PlaygroundUtility.showLogin();
         }
         catch (error) {
             console.error("Error while completing authentication:", error);
@@ -144,8 +145,8 @@ class EducationPlatformApp {
             if (hasAuthCookie.authenticated) {
                 console.log("User has previously logged in - redirecting to activity.");
 
-                PlaygroundUtility.hideLogin();
-                this.setupAuthenticatedState(urlParameters);
+                const success = this.setupAuthenticatedState(urlParameters);
+                success ? PlaygroundUtility.hideLogin() : PlaygroundUtility.showLogin();
             } 
             else {
                 console.log("User is not authenticated - showing login.");
@@ -185,6 +186,7 @@ class EducationPlatformApp {
     /**
      * Set up the environment for an authenticated user
      * @param {URLSearchParams} urlParameters - The URL parameters.
+     * @returns {boolean} true if the authenticated state was set up successfully, false otherwise.
      */
     setupAuthenticatedState(urlParameters) {
         try {
@@ -192,19 +194,26 @@ class EducationPlatformApp {
         }
         catch (error) {
             console.error("Error during activity initialization:", error);
-            PlaygroundUtility.showLogin();
-            return;
+            return false;
         }
 
-        setAuthenticated(true);
-        this.setupEventListeners();
+        try {
+            setAuthenticated(true);
+            this.setupEventListeners();
 
-        document.getElementById('save').classList.remove('hidden');
-        document.getElementById('branch').classList.remove('hidden');
-        document.getElementById('review-changes').classList.remove('hidden');
+            document.getElementById('save').classList.remove('hidden');
+            document.getElementById('branch').classList.remove('hidden');
+            document.getElementById('review-changes').classList.remove('hidden');
 
-        this.activityURL = utility.getActivityURL();
-        this.currentBranch = utility.getCurrentBranch();
+            this.activityURL = utility.getActivityURL();
+            this.currentBranch = utility.getCurrentBranch();
+
+            return true;
+        }
+        catch (error) {
+            console.error(error);
+            return false;
+        }
     }
 
     setupEventListeners() {
@@ -1205,19 +1214,19 @@ class EducationPlatformApp {
 
         switch (status) {
             case "identical":
-                infoText.innerHTML = `✅<br><strong>${head}</strong> is up to date with <strong>${base}</strong>.<br>No merge needed.`;
+                infoText.innerHTML = `✅<br><strong>${head}</strong> is up to date with <strong>${base}</strong><br>No merge needed`;
                 mergeButton.disabled = true;
                 break;
             case "ahead":
-                infoText.innerHTML = `🔀<br><strong>${head}</strong> is ahead of <strong>${base}</strong> by ${comparisonInfo.ahead_by} commit(s) and can be merged.`;
+                infoText.innerHTML = `🔀<br><strong>${head}</strong> is ahead of <strong>${base}</strong> by ${comparisonInfo.ahead_by} commit(s) and can be merged`;
                 mergeButton.disabled = false;
                 break;
             case "behind":
-                infoText.innerHTML = `⚠️<br><strong>${head}</strong> is behind <strong>${base}</strong> by ${comparisonInfo.behind_by} commit(s).<br>Nothing new to merge.`;
+                infoText.innerHTML = `⚠️<br><strong>${head}</strong> is behind <strong>${base}</strong> by ${comparisonInfo.behind_by} commit(s)<br>Nothing new to merge`;
                 mergeButton.disabled = true;
                 break;
             case "diverged":
-                infoText.innerHTML = `⚠️<br><strong>${head}</strong> and <strong>${base}</strong> have diverged.<br>Merge conflicts are likely.`;
+                infoText.innerHTML = `⚠️<br><strong>${head}</strong> and <strong>${base}</strong> have diverged<br>Merge conflicts are possible`;
                 mergeButton.disabled = false;
                 break;
             default:

@@ -122,7 +122,7 @@ class StorageController {
              * Optionally filter out bot commits and adjust the comparison status accordingly.
              * Remove this if we want to treat all commits equally.
              */
-            await this.applyOptionalBotFiltering(comparison, octokit, owner, repo, baseBranch);
+            await this.applyOptionalBotFiltering(comparison, octokit, owner, repo, baseBranch, compareBranch);
 
             res.status(200).json(comparison);
         }
@@ -332,66 +332,66 @@ class StorageController {
         return octokit;
     }
 
-/**
- * Optionally filters out bot commits and adjusts the comparison status accordingly.
- * 
- * This method modifies the GitHub comparison object to ignore commits made by known bots
- * like GitHub Actions, Dependabot, etc. Remove this if we want to treat all commits equally.
- * 
- * @param {object} comparison - The original comparison object
- */
-async applyOptionalBotFiltering(comparison, octokit, owner, repo, baseBranch) {
-    const IGNORED_BOTS = ["github-actions[bot]", "renovate[bot]", "dependabot[bot]"];
-
-    const humanCommits = comparison.commits.filter(
-        commit => !IGNORED_BOTS.includes(commit.author?.login)
-    );
-
-    const headHasHumanCommits = humanCommits.length > 0;
-    const behindBy = comparison.behind_by;
-
-    const baseCommitsResponse = await octokit.request('GET /repos/{owner}/{repo}/commits', {
-        owner,
-        repo,
-        sha: baseBranch,
-        per_page: 10
-    });
-
-    const baseCommits = baseCommitsResponse.data;
-    const baseHasOnlyBotCommits = baseCommits.every(
-        commit => IGNORED_BOTS.includes(commit.author?.login)
-    );
-
-    if (!headHasHumanCommits && behindBy === 0) {
-        comparison.status = "identical";
-        comparison.ahead_by = 0;
-        comparison.total_commits = 0;
-        comparison.commits = [];
-    } 
-    else if (!headHasHumanCommits && behindBy > 0) {
-        comparison.status = "behind";
-        comparison.ahead_by = 0;
-        comparison.total_commits = behindBy;
-        comparison.commits = [];
-    } 
-    else if (headHasHumanCommits && behindBy === 0) {
-        comparison.status = "ahead";
-        comparison.ahead_by = humanCommits.length;
-        comparison.total_commits = humanCommits.length;
-        comparison.commits = humanCommits;
-    } 
-    else {
-        if (baseHasOnlyBotCommits) {
+    /**
+     * Filters out bot commits and recalculates branch comparison status based only on human commits.
+     * This filtering is **optional** and can be removed if bot commits should be treated as meaningful.
+     * @param {object} comparison - The original comparison object
+     */
+    async applyOptionalBotFiltering(comparison, octokit, owner, repo, baseBranch, compareBranch) {
+        const IGNORED_BOTS = ["github-actions[bot]", "renovate[bot]", "dependabot[bot]"];
+    
+        // Fetch HEAD (compareBranch) commits
+        const headCommitsResponse = await octokit.request('GET /repos/{owner}/{repo}/commits', {
+            owner,
+            repo,
+            sha: compareBranch,
+            per_page: 20,
+        });
+        const headCommits = headCommitsResponse.data;
+        const headHumanCommits = headCommits.filter(
+            commit => !IGNORED_BOTS.includes(commit.author?.login)
+        );
+    
+        // Fetch BASE (baseBranch) commits
+        const baseCommitsResponse = await octokit.request('GET /repos/{owner}/{repo}/commits', {
+            owner,
+            repo,
+            sha: baseBranch,
+            per_page: 20,
+        });
+        const baseCommits = baseCommitsResponse.data;
+        const baseHumanCommits = baseCommits.filter(
+            commit => !IGNORED_BOTS.includes(commit.author?.login)
+        );
+    
+        // Recalculate ahead/behind status based only on human commits
+    
+        const headHas = new Set(headHumanCommits.map(c => c.sha));
+        const baseHas = new Set(baseHumanCommits.map(c => c.sha));
+    
+        const ahead = [...headHas].filter(sha => !baseHas.has(sha));
+        const behind = [...baseHas].filter(sha => !headHas.has(sha));
+    
+        comparison.ahead_by = ahead.length;
+        comparison.behind_by = behind.length;
+        comparison.total_commits = ahead.length + behind.length;
+        comparison.commits = headHumanCommits;
+    
+        // Decide the status
+        if (ahead.length === 0 && behind.length === 0) {
+            comparison.status = "identical";
+        } 
+        else if (ahead.length > 0 && behind.length === 0) {
             comparison.status = "ahead";
-            comparison.ahead_by = humanCommits.length;
-            comparison.total_commits = humanCommits.length;
-            comparison.commits = humanCommits;
+        } 
+        else if (ahead.length === 0 && behind.length > 0) {
+            comparison.status = "behind";
         } 
         else {
             comparison.status = "diverged";
         }
     }
-}
+    
 
 }
 
