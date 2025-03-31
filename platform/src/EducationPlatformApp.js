@@ -867,7 +867,6 @@ class EducationPlatformApp {
      * Provides UI feedback on the success or failure of the save operation.
      */
     async savePanelContents() {
-        console.log("Saving panel contents...");
 
         if (!this.changesHaveBeenMade()) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
