@@ -126,7 +126,7 @@ class StorageController {
              * Optionally filter out bot commits and adjust the comparison status accordingly.
              * Remove this if we want to treat all commits equally.
              */
-            await this.applyOptionalBotFiltering(comparison, octokit, owner, repo, baseBranch, headBranch);
+            // await this.applyBotFiltering(comparison, octokit, owner, repo, baseBranch, headBranch);
 
             res.status(200).json(comparison);
         }
@@ -520,7 +520,7 @@ class StorageController {
      * This filtering is **optional** and can be removed if bot commits should be treated as meaningful.
      * @param {object} comparison - The original comparison object
      */
-    async applyOptionalBotFiltering(comparison, octokit, owner, repo, baseBranch, headBranch) {
+    async applyBotFiltering(comparison, octokit, owner, repo, baseBranch, headBranch) {
         const IGNORED_BOTS = ["github-actions[bot]", "renovate[bot]", "dependabot[bot]"];
     
         // Fetch head branch commits

@@ -30,9 +30,10 @@ class LoginController {
         try {
             //TODO validate request url
 
-            let userData = await this.octokitApp.getWebFlowAuthorizationUrl(
-                {redirectUrl: req.body.url}
-            );
+            let userData = await this.octokitApp.getWebFlowAuthorizationUrl({
+                redirectUrl: req.body.url,
+                scopes: ['repo']
+            });
 
             res.status(200).json(userData);
         } catch (err) {
