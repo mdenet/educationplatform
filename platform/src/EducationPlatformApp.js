@@ -51,7 +51,6 @@ class EducationPlatformApp {
     branches;
     currentBranch;
     activityURL;
-    confirmLeavePage;
 
     errorHandler;
     fileHandler;
@@ -67,7 +66,6 @@ class EducationPlatformApp {
         this.panels = [];
         this.saveablePanels = [];
         this.branches = [];
-        this.confirmLeavePage = false;
     }
 
     initialize( urlParameters, tokenHandlerUrl , wsUri){
@@ -219,7 +217,7 @@ class EducationPlatformApp {
     setupEventListeners() {
         // Warn user if there are unsaved changes before closing the tab
         window.addEventListener("beforeunload", (event) => {
-            if (this.changesHaveBeenMade() && !this.confirmLeavePage) {
+            if (this.changesHaveBeenMade()) {
                 event.preventDefault();
 
                 // Browsers usually ignore the message
@@ -958,18 +956,18 @@ class EducationPlatformApp {
         const discardChangesButton = document.getElementById("discard-changes-btn");
         discardChangesButton.onclick = () => {
 
-            const confirmSwitch = confirm(
+            const confirmDiscard = confirm(
                 "⚠️ Are you sure you want to discard your changes?\n" +
                 "This action cannot be undone.\n\n" +
                 "✔ OK to discard changes\n" +
                 "✖ Cancel to keep changes"
             );
         
-            if (!confirmSwitch) {
+            if (!confirmDiscard) {
                 return;
             }
 
-            this.undoPanelChanges();
+            this.discardPanelChanges();
 
             // Reload the modal 
             this.reviewChanges(event);
@@ -1152,12 +1150,10 @@ class EducationPlatformApp {
                         );
                     
                         if (!confirmSwitch) {
-                            this.confirmLeavePage = false;
                             return;
                         }
                         else {
-                            // Change the flag to prevent the "Leave Page" warning
-                            this.confirmLeavePage = true;
+                            this.discardPanelChanges();
                         }
                     }
     
@@ -1242,20 +1238,20 @@ class EducationPlatformApp {
 
         switch (status) {
             case "identical":
-                infoText.innerHTML = `✅<br><strong>${head}</strong> is up to date with <strong>${base}</strong><br>No merge needed`;
+                infoText.innerHTML = `✅<br><strong>${head}</strong> is <strong>up to date</strong> with <strong>${base}</strong><br>No merge needed`;
                 mergeButton.disabled = true;
                 break;
             case "ahead":
-                infoText.innerHTML = `🔀<br><strong>${head}</strong> is ahead of <strong>${base}</strong> by ${comparisonInfo.ahead_by} commit(s) and can be merged`;
+                infoText.innerHTML = `🔀<br><strong>${head}</strong> is <strong>ahead</strong> of <strong>${base}</strong> by ${comparisonInfo.ahead_by} commit(s) and can be merged`;
                 mergeButton.disabled = false;
                 branchList.dataset.mergeType = "fast-forward";
                 break;
             case "behind":
-                infoText.innerHTML = `⚠️<br><strong>${head}</strong> is behind <strong>${base}</strong> by ${comparisonInfo.behind_by} commit(s)<br>Nothing new to merge`;
+                infoText.innerHTML = `⚠️<br><strong>${head}</strong> is <strong>behind</strong> <strong>${base}</strong> by ${comparisonInfo.behind_by} commit(s)<br>Nothing new to merge`;
                 mergeButton.disabled = true;
                 break;
             case "diverged":
-                infoText.innerHTML = `⚠️<br><strong>${head}</strong> and <strong>${base}</strong> have diverged<br>Merge conflicts are possible`;
+                infoText.innerHTML = `⚠️<br><strong>${head}</strong> and <strong>${base}</strong> have <strong>diverged</strong><br>Merge conflicts are possible`;
                 mergeButton.disabled = false;
                 branchList.dataset.mergeType = "merge";
                 break;
@@ -1339,7 +1335,21 @@ class EducationPlatformApp {
             }
 
             if (this.changesHaveBeenMade()) {
-                
+                const confirmDiscardBeforeMerge = confirm(
+                    "⚠️ You have unsaved changes!\n\n" +
+                    "Merging branches will discard your unsaved work.\n" +
+                    "Do you want to continue?\n\n" +
+                    "✔ OK to discard changes and continue\n" +
+                    "✖ Cancel to stop merging"
+                );
+
+                if (!confirmDiscardBeforeMerge) {
+                    disableMergeButton(false);
+                    return;
+                }
+                else {
+                    this.discardPanelChanges();
+                }
             }
 
             try {
@@ -1500,7 +1510,7 @@ class EducationPlatformApp {
                         this.displaySwitchToBranchLink(newBranch);
 
                         // Undo the changes made to the panels to keep the current branch clean
-                        this.undoPanelChanges();
+                        this.discardPanelChanges();
                     })
                     .catch((error) => {
                         console.error(error);
@@ -1518,7 +1528,7 @@ class EducationPlatformApp {
             this.fileHandler.createBranch(this.activityURL, newBranch)
             .then(() => {
                 // Undo the changes made to the panels to keep the current branch clean
-                this.undoPanelChanges();
+                this.discardPanelChanges();
 
                 PlaygroundUtility.successNotification("Branch " + newBranch + " created successfully");
                 this.displaySwitchToBranchLink(newBranch);
@@ -1550,7 +1560,7 @@ class EducationPlatformApp {
         currentBranchElements.forEach(element => element.textContent = this.currentBranch);
     }
 
-    undoPanelChanges() {
+    discardPanelChanges() {
         this.saveablePanels.forEach(panel => panel.resetChanges());
     }
 
