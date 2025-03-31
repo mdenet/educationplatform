@@ -228,7 +228,12 @@ class EducationPlatformApp {
         document.addEventListener("keydown", function(event) {
             // Check for Ctrl+S or Command+S (for macOS)
             if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+
+                // Prevent the default save action to the webpage
                 event.preventDefault();
+
+                // Can use this to trigger savePanelContents()
+                // this.savePanelContents();
             }
         });
     }
