@@ -32,7 +32,6 @@ class LoginController {
 
             let userData = await this.octokitApp.getWebFlowAuthorizationUrl({
                 redirectUrl: req.body.url,
-                scopes: ['repo']
             });
 
             res.status(200).json(userData);

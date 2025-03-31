@@ -23,7 +23,6 @@ class StorageController {
         this.router.post('/fork', asyncCatch(this.forkRepository));
         this.router.post('/create-branch', asyncCatch(this.createBranch));
         this.router.post('/merge-branches', asyncCatch(this.mergeBranches));
-        this.router.post('/create-pull-request', asyncCatch(this.createPullRequest));
     }
 
     getFile = async (req, res) => { 
@@ -408,45 +407,6 @@ class StorageController {
         }
         catch (error) {
             console.error("Error while storing files:", error);
-            throw new GitHubException(error.status);
-        }
-    }
-
-    createPullRequest = async (req, res) => {
-        const encryptedAuthCookie = req.cookies[getAuthCookieName];
-        const octokit = this.initOctokit(encryptedAuthCookie);
-
-        const { owner, repo, baseBranch, headBranch } = req.body;
-
-        if (!owner || !repo || !baseBranch || !headBranch) {
-            throw new InvalidRequestException();
-        }
-
-        try {
-            const templatePath = path.join(__dirname, '..', 'utility', 'pull-request-template.md');
-            let pullRequestBody = fs.readFileSync(templatePath, 'utf-8');
-
-            // Replace placeholders
-            pullRequestBody = pullRequestBody
-                .replace('{baseBranch}', baseBranch)
-                .replace('{headBranch}', headBranch);
-
-            const { data: pullRequest } = await octokit.request('POST /repos/{owner}/{repo}/pulls', {
-                owner,
-                repo,
-                title: `Resolve merge conflict: ${headBranch} into ${baseBranch}`,
-                head: headBranch,
-                base: baseBranch,
-                body: pullRequestBody,
-                headers: {
-                    'X-GitHub-Api-Version': config.githubApiVersion
-                }
-            });
-    
-            res.status(201).json({ success: true, pullRequestUrl: pullRequest.html_url });
-        } 
-        catch (error) {
-            console.error("Error creating pull request:", error);
             throw new GitHubException(error.status);
         }
     }

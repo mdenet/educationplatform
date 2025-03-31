@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "build": "tsc && mkdir -p dist/utility && cp src/utility/pull-request-template.md dist/utility/",
+    "build": "tsc",
     "start": "node -r dotenv/config ./dist/server.js",
     "test": "echo \"Warning: no tests to run.\"",
     "lint": "eslint src/**/*.js --format junit --output-file ./reports/lint-results.xml; exit 0"

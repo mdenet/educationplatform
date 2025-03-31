@@ -1294,12 +1294,21 @@ class EducationPlatformApp {
 
         const mergeButton = document.getElementById("confirm-merge-button");
         mergeButton.onclick = async () => {
+
+            const disableMergeButton = (isDisabled) => {
+                mergeButton.disabled = isDisabled;
+                mergeButton.innerText = isDisabled ? "Merging..." : "Complete Merge";
+            };
+            disableMergeButton(true);
+
             const branchList = document.getElementById("merge-branch-list");
             const mergeType = branchList.dataset.mergeType;
             const selectedBranch = branchList.dataset.selectedBranch;
 
             if (!selectedBranch) {
                 PlaygroundUtility.warningNotification("Please select a branch to merge.");
+                mergeButton.disabled = true;
+                mergeButton.innerText = "Complete Merge";
                 return;
             }
 
@@ -1322,12 +1331,16 @@ class EducationPlatformApp {
                     PlaygroundUtility.successNotification("Branches merged successfully.");
                 }
                 else if (response.conflict) {
+                    PlaygroundUtility.warningNotification("Merge conflicts detected while attempting to merge branches.");
                     this.displayMergeConflictModal(this.currentBranch, selectedBranch);
                 }
             }
             catch (error) {
                 console.error("Error merging branches:", error);
                 this.errorHandler.notify("An error occurred while merging branches.");
+            }
+            finally {
+                disableMergeButton(false);
             }
         };
     }
@@ -1360,11 +1373,8 @@ class EducationPlatformApp {
 
         // Retrieve the pull request link created
         try {
-            const response = await this.fileHandler.createPullRequest(this.activityURL, baseBranch, headBranch);
-            if (response.success) {
-                const pullRequestURL = response.pullRequestUrl;
-                this.displayPullRequestLink(pullRequestURL);
-            }
+            const pullRequestLink = this.fileHandler.getPullRequestLink(this.activityURL, baseBranch, headBranch)
+            this.displayPullRequestLink(pullRequestLink);
         }
         catch (error) {
             console.error("Error creating pull request:", error);
@@ -1618,12 +1628,10 @@ class EducationPlatformApp {
     }
 
     displayPullRequestLink(pullRequestLink) {
+        const anchor = document.getElementById("pull-request-anchor");
         document.getElementById("pull-request-link").style.display = "block";
-        document.getElementById("pull-request-anchor").style.display = "block";
-        document.getElementById("pull-request-anchor").onclick = (event) => {
-            event.preventDefault();
-            utility.setWindowLocationHref(pullRequestLink);
-        };
+        anchor.style.display = "block";
+        anchor.href = pullRequestLink;
     }
 
     /**

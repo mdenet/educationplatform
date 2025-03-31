@@ -160,23 +160,26 @@ class FileHandler {
         return JSON.parse(response);
     }
 
-    async createPullRequest(url, branchToMergeFrom) {
-
+    /**
+     * Retrieve the link to the pull request for merging the head branch into the base branch.
+     * This version simply returns the URL to the pull request page, but does not create the pull request.
+     * This should be updated in the future to create the pull request and return the link to it.
+     * @param {*} url 
+     * @param {*} headBranch 
+     */
+    getPullRequestLink(url, baseBranch, headBranch) {
+        
         if (!isAuthenticated()) {
-            throw new Error("Not authenticated to create a pull request.");
+            throw new Error("Not authenticated to get pull request link.");
         }
 
-        const requestUrl = new URL(this.tokenHandlerUrl);
-        requestUrl.pathname = "/mdenet-auth/github/create-pull-request";
-
-        const requestParams = this.createPullRequestParams(url, branchToMergeFrom);
-        if (!requestParams) {
-            throw new Error("Failed to create pull request - invalid URL");
+        const pullRequestLink = this.createPullRequestLink(url, baseBranch, headBranch);
+        if (!pullRequestLink) {
+            throw new Error("Failed to get pull request link - invalid URL");
         }
 
-        const response = await jsonRequest(requestUrl, JSON.stringify(requestParams), true);
-        return JSON.parse(response);
-
+        return pullRequestLink;
+        
     }
 
     storeFiles(filesToSave, message, overrideBranch){
@@ -335,6 +338,31 @@ class FileHandler {
 
         return fileRequestUrl;
     }
+
+    createPullRequestLink(fileUrl, baseBranch, headBranch) {
+        let fileSourceUrl = new URL(fileUrl);
+        let fileRequestUrl;
+
+        switch(fileSourceUrl.host) {
+            case 'raw.githubusercontent.com':
+                fileRequestUrl = this.githubRawUrlToPullRequestLink(fileSourceUrl.pathname, baseBranch, headBranch);
+                break;
+            default:
+                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
+                fileRequestUrl = null;
+                break;
+        }
+
+        return fileRequestUrl;
+    }
+
+    githubRawUrlToPullRequestLink(githubUrlPath, baseBranch, headBranch) {
+        const pathParts = this.getPathParts(githubUrlPath);
+        const owner = pathParts.owner;
+        const repo = pathParts.repo;
+
+        return `https://github.com/${owner}/${repo}/compare/${baseBranch}...${headBranch}`;
+    }
     
     /**
      * Convert github raw file url path into request url
@@ -416,34 +444,6 @@ class FileHandler {
         }
 
         return fileRequestUrl;
-    }
-
-    createPullRequestParams(fileUrl, branchToMergeFrom) {
-        let fileSourceUrl = new URL(fileUrl);
-        let fileRequestUrl;
-
-        switch(fileSourceUrl.host) {
-            case 'raw.githubusercontent.com':
-                fileRequestUrl = this.githubRawUrlToCreatePullRequestParams(fileSourceUrl.pathname, branchToMergeFrom);
-                break;
-            default:
-                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
-                fileRequestUrl = null;
-                break;
-        }
-
-        return fileRequestUrl;
-    }
-
-    githubRawUrlToCreatePullRequestParams(githubUrlPath, branchToMergeFrom) {
-        const pathParts = this.getPathParts(githubUrlPath);
-        const requestParams = {
-            owner: pathParts.owner,
-            repo: pathParts.repo,
-            baseBranch: pathParts.ref,
-            headBranch: branchToMergeFrom
-        }
-        return requestParams;
     }
 
     githubRawUrlToMergeBranchRequestParams(githubUrlPath, branchToMergeFrom, mergeType) {
