@@ -867,6 +867,7 @@ class EducationPlatformApp {
      * Provides UI feedback on the success or failure of the save operation.
      */
     async savePanelContents() {
+        console.log("Saving panel contents...");
 
         if (!this.changesHaveBeenMade()) {
             PlaygroundUtility.warningNotification("There are no panels to save.");
@@ -1322,7 +1323,7 @@ class EducationPlatformApp {
                     PlaygroundUtility.successNotification("Branches merged successfully.");
                 }
                 else if (response.conflict) {
-                    PlaygroundUtility.warningNotification("Merge conflict detected. Please resolve the conflicts manually.");
+                    this.displayMergeConflictModal(this.currentBranch, selectedBranch);
                 }
             }
             catch (error) {
@@ -1330,6 +1331,46 @@ class EducationPlatformApp {
                 this.errorHandler.notify("An error occurred while merging branches.");
             }
         };
+    }
+
+    /**
+     * Displays a modal to notify the user of merge conflicts.
+     * Creates a pull request which the user can review to manually resolve the conflicts.
+     * @param {String} baseBranch - The base branch to merge into.
+     * @param {String} headBranch - The branch to merge from.
+     */
+    async displayMergeConflictModal(baseBranch, headBranch) {
+        this.toggleMergeBranchVisibility(false);
+        this.toggleMergeConflictVisibility(true);
+
+        const closeButton = document.getElementById("merge-conflict-close-button");
+        closeButton.onclick = () => {
+            this.toggleMergeConflictVisibility(false);
+        };
+
+        const backButton = document.getElementById("merge-conflict-back-button");
+        backButton.onclick = () => {
+            this.toggleMergeConflictVisibility(false);
+            this.toggleMergeBranchVisibility(true);
+        };
+
+        const headBranchElement = document.getElementById("head-branch");
+        const baseBranchElement = document.getElementById("base-branch");
+        headBranchElement.textContent = headBranch;
+        baseBranchElement.textContent = baseBranch;
+
+        // Retrieve the pull request link created
+        try {
+            const response = await this.fileHandler.createPullRequest(this.activityURL, baseBranch, headBranch);
+            if (response.success) {
+                const pullRequestURL = response.pullRequestUrl;
+                this.displayPullRequestLink(pullRequestURL);
+            }
+        }
+        catch (error) {
+            console.error("Error creating pull request:", error);
+            this.errorHandler.notify("An error occurred while creating the pull request.");
+        }
     }
 
     /**
@@ -1342,14 +1383,12 @@ class EducationPlatformApp {
 
         const closeButton = document.getElementById("create-branch-close-button");
         closeButton.onclick = () => {
-            this.hideSwitchToBranchLink();
             this.toggleCreateBranchVisibility(false);
         };
 
         const backButton = document.getElementById("create-branch-back-button");
         backButton.onclick = async () => {
             this.toggleCreateBranchVisibility(false);
-            this.hideSwitchToBranchLink();
             await this.toggleSwitchBranchVisibility(true);
         };
 
@@ -1403,13 +1442,11 @@ class EducationPlatformApp {
         const closeButton = document.getElementById("create-branch-confirm-close-button");
         closeButton.onclick = () => {
             this.toggleCreateBranchConfirmVisibility(false);
-            this.hideSwitchToBranchLink();
         };
 
         const backButton = document.getElementById("create-branch-confirm-back-button");
         backButton.onclick = async () => {
             this.toggleCreateBranchConfirmVisibility(false);
-            this.hideSwitchToBranchLink();
             this.toggleCreateBranchVisibility(true);
         };
 
@@ -1490,6 +1527,10 @@ class EducationPlatformApp {
 
     toggleCreateBranchVisibility(visibility) {
         const container = document.getElementById("create-branch-container");
+        if (!visibility) {
+            // Hide the switch to branch link when closing the modal
+            this.hideSwitchToBranchLink();
+        }
         container.style.display = visibility ? "block" : "none";
     }
 
@@ -1505,6 +1546,15 @@ class EducationPlatformApp {
             // Reset the merge branch info text
             const infoText = document.getElementById("merge-branch-info-text");
             infoText.textContent = "Select a branch to merge into " + this.currentBranch;
+        }
+        container.style.display = visibility ? "block" : "none";
+    }
+
+    toggleMergeConflictVisibility(visibility) {
+        const container = document.getElementById("merge-conflict-container");
+        if (!visibility) {
+            // Hide the pull request link when closing the modal
+            this.hidePullRequestLink();
         }
         container.style.display = visibility ? "block" : "none";
     }
@@ -1526,6 +1576,10 @@ class EducationPlatformApp {
 
     toggleCreateBranchConfirmVisibility(visibility) {
         const container = document.getElementById("create-branch-confirm-container");
+        if (!visibility) {
+            // Hide the switch to branch link when closing the modal
+            this.hideSwitchToBranchLink();
+        }
         visibility ? container.style.display = "block" : container.style.display = "none";
     }
 
@@ -1556,6 +1610,21 @@ class EducationPlatformApp {
                 this.switchBranch(branchToSwitchTo);
             };
         });
+    }
+
+    hidePullRequestLink() {
+        document.getElementById("pull-request-link").style.display = "none";
+        document.getElementById("pull-request-anchor").style.display = "none";
+        document.getElementById("pull-request-anchor").onclick = null;
+    }
+
+    displayPullRequestLink(pullRequestLink) {
+        document.getElementById("pull-request-link").style.display = "block";
+        document.getElementById("pull-request-anchor").style.display = "block";
+        document.getElementById("pull-request-anchor").onclick = (event) => {
+            event.preventDefault();
+            utility.setWindowLocationHref(pullRequestLink);
+        };
     }
 
     /**

@@ -120,10 +120,10 @@
         </div>
 
         <div class="create-branch-based-on-container">
-            <p class="create-branch-based-on">
+            <p>
                 This branch will be based on: <strong id="current-branch"></strong>
             </p>
-            <p id="switch-to-branch-link" style="display:none;">
+            <p id="switch-to-branch-link" class="link" style="display:none;">
                 <a href="#" id="switch-branch-anchor">
                     Go to 
                     <span id="switch-branch-name">
@@ -152,7 +152,7 @@
             <p> You have unsaved changes in <strong id="current-branch"></strong>. </p>
             <p> Would you like to bring these changes to <strong id="new-branch"></strong>? </p>
 
-            <p id="switch-to-branch-link" style="display:none;">
+            <p id="switch-to-branch-link" class="link" style="display:none;">
                 <a href="#" id="switch-branch-anchor">
                     Go to 
                     <span id="switch-branch-name">
@@ -199,6 +199,34 @@
             <br>
             <button id="confirm-merge-button" class="button primary round-button">Complete merge</button>
         </div>
+
+    </div>
+
+    <div id="merge-conflict-container" class="container-modal" style="display:none;">
+        
+        <div class="container-header">
+            <button class="back-button" id="merge-conflict-back-button">
+                <span class="default-icon-left-arrow"></span>
+            </button>
+            <h6 class="container-title">Merge conflicts detected</h6>
+            <button class="close-button" id="merge-conflict-close-button">
+                <span class="default-icon-cross"></span>
+            </button>
+        </div>
+
+        <div class="container-body">
+            <p>
+                There have been merge conflicts detected when attempting to merge the branch <strong id="head-branch"></strong> into <strong id="base-branch"></strong>.
+                <br>
+                When a merge conflict arises, it means that the changes made in the two branches are incompatible and cannot be automatically merged.
+                <br>
+                You will need to manually resolve these conflicts before the merge can be completed.
+            </p>
+            <p id="pull-request-link" class="link" style="display:none;">
+                <a href="#" id="pull-request-anchor">
+                    Please review the pull request created here to manually resolve the conflicts.
+                </a>
+            </p>
 
     </div>
 

@@ -315,19 +315,19 @@ body {
     border-radius: 20px;
 }
 
-#switch-to-branch-link, #review-changes-link {
+.link {
     text-align: center;
     margin-top: 7.5px;
 }
 
-#switch-branch-anchor, #review-changes-anchor {
+.link a {
     text-decoration: none;
 	font-weight: 550;
     color: #007bff;
     font-size: 14px;
 }
 
-#switch-branch-anchor:hover, #review-changes-anchor:hover {
+.link a:hover {
     text-decoration: underline;
     color: #e83e8c;
 }

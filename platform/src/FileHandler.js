@@ -160,6 +160,25 @@ class FileHandler {
         return JSON.parse(response);
     }
 
+    async createPullRequest(url, branchToMergeFrom) {
+
+        if (!isAuthenticated()) {
+            throw new Error("Not authenticated to create a pull request.");
+        }
+
+        const requestUrl = new URL(this.tokenHandlerUrl);
+        requestUrl.pathname = "/mdenet-auth/github/create-pull-request";
+
+        const requestParams = this.createPullRequestParams(url, branchToMergeFrom);
+        if (!requestParams) {
+            throw new Error("Failed to create pull request - invalid URL");
+        }
+
+        const response = await jsonRequest(requestUrl, JSON.stringify(requestParams), true);
+        return JSON.parse(response);
+
+    }
+
     storeFiles(filesToSave, message, overrideBranch){
 
         if (!isAuthenticated()) {
@@ -397,6 +416,34 @@ class FileHandler {
         }
 
         return fileRequestUrl;
+    }
+
+    createPullRequestParams(fileUrl, branchToMergeFrom) {
+        let fileSourceUrl = new URL(fileUrl);
+        let fileRequestUrl;
+
+        switch(fileSourceUrl.host) {
+            case 'raw.githubusercontent.com':
+                fileRequestUrl = this.githubRawUrlToCreatePullRequestParams(fileSourceUrl.pathname, branchToMergeFrom);
+                break;
+            default:
+                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
+                fileRequestUrl = null;
+                break;
+        }
+
+        return fileRequestUrl;
+    }
+
+    githubRawUrlToCreatePullRequestParams(githubUrlPath, branchToMergeFrom) {
+        const pathParts = this.getPathParts(githubUrlPath);
+        const requestParams = {
+            owner: pathParts.owner,
+            repo: pathParts.repo,
+            baseBranch: pathParts.ref,
+            headBranch: branchToMergeFrom
+        }
+        return requestParams;
     }
 
     githubRawUrlToMergeBranchRequestParams(githubUrlPath, branchToMergeFrom, mergeType) {
