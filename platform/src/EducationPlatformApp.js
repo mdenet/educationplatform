@@ -1175,7 +1175,7 @@ class EducationPlatformApp {
                     li.classList.add("selected-branch");
                     branchList.dataset.selectedBranch = branch;
 
-                     // Retrieve comparison information between the current branch and the selected branch
+                    // Retrieve comparison information between the current branch and the selected branch
                     try {
                         const comparison = await this.fileHandler.compareBranches(this.activityURL, branch);
                         this.updateMergeInfoText(comparison, branch)
@@ -1197,6 +1197,7 @@ class EducationPlatformApp {
      * @param {string} branchCompared - The name of the selected branch (head).
      */
     updateMergeInfoText(comparisonInfo, branchCompared) {
+        const branchList = document.getElementById("merge-branch-list");
         const infoText = document.getElementById("merge-branch-info-text");
         const mergeButton = document.getElementById("confirm-merge-button");
 
@@ -1220,6 +1221,7 @@ class EducationPlatformApp {
             case "ahead":
                 infoText.innerHTML = `🔀<br><strong>${head}</strong> is ahead of <strong>${base}</strong> by ${comparisonInfo.ahead_by} commit(s) and can be merged`;
                 mergeButton.disabled = false;
+                branchList.dataset.mergeType = "fast-forward";
                 break;
             case "behind":
                 infoText.innerHTML = `⚠️<br><strong>${head}</strong> is behind <strong>${base}</strong> by ${comparisonInfo.behind_by} commit(s)<br>Nothing new to merge`;
@@ -1228,6 +1230,7 @@ class EducationPlatformApp {
             case "diverged":
                 infoText.innerHTML = `⚠️<br><strong>${head}</strong> and <strong>${base}</strong> have diverged<br>Merge conflicts are possible`;
                 mergeButton.disabled = false;
+                branchList.dataset.mergeType = "merge";
                 break;
             default:
                 infoText.innerHTML = `ℹ️<br>Merge status: ${status}`;
@@ -1292,6 +1295,7 @@ class EducationPlatformApp {
         const mergeButton = document.getElementById("confirm-merge-button");
         mergeButton.onclick = async () => {
             const branchList = document.getElementById("merge-branch-list");
+            const mergeType = branchList.dataset.mergeType;
             const selectedBranch = branchList.dataset.selectedBranch;
 
             if (!selectedBranch) {
@@ -1301,7 +1305,7 @@ class EducationPlatformApp {
 
             try {
                 // Retrieve a {path, sha, content} list of all files in the selected branch
-                const response = await this.fileHandler.mergeBranches(this.activityURL, selectedBranch);
+                const response = await this.fileHandler.mergeBranches(this.activityURL, selectedBranch, mergeType);
                 if (response.success) {
                     // Sync file SHAs after successful merge
                     const updatedFiles = response.files;
@@ -1318,7 +1322,7 @@ class EducationPlatformApp {
                     PlaygroundUtility.successNotification("Branches merged successfully.");
                 }
                 else if (response.conflict) {
-                    
+                    PlaygroundUtility.warningNotification("Merge conflict detected. Please resolve the conflicts manually.");
                 }
             }
             catch (error) {

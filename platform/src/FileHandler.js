@@ -135,7 +135,14 @@ class FileHandler {
         }
     }
 
-    async mergeBranches(url, branchToMergeFrom) {
+    /**
+     * Merge two branches in the repository
+     * @param {String} url 
+     * @param {String} branchToMergeFrom - the branch to merge into the current one (the head branch)
+     * @param {String} mergeType - the type of merge to perform (e.g. "fast-forward", "merge")
+     * @returns {Promise} Promise to the response
+     */
+    async mergeBranches(url, branchToMergeFrom, mergeType) {
 
         if (!isAuthenticated()) {
             throw new Error("Not authenticated to merge branches.");
@@ -144,12 +151,12 @@ class FileHandler {
         const requestUrl = new URL(this.tokenHandlerUrl);
         requestUrl.pathname = "/mdenet-auth/github/merge-branches";
 
-        const requestParams = this.mergeBranchRequestParams(url, branchToMergeFrom);
+        const requestParams = this.mergeBranchRequestParams(url, branchToMergeFrom, mergeType);
         if (!requestParams) {
             throw new Error("Failed to merge branches - invalid URL");
         }
 
-        const response = jsonRequest(requestUrl, JSON.stringify(requestParams), true);
+        const response = await jsonRequest(requestUrl, JSON.stringify(requestParams), true);
         return JSON.parse(response);
     }
 
@@ -375,13 +382,13 @@ class FileHandler {
         return fileRequestUrl;
     }
 
-    mergeBranchRequestParams(fileUrl, branchToMergeFrom) {
+    mergeBranchRequestParams(fileUrl, branchToMergeFrom, mergeType) {
         let fileSourceUrl = new URL(fileUrl);
         let fileRequestUrl;
 
         switch(fileSourceUrl.host) {
             case 'raw.githubusercontent.com':
-                fileRequestUrl = this.githubRawUrlToMergeBranchRequestParams(fileSourceUrl.pathname, branchToMergeFrom);
+                fileRequestUrl = this.githubRawUrlToMergeBranchRequestParams(fileSourceUrl.pathname, branchToMergeFrom, mergeType);
                 break;
             default:
                 console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
@@ -392,13 +399,14 @@ class FileHandler {
         return fileRequestUrl;
     }
 
-    githubRawUrlToMergeBranchRequestParams(githubUrlPath, branchToMergeFrom) {
+    githubRawUrlToMergeBranchRequestParams(githubUrlPath, branchToMergeFrom, mergeType) {
         const pathParts = this.getPathParts(githubUrlPath);
         const requestParams = {
             owner: pathParts.owner,
             repo: pathParts.repo,
             baseBranch: pathParts.ref,
             headBranch: branchToMergeFrom,
+            mergeType: mergeType
         }
         return requestParams;
     }

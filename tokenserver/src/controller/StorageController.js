@@ -133,66 +133,48 @@ class StorageController {
         }
     }
 
+    /**
+     * Merges two branches
+     * If mergeType is "ahead", performs a fast-forward.
+     * If mergeType is "diverged", creates a merge commit and returns updated files.
+     * If there are merge conflicts, returns a conflict status.
+     */
     mergeBranches = async (req, res) => {
+
         const encryptedAuthCookie = req.cookies[getAuthCookieName];
         const octokit = this.initOctokit(encryptedAuthCookie);
 
-        const { owner, repo, base, head } = req.body;
+        const { owner, repo, baseBranch, headBranch, mergeType } = req.body;
 
-        if (!owner || !repo || !base || !head) {
+        if (!owner || !repo || !baseBranch || !headBranch || !mergeType) {
             throw new InvalidRequestException();
         }
 
         try {
-            const result = await octokit.request('POST /repos/{owner}/{repo}/merges', {
-                owner: owner,
-                repo: repo,
-                base: base,
-                head: head,
-                commit_message: `Merge ${head} into ${base}`,
-                headers: {
-                    'X-GitHub-Api-Version': config.githubApiVersion
-                }
-            });
-
-            const mergeCommitSha = result.data.sha;
-
-            // Get all the files in the merge commit tree
-            const { data: treeData } = await octokit.request('GET /repos/{owner}/{repo}/git/trees/{tree_sha}?recursive=1', {
+            if (mergeType == "fast-forward") {
+                const updatedFiles = await this.fastForwardBranch(octokit, owner, repo, baseBranch, headBranch);
+                return res.status(200).json({ success: true, files: updatedFiles });
+            }
+            if (mergeType == "merge") {
+                const result = await octokit.request('POST /repos/{owner}/{repo}/merges', {
                     owner,
                     repo,
-                    tree_sha: mergeCommitSha,
+                    base: baseBranch,
+                    head: headBranch,
+                    commit_message: `Merge branch ${headBranch} into branch ${baseBranch}`,
                     headers: {
                         'X-GitHub-Api-Version': config.githubApiVersion
                     }
-                }
-            );
+                });
+    
+                const mergeCommitSha = result.data.sha;
+                const updatedFiles = await this.getUpdatedFilesFromCommit(octokit, owner, repo, mergeCommitSha);
 
-            // Filter out the blob files (actual files) from the tree data and retrieve their content
-            const blobFiles = treeData.tree.filter(file => file.type === 'blob');
-            
-            const updatedFiles = await Promise.all(
-                blobFiles.map(async file => {
-                    const blob = await octokit.request('GET /repos/{owner}/{repo}/git/blobs/{file_sha}', {
-                        owner,
-                        repo,
-                        file_sha: file.sha,
-                        headers: {
-                            'X-GitHub-Api-Version': config.githubApiVersion
-                        }
-                    });
+                return res.status(201).json({ success: true, files: updatedFiles});
+            }
 
-                    const content = Buffer.from(blob.data.content, 'base64').toString();
-
-                    return {
-                        path: file.path,
-                        sha: file.sha,
-                        content: content
-                    };
-                })
-            );
-
-            res.status(201).json({ success: true, files: updatedFiles});
+            // Unsupported merge type
+            res.status(400).json({ success: false, message: "Unsupported merge type" });
         }
         catch (error) {
 
@@ -206,6 +188,90 @@ class StorageController {
             }
         }
     }
+
+    /**
+     * Fast-forwards the base branch to match the head branch.
+     * Updates the base reference to point to the head's latest commit.
+     * Returns the updated files from the new head.
+     *
+     * @param {Octokit} octokit - The authenticated Octokit instance
+     * @param {string} owner - The repository owner
+     * @param {string} repo - The repository name
+     * @param {string} baseBranch - The branch to be fast-forwarded
+     * @param {string} headBranch - The branch to fast-forward to
+     * @returns {Promise<Array<{ path: string, sha: string, content: string }>>}
+     */
+    fastForwardBranch = async (octokit, owner, repo, baseBranch, headBranch) => {
+        const { data: headBranchData } = await octokit.request('GET /repos/{owner}/{repo}/branches/{branch}', {
+            owner,
+            repo,
+            branch: headBranch,
+            headers: {
+                'X-GitHub-Api-Version': config.githubApiVersion
+            }
+        });
+        const latestCommitSha = headBranchData.commit.sha;
+        
+        await octokit.request('PATCH /repos/{owner}/{repo}/git/refs/heads/{branch}', {
+            owner,
+            repo,
+            branch: baseBranch,
+            sha: latestCommitSha,
+            force: false,
+            headers: {
+                'X-GitHub-Api-Version': config.githubApiVersion
+            }
+        });
+
+        return this.getUpdatedFilesFromCommit(octokit, owner, repo, latestCommitSha);
+    }
+
+    /**
+     * Retrieves the latest files from a given commit.
+     * Decodes and returns an array of file objects with their path, SHA, and content.
+     *
+     * @param {Octokit} octokit - The authenticated Octokit instance
+     * @param {string} owner - The repository owner
+     * @param {string} repo - The repository name
+     * @param {string} commitSha - The commit SHA to retrieve files from
+     * @returns {Promise<Array<{ path: string, sha: string, content: string }>>}
+     */
+    getUpdatedFilesFromCommit = async (octokit, owner, repo, commitSha) => {
+        const { data: treeData } = await octokit.request('GET /repos/{owner}/{repo}/git/trees/{tree_sha}?recursive=1', {
+            owner,
+            repo,
+            tree_sha: commitSha,
+            headers: {
+                'X-GitHub-Api-Version': config.githubApiVersion
+            }
+        });
+    
+        const blobFiles = treeData.tree.filter(file => file.type === 'blob');
+    
+        const updatedFiles = await Promise.all(
+            blobFiles.map(async file => {
+                const blob = await octokit.request('GET /repos/{owner}/{repo}/git/blobs/{file_sha}', {
+                    owner,
+                    repo,
+                    file_sha: file.sha,
+                    headers: {
+                        'X-GitHub-Api-Version': config.githubApiVersion
+                    }
+                });
+    
+                const content = Buffer.from(blob.data.content, 'base64').toString();
+    
+                return {
+                    path: file.path,
+                    sha: file.sha,
+                    content: content
+                };
+            })
+        );
+    
+        return updatedFiles;
+    };
+    
     
     getBranches = async (req, res) => {
         const encryptedAuthCookie = req.cookies[getAuthCookieName];
