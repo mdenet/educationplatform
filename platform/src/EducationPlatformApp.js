@@ -955,27 +955,54 @@ class EducationPlatformApp {
             this.toggleReviewChangesVisibility(false);
         };
 
-        const listTitle = document.getElementById("changed-panels-title");
-        listTitle.textContent = this.changesHaveBeenMade()
-            ? "Review the changes made to the panels:"
-            : "There are no changes to the panels.";
+        const discardChangesButton = document.getElementById("discard-changes-btn");
+        discardChangesButton.onclick = () => {
+
+            const confirmSwitch = confirm(
+                "⚠️ Are you sure you want to discard your changes?\n" +
+                "This action cannot be undone.\n\n" +
+                "✔ OK to discard changes\n" +
+                "✖ Cancel to keep changes"
+            );
+        
+            if (!confirmSwitch) {
+                return;
+            }
+
+            this.undoPanelChanges();
+
+            // Reload the modal 
+            this.reviewChanges(event);
+        };
 
         const panelList = document.getElementById("changed-panels-list");
         panelList.innerHTML = ""; // Clear previous list items
 
-        const panelsToSave = this.getPanelsWithChanges();
+        const listTitle = document.getElementById("changed-panels-title");
+        const discardChangesFooter = document.getElementById("discard-changes-footer");
 
-        // Populate the list of panels with unsaved changes
-        panelsToSave.forEach(panel => {
-            const li = document.createElement("li");
-            li.textContent = panel.getTitle();
+        if (this.changesHaveBeenMade()) {
+            listTitle.textContent = "Review the changes made to the panels:"
+            discardChangesFooter.style.display = "block";
 
-            li.addEventListener("click", () => {
-                this.displayChangesForPanel(panel);
+            const panelsToSave = this.getPanelsWithChanges();
+
+            // Populate the list of panels with unsaved changes
+            panelsToSave.forEach(panel => {
+                const li = document.createElement("li");
+                li.textContent = panel.getTitle();
+
+                li.addEventListener("click", () => {
+                    this.displayChangesForPanel(panel);
+                })
+
+                panelList.appendChild(li);
             })
-
-            panelList.appendChild(li);
-        })
+        }
+        else {
+            listTitle.textContent = "There are no changes to the panels.";
+            discardChangesFooter.style.display = "none";
+        }
     }
 
     /**
@@ -1307,9 +1334,12 @@ class EducationPlatformApp {
 
             if (!selectedBranch) {
                 PlaygroundUtility.warningNotification("Please select a branch to merge.");
-                mergeButton.disabled = true;
-                mergeButton.innerText = "Complete Merge";
+                disableMergeButton(false);
                 return;
+            }
+
+            if (this.changesHaveBeenMade()) {
+                
             }
 
             try {
