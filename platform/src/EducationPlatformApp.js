@@ -1320,7 +1320,7 @@ class EducationPlatformApp {
 
             const disableMergeButton = (isDisabled) => {
                 mergeButton.disabled = isDisabled;
-                mergeButton.innerText = isDisabled ? "Merging..." : "Complete Merge";
+                mergeButton.innerText = isDisabled ? "Merging..." : "Merge Branches";
             };
             disableMergeButton(true);
 
@@ -1347,9 +1347,8 @@ class EducationPlatformApp {
                     disableMergeButton(false);
                     return;
                 }
-                else {
-                    this.discardPanelChanges();
-                }
+                
+                this.discardPanelChanges();
             }
 
             try {
