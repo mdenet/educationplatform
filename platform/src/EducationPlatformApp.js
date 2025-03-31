@@ -224,6 +224,13 @@ class EducationPlatformApp {
                 // return "You have unsaved changes. Are you sure you want to leave?";
             }
         });
+
+        document.addEventListener("keydown", function(event) {
+            // Check for Ctrl+S or Command+S (for macOS)
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+                event.preventDefault();
+            }
+        });
     }
 
     initializeActivity(urlParameters){
