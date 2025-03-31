@@ -1,6 +1,4 @@
 import * as express from "express";
-import fs from 'fs';
-import path from 'path';
 
 import {InvalidRequestException} from "../exceptions/InvalidRequestException.js";
 import { GitHubException } from "../exceptions/GitHubException.js";
@@ -19,7 +17,7 @@ class StorageController {
         this.router.get('/file', asyncCatch(this.getFile));
         this.router.get('/branches', asyncCatch(this.getBranches));
         this.router.get('/compare-branches', asyncCatch(this.compareBranches));
-        this.router.post('/file', asyncCatch(this.storeFiles));
+        this.router.post('/store', asyncCatch(this.storeFiles));
         this.router.post('/fork', asyncCatch(this.forkRepository));
         this.router.post('/create-branch', asyncCatch(this.createBranch));
         this.router.post('/merge-branches', asyncCatch(this.mergeBranches));

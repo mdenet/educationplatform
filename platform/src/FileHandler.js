@@ -1,12 +1,31 @@
 import { jsonRequest, isAuthenticated, getRequest} from './Utility.js';
+import { GitHubProvider } from './GitHubProvider.js';
 
 
 class FileHandler {
     
     tokenHandlerUrl;
+    providers = [];
 
-    constructor( tokenHandlerUrl ){
+    constructor( tokenHandlerUrl ) {
         this.tokenHandlerUrl = tokenHandlerUrl;
+
+        this.providers.push(new GitHubProvider(tokenHandlerUrl));
+
+        // If we wish to support more VCS providers, we can add them here.
+        // this.providers.push(new GitLabProvider(tokenHandlerUrl));
+    }
+
+    /**
+     * Chooses the correct VCS provider based on the URL of the file.
+     * @param url
+     * @returns a VCS provider object that supports the URL, or null if none found.
+     */
+    findProvider(url) {
+        const url = new URL(fileUrl);
+        return this.providers.find(provider => 
+            provider.supportedHosts.includes(url.host)
+        );
     }
 
 
@@ -24,7 +43,13 @@ class FileHandler {
 
         if (isPrivate){
             // Private so request via token server
-            const requestUrl = this.getPrivateFileRequestUrl(url);
+            const provider = this.findProvider(url);
+
+            if (!provider) {
+                throw new Error(`URL is not supported: ${url}`);
+            }
+
+            const requestUrl = provider.getPrivateFileRequestUrl(url);
 
             if (requestUrl != null) {
                 let xhr = new XMLHttpRequest();
@@ -41,7 +66,8 @@ class FileHandler {
 
                     return { content: contents, sha: response.data.sha };
                 
-                } else {
+                } 
+                else {
                     return null;
                 }
             }
@@ -56,7 +82,8 @@ class FileHandler {
         if (xhr.status === 200) {    
             return { content: xhr.responseText, sha: null }; //TODO need to retrieve the sha for the file IF it's from a public repository
 
-        } else {
+        } 
+        else {
             return null;
         }
     }
@@ -190,7 +217,7 @@ class FileHandler {
 
         // Prepare the request payload
         const requestUrl = new URL(this.tokenHandlerUrl);
-        requestUrl.pathname = "/mdenet-auth/github/file";
+        requestUrl.pathname = "/mdenet-auth/github/store";
         let request = {
             files: [],
             message: message
