@@ -1,95 +1,313 @@
-import {FileHandler} from "../../src/FileHandler"
+/*global describe, it, expect, spyOn, beforeEach, afterEach -- Jasmine globals */
+import { utility } from '../../src/Utility.js';
+import { FileHandler } from '../../src/FileHandler';
+
+function createDummyProvider(tokenHandlerUrl) {
+    const name = "mdenet-auth/dummy";
+
+    return {
+        name,
+        tokenHandlerUrl,
+        supportedHosts: ["dummy.com"],
+
+        createBranchRequest: jasmine.createSpy().and.callFake((url, newBranch) => {
+            const requestUrl = new URL(`${tokenHandlerUrl}/${name}/create-branch`);
+            return {
+                url: requestUrl.href,
+                payload: { owner: "dummy", repo: "dummy", ref: "main", newBranch }
+            };
+        }),
+
+        getBranchesRequestUrl: jasmine.createSpy().and.callFake((url) => {
+            const requestUrl = new URL(`${tokenHandlerUrl}/${name}/branches`);
+            return requestUrl.href;
+        }),
+
+        getCompareBranchesRequestUrl: jasmine.createSpy().and.callFake((url, branchToCompare) => {
+            const requestUrl = new URL(`${tokenHandlerUrl}/${name}/compare-branches`);
+            requestUrl.searchParams.append("branch", branchToCompare);
+            return requestUrl.href;
+        }),
+
+        mergeBranchesRequest: jasmine.createSpy().and.callFake((url, branchToMergeFrom, mergeType) => {
+            const requestUrl = new URL(`${tokenHandlerUrl}/${name}/merge-branches`);
+            return {
+                url: requestUrl.href,
+                payload: {
+                    owner: "dummy",
+                    repo: "dummy",
+                    baseBranch: "main",
+                    headBranch: branchToMergeFrom,
+                    mergeType
+                }
+            };
+        }),
+
+        createPullRequestLink: jasmine.createSpy().and.callFake((url, baseBranch, headBranch) => {
+            return `https://dummy.com/pullRequest?base=${baseBranch}&head=${headBranch}`;
+        }),
+
+        storeFilesRequest: jasmine.createSpy().and.callFake((url, files, message, overrideBranch) => {
+            const requestUrl = new URL(`${tokenHandlerUrl}/${name}/store`);
+            return {
+                url: requestUrl.href,
+                payload: {
+                    owner: "dummy",
+                    repo: "dummy",
+                    ref: overrideBranch || "main",
+                    files,
+                    message
+                }
+            };
+        })
+    };
+}
 
 describe("FileHandler", () => {
+    let fileHandler;
+    let dummyProvider;
+    const tokenHandlerUrl = "http://test.tokenserver";
 
-    it("githubRawUrlTorequestUrl - returns a token server request url from a raw github file url", () => {
-    
-        let rawGithubUrl = new URL("https://raw.githubusercontent.com/mdenet/educationplatform/mdenet-ep-prototype/README.md");
+    beforeEach(() => {
+        spyOn(utility, 'jsonRequest');
+        spyOn(utility, 'getRequest');
 
-        const TOKEN_SERVER_URL = "http://test.token.mdenet.com";
-        let fh = new FileHandler(TOKEN_SERVER_URL) 
+        window.sessionStorage.setItem("isAuthenticated", "true");
 
-        let result = fh.githubRawUrlToRequestUrl(rawGithubUrl.pathname);
+        fileHandler = new FileHandler(tokenHandlerUrl);
+        dummyProvider = createDummyProvider(tokenHandlerUrl);
+        fileHandler.providers = [dummyProvider];
 
-        expect(result).toEqual( TOKEN_SERVER_URL + "/mdenet-auth/github/file?owner=mdenet&repo=educationplatform&ref=mdenet-ep-prototype&path=README.md" );    
-    })
+        utility.jsonRequest.calls.reset();
+        utility.getRequest.calls.reset();
+    });
 
-    it("getPrivateFileRequestUrl - returns a token server request url from a raw github file url", () => {
-    
-        let rawGithubUrl = "https://raw.githubusercontent.com/mdenet/educationplatform/mdenet-ep-prototype/README.md";
+    afterEach(() => {
+        window.sessionStorage.removeItem("isAuthenticated");
+        fileHandler.providers = [];
+    });
 
-        const TOKEN_SERVER_URL = "http://test.token.mdenet.com";
-        let fh = new FileHandler(TOKEN_SERVER_URL) 
+    describe("authentication", () => {
+        it("should throw an error when not authenticated", () => {
+            window.sessionStorage.removeItem("isAuthenticated");
 
-        let result = fh.getPrivateFileRequestUrl(rawGithubUrl);
+            expect(() => {
+                fileHandler.mergeBranches("http://dummy.com/some/repo", "feature", "merge");
+            }).toThrowError("Not authenticated to execute mergeBranches");
+        });
+    });
 
-        expect(result).toEqual( TOKEN_SERVER_URL + "/mdenet-auth/github/file?owner=mdenet&repo=educationplatform&ref=mdenet-ep-prototype&path=README.md" );    
-    })
+    describe("findProvider", () => {
+        it("should return the provider for a supported host", () => {
+            const url = "http://dummy.com/some/path";
+            const provider = fileHandler.findProvider(url);
+            expect(provider).toBe(dummyProvider);
+        });
 
-    it("getPrivateFileRequestUrl - returns null for an unknown file url", () => {
-    
-        let unknownUrl = "https://unknown.file.com/unknown/README.md";
+        it("should throw an error for an unsupported host", () => {
+            const url = "http://unsupported.com/some/path";
+            expect(() => fileHandler.findProvider(url))
+                .toThrowError("Host URL 'unsupported.com' is not supported.");
+        });
+    });
 
-        const TOKEN_SERVER_URL = "http://test.token.mdenet.com";
-        let fh = new FileHandler(TOKEN_SERVER_URL) 
+    describe("fetchBranches", () => {
+        it("should fetch branches and return the parsed array", async () => {
+            const url = "http://dummy.com/some/repo";
+            const expectedUrl = `${tokenHandlerUrl}/mdenet-auth/dummy/branches`;
+            dummyProvider.getBranchesRequestUrl.and.returnValue(expectedUrl);
 
-        let result = fh.getPrivateFileRequestUrl(unknownUrl);
+            const branchesArray = ["branch1", "branch2"];
+            utility.getRequest.and.returnValue(Promise.resolve(JSON.stringify(branchesArray)));
 
-        expect(result).toBeNull();    
-    })
+            const result = await fileHandler.fetchBranches(url);
 
+            expect(dummyProvider.getBranchesRequestUrl).toHaveBeenCalledWith(url);
+            expect(result).toEqual(branchesArray);
+        });
 
-    it("githubRawUrlToStoreRequest - returns an object with a token server request url member from a raw github file url", () => {
-    
-        let rawGithubUrl = new URL("https://raw.githubusercontent.com/mdenet/educationplatform/mdenet-ep-prototype/README.md");
+        it("should throw an error if fetching branches fails", async () => {
+            const url = "http://dummy.com/some/repo";
+            const expectedUrl = `${tokenHandlerUrl}/mdenet-auth/dummy/branches`;
+            dummyProvider.getBranchesRequestUrl.and.returnValue(expectedUrl);
 
-        const TOKEN_SERVER_URL = "http://test.token.mdenet.com";
-        let fh = new FileHandler(TOKEN_SERVER_URL) 
+            utility.getRequest.and.returnValue(Promise.reject({ message: "fail" }));
 
-        let result = fh.githubRawUrlToStoreRequest(rawGithubUrl.pathname);
+            await expectAsync(fileHandler.fetchBranches(url)).toBeRejectedWith({ message: "fail" });
+        });
+    });
 
-        expect(result.url).toEqual( TOKEN_SERVER_URL + "/mdenet-auth/github/file" );    
-    })
+    describe("createBranch", () => {
+        it("should create a branch and return the response", async () => {
+            const url = "http://dummy.com/some/repo";
+            const newBranch = "feature-branch";
+            const expectedUrl = `${tokenHandlerUrl}/mdenet-auth/dummy/create-branch`;
 
-    it("githubRawUrlToStoreRequest - returns an object with a token server requestParams member from a raw github file url", () => {
-    
-        let rawGithubUrl = new URL("https://raw.githubusercontent.com/mdenet/educationplatform/mdenet-ep-prototype/README.md");
+            dummyProvider.createBranchRequest.and.returnValue({
+                url: expectedUrl,
+                payload: { newBranch }
+            });
 
-        const TOKEN_SERVER_URL = "http://test.token.mdenet.com";
-        let fh = new FileHandler(TOKEN_SERVER_URL) 
+            const fakeResponse = "branch created";
+            utility.jsonRequest.and.returnValue(Promise.resolve(fakeResponse));
 
-        let result = fh.githubRawUrlToStoreRequest(rawGithubUrl.pathname);
+            const result = await fileHandler.createBranch(url, newBranch);
 
-        expect(result.params.owner).toEqual( "mdenet" );
-        expect(result.params.repo).toEqual( "educationplatform" ); 
-        expect(result.params.path).toEqual( "README.md" );     
-    })
+            expect(dummyProvider.createBranchRequest).toHaveBeenCalledWith(url, newBranch);
+            expect(utility.jsonRequest).toHaveBeenCalledWith(expectedUrl, JSON.stringify({ newBranch }), true);
+            expect(result).toEqual(fakeResponse);
+        });
 
-    it("getPrivateFileUpdateParams - returns ", () => {
-    
-        let unknownUrl = "https://unknown.file.com/unknown/README.md";
+        it("should throw an error if creating branch fails", async () => {
+            const url = "http://dummy.com/some/repo";
+            const newBranch = "feature-branch";
+            const expectedUrl = `${tokenHandlerUrl}/mdenet-auth/dummy/create-branch`;
 
-        const TOKEN_SERVER_URL = "http://test.token.mdenet.com";
-        let fh = new FileHandler(TOKEN_SERVER_URL) 
+            dummyProvider.createBranchRequest.and.returnValue({
+                url: expectedUrl,
+                payload: { newBranch }
+            });
 
-        let result = fh.getPrivateFileUpdateParams(unknownUrl);
+            utility.jsonRequest.and.returnValue(Promise.reject({ message: "create branch error" }));
 
-        expect(result).toBeNull();    
-    })
+            await expectAsync(fileHandler.createBranch(url, newBranch)).toBeRejectedWith({ message: "create branch error" });
+        });
+    });
 
+    describe("compareBranches", () => {
+        it("should compare branches and return the comparison object", async () => {
+            const url = "http://dummy.com/some/repo";
+            const branchToCompare = "dev";
 
-    it("getPrivateFileUpdateParams - returns null for an unknown file url", () => {
-    
-        let unknownUrl = "https://unknown.file.com/unknown/README.md";
+            const expectedUrlObj = new URL(`${tokenHandlerUrl}/mdenet-auth/dummy/compare-branches`);
+            expectedUrlObj.searchParams.append("branch", branchToCompare);
 
-        const TOKEN_SERVER_URL = "http://test.token.mdenet.com";
-        let fh = new FileHandler(TOKEN_SERVER_URL) 
+            dummyProvider.getCompareBranchesRequestUrl.and.returnValue(expectedUrlObj.href);
 
-        let result = fh.getPrivateFileUpdateParams(unknownUrl);
+            const comparisonObj = { ahead: 2, behind: 3 };
+            utility.getRequest.and.returnValue(Promise.resolve(JSON.stringify(comparisonObj)));
 
-        expect(result).toBeNull();    
-    })
+            const result = await fileHandler.compareBranches(url, branchToCompare);
 
+            expect(dummyProvider.getCompareBranchesRequestUrl).toHaveBeenCalledWith(url, branchToCompare);
+            expect(result).toEqual(comparisonObj);
+        });
 
+        it("should throw an error if comparing branches fails", async () => {
+            const url = "http://dummy.com/some/repo";
+            const branchToCompare = "dev";
 
-})
+            const expectedUrlObj = new URL(`${tokenHandlerUrl}/mdenet-auth/dummy/compare-branches`);
+            expectedUrlObj.searchParams.append("branch", branchToCompare);
+
+            dummyProvider.getCompareBranchesRequestUrl.and.returnValue(expectedUrlObj.href);
+            utility.getRequest.and.returnValue(Promise.reject({ message: "compare error" }));
+
+            await expectAsync(fileHandler.compareBranches(url, branchToCompare)).toBeRejectedWith({ message: "compare error" });
+        });
+    });
+
+    describe("mergeBranches", () => {
+        it("should merge branches and return the parsed response", async () => {
+            const url = "http://dummy.com/some/repo";
+            const branchToMergeFrom = "feature";
+            const mergeType = "merge";
+            const expectedUrl = `${tokenHandlerUrl}/mdenet-auth/dummy/merge-branches`;
+
+            dummyProvider.mergeBranchesRequest.and.returnValue({
+                url: expectedUrl,
+                payload: { mergeType }
+            });
+
+            const mergeResponse = { merged: true };
+            utility.jsonRequest.and.returnValue(Promise.resolve(JSON.stringify(mergeResponse)));
+
+            const result = await fileHandler.mergeBranches(url, branchToMergeFrom, mergeType);
+
+            expect(dummyProvider.mergeBranchesRequest).toHaveBeenCalledWith(url, branchToMergeFrom, mergeType);
+            expect(result).toEqual(mergeResponse);
+        });
+
+        it("should throw an error if merging branches fails", async () => {
+            const url = "http://dummy.com/some/repo";
+            const branchToMergeFrom = "feature";
+            const mergeType = "merge";
+            const expectedUrl = `${tokenHandlerUrl}/mdenet-auth/dummy/merge-branches`;
+
+            dummyProvider.mergeBranchesRequest.and.returnValue({
+                url: expectedUrl,
+                payload: { mergeType }
+            });
+
+            utility.jsonRequest.and.returnValue(Promise.reject({ message: "merge error" }));
+
+            await expectAsync(fileHandler.mergeBranches(url, branchToMergeFrom, mergeType)).toBeRejectedWith({ message: "merge error" });
+        });
+    });
+
+    describe("getPullRequestLink", () => {
+        it("should return a pull request link", () => {
+            const url = "http://dummy.com/some/repo";
+            const baseBranch = "main";
+            const headBranch = "feature";
+
+            const link = fileHandler.getPullRequestLink(url, baseBranch, headBranch);
+
+            expect(dummyProvider.createPullRequestLink).toHaveBeenCalledWith(url, baseBranch, headBranch);
+            expect(link).toBe(`https://dummy.com/pullRequest?base=${baseBranch}&head=${headBranch}`);
+        });
+
+        it("should throw an error if the provider fails to create a pull request link", () => {
+            dummyProvider.createPullRequestLink.and.callFake(() => {
+                throw new Error("PR link error");
+            });
+
+            const url = "http://dummy.com/some/repo";
+
+            expect(() => fileHandler.getPullRequestLink(url, "main", "feature"))
+                .toThrowError("PR link error");
+        });
+    });
+
+    describe("storeFiles", () => {
+        it("should store files and return the response", async () => {
+            const url = "http://dummy.com/some/repo";
+            const files = [{ fileUrl: "http://dummy.com/path/to/file", newFileContent: "content" }];
+            const message = "commit message";
+            const overrideBranch = "develop";
+
+            const expectedUrl = `${tokenHandlerUrl}/mdenet-auth/dummy/store`;
+
+            dummyProvider.storeFilesRequest.and.returnValue({
+                url: expectedUrl,
+                payload: { files, message, ref: overrideBranch }
+            });
+
+            const fakeResponse = "files stored";
+            utility.jsonRequest.and.returnValue(Promise.resolve(fakeResponse));
+
+            const result = await fileHandler.storeFiles(url, files, message, overrideBranch);
+
+            expect(dummyProvider.storeFilesRequest).toHaveBeenCalledWith(url, files, message, overrideBranch);
+            expect(result).toEqual(fakeResponse);
+        });
+
+        it("should throw an error if storing files fails", async () => {
+            const url = "http://dummy.com/some/repo";
+            const files = [{ fileUrl: "http://dummy.com/path/to/file", newFileContent: "content" }];
+            const message = "commit message";
+            const overrideBranch = "develop";
+
+            const expectedUrl = `${tokenHandlerUrl}/mdenet-auth/dummy/store`;
+
+            dummyProvider.storeFilesRequest.and.returnValue({
+                url: expectedUrl,
+                payload: { files, message, ref: overrideBranch }
+            });
+
+            utility.jsonRequest.and.returnValue(Promise.reject({ message: "store error" }));
+
+            await expectAsync(fileHandler.storeFiles(url, files, message, overrideBranch)).toBeRejectedWith({ message: "store error" });
+        });
+    });
+});

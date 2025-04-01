@@ -1,4 +1,4 @@
-import { jsonRequest, getRequest, authenticatedDecorator, base64ToBytes, bytesToBase64} from './Utility.js';
+import { utility} from './Utility.js';
 import { GitHubProvider } from './GitHubProvider.js';
 
 
@@ -49,7 +49,7 @@ export class FileHandler {
                     
                     let response = JSON.parse(xhr.responseText);
 
-                    let contents = new TextDecoder().decode(base64ToBytes(response.data.content));
+                    let contents = new TextDecoder().decode(utility.base64ToBytes(response.data.content));
 
                     return { content: contents, sha: response.data.sha };
                 
@@ -91,17 +91,17 @@ export class FileHandler {
                 const requestUrl = provider.getFileRequestUrl(url);
 
                 if (requestUrl) {
-                    const responseText = await getRequest(requestUrl, true);
+                    const responseText = await utility.getRequest(requestUrl, true);
                     const response = JSON.parse(responseText);
 
-                    const contents = new TextDecoder().decode(base64ToBytes(response.data.content));
+                    const contents = new TextDecoder().decode(utility.base64ToBytes(response.data.content));
                     return { content: contents, sha: response.data.sha };
                 }
             }
 
             // At this point, this is either a public repository, or it's a private repository but an unknown type of URL.
             // In either case, we assume that we can simply access the URL directly.
-            const responseText = await getRequest(url, false);
+            const responseText = await utility.getRequest(url, false);
             return { content: responseText, sha: null };
 
         } 
@@ -121,7 +121,7 @@ export class FileHandler {
             const provider = this.findProvider(url);
             const requestUrl = provider.getBranchesRequestUrl(url);    
 
-            const response = await getRequest(requestUrl, true);
+            const response = await utility.getRequest(requestUrl, true);
             const branches = JSON.parse(response);
             return branches;
         }
@@ -142,7 +142,7 @@ export class FileHandler {
             const provider = this.findProvider(url);
 
             const { url: requestUrl, payload } = provider.createBranchRequest(url, newBranch);
-            return await jsonRequest(requestUrl, JSON.stringify(payload), true);
+            return await utility.jsonRequest(requestUrl, JSON.stringify(payload), true);
         }
         catch (error) {
             console.error("Failed to create branch: " + error);
@@ -161,7 +161,7 @@ export class FileHandler {
             const provider = this.findProvider(url);
             const requestUrl = provider.getCompareBranchesRequestUrl(url, branchToCompare);
 
-            const response = await getRequest(requestUrl, true);
+            const response = await utility.getRequest(requestUrl, true);
             const comparison = JSON.parse(response);
             return comparison;
         }
@@ -185,11 +185,11 @@ export class FileHandler {
             const provider = this.findProvider(url);
             const { url: requestUrl, payload } = provider.mergeBranchesRequest(url, branchToMergeFrom, mergeType);
 
-            const response = await jsonRequest(requestUrl, JSON.stringify(payload), true);
+            const response = await utility.jsonRequest(requestUrl, JSON.stringify(payload), true);
             return JSON.parse(response);
         }
         catch (error) {
-            console.error("Failed to merge branches: " + error);
+            console.error("Failed to merge branches: ", error);
             throw error;
         }   
     }
@@ -229,7 +229,7 @@ export class FileHandler {
             const provider = this.findProvider(url);
             const { url: requestUrl, payload } = provider.storeFilesRequest(url, filesToSave, message, overrideBranch);
     
-            return jsonRequest(requestUrl, JSON.stringify(payload), true);
+            return utility.jsonRequest(requestUrl, JSON.stringify(payload), true);
         }
         catch (error) {
             console.error("Failed to store files: " + error);
@@ -238,11 +238,11 @@ export class FileHandler {
     }
     
     static {
-        authenticatedDecorator(FileHandler.prototype, 'fetchBranches');
-        authenticatedDecorator(FileHandler.prototype, 'createBranch');
-        authenticatedDecorator(FileHandler.prototype, 'compareBranches');
-        authenticatedDecorator(FileHandler.prototype, 'mergeBranches');
-        authenticatedDecorator(FileHandler.prototype, 'getPullRequestLink');
-        authenticatedDecorator(FileHandler.prototype, 'storeFiles');
+        utility.authenticatedDecorator(FileHandler.prototype, 'fetchBranches');
+        utility.authenticatedDecorator(FileHandler.prototype, 'createBranch');
+        utility.authenticatedDecorator(FileHandler.prototype, 'compareBranches');
+        utility.authenticatedDecorator(FileHandler.prototype, 'mergeBranches');
+        utility.authenticatedDecorator(FileHandler.prototype, 'getPullRequestLink');
+        utility.authenticatedDecorator(FileHandler.prototype, 'storeFiles');
     }
 }
