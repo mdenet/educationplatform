@@ -191,9 +191,7 @@ class GeneralActivityManager {
     getPanelRefId(panelId){
         
         for ( const activitykey of  Object.keys(this.activities)){
-
             const foundPanel = this.activities[activitykey].panels.find( pn => pn.id==panelId );
-
             if ( foundPanel != undefined){
                 return foundPanel.ref;
             } 

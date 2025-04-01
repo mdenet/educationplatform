@@ -22,18 +22,37 @@
         "extensions": [
           ".xtext"
         ],
-        "configuration": "./language-config/xtext-language-config.json"
+        "configuration": "./language-config/language-config.json"
       },
       {
         "id": "xtend",
-        "aliases": [
-          "Xtend",
-          "xtend"
-        ],
+        "aliases": ["Xtend","xtend"],
         "extensions": [
           ".xtend"
         ],
-        "configuration": "./language-config/xtend-language-config.json"
+        "configuration": "./language-config/language-config.json"
+      },
+      {
+        "id": "ocl",
+        "aliases": [
+          "OCL",
+          "ocl"
+        ],
+        "extensions": [
+          ".ocl"
+        ],
+        "configuration": "./language-config/language-config.json"
+      },
+      {
+        "id": "emf",
+        "aliases": [
+          "EMF",
+          "emf"
+        ],
+        "extensions": [
+          ".emf"
+        ],
+        "configuration": "./language-config/language-config.json"
       }
     ],
     "snippets": [
@@ -52,6 +71,16 @@
         "language": "xtend",
         "scopeName": "source.xtend",
         "path": "./syntaxes/xtend.tmLanguage.json"
+      },
+      {
+        "language": "ocl",
+        "scopeName": "source.ocl",
+        "path": "./syntaxes/ocl.tmLanguage.json"
+      },
+      {
+        "language": "emf",
+        "scopeName": "source.emfatic",
+        "path": "./syntaxes/emf.tmLanguage.json"
       }
     ],
     "menus": {
@@ -122,15 +151,18 @@
       "mdenetActivity": [
         {
           "id": "activities",
-          "name": "Activities"
+          "name": "Activities",
+          "icon": "public/images/M.svg"
         },
         {
           "id": "tasks",
-          "name": "Tasks"
+          "name": "Tasks",
+          "icon": "public/images/M.svg"
         },
         {
           "id": "panels",
-          "name": "Panels"
+          "name": "Panels",
+          "icon": "public/images/M.svg"
         }
       ]
     }

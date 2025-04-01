@@ -62,7 +62,8 @@ class GeneralEducationPlatformApp{
             console.log("Selected activity: " + this.activity);
 
             // Validate the resolved activity
-            errors = errors.concat( ActivityValidator.validate(this.activity, this.toolsManager.tools) );   
+            errors = errors.concat( ActivityValidator.validate(this.activity, this.toolsManager.tools) );
+            console.log("Activity errors: ", errors);
         }
 
         if  (errors.length==0){

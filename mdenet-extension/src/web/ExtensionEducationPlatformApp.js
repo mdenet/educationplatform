@@ -69,7 +69,6 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
 				break;
 			}
 			case "OutputPanel":{
-				console.log(panel)
 				newPanel = new ExtensionOutputPanel(newPanelId, panel.name, panelDefinition.language);
                 newPanel.initialize();
 				break;
