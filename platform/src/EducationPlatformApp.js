@@ -297,75 +297,75 @@ class EducationPlatformApp {
         }
     }
 
-    displayErrors(errors){
+    displayErrors(errors) {
 
-            const contentPanelName = "content-panel";
-        
-            this.panels.push(new BlankPanel(contentPanelName));
-            this.panels[0].setVisible(true);
-        
-            new Layout().createFromPanels("navview-content", this.panels);
-        
-            PlaygroundUtility.showMenu();
-        
-            Metro.init();
-            this.fit();
-        
-            var contentPanelDiv = document.getElementById(contentPanelName);
+        const contentPanelName = "content-panel";
+    
+        this.panels.push(new BlankPanel(contentPanelName));
+        this.panels[0].setVisible(true);
+    
+        new Layout().createFromPanels("navview-content", this.panels);
+    
+        PlaygroundUtility.showMenu();
+    
+        Metro.init();
+        this.fit();
+    
+        var contentPanelDiv = document.getElementById(contentPanelName);
 
-            // EP Errors
-            const platformErrors= errors.filter((e)=> e.constructor.name === EducationPlatformError.name);
+        // EP Errors
+        const platformErrors= errors.filter((e)=> e.constructor.name === EducationPlatformError.name);
 
-            if (platformErrors.length > 0){
-                let contentTitle = document.createElement("h2");
-                contentTitle.innerText = "Education Platform Errors:";
-                contentPanelDiv.append(contentTitle);
+        if (platformErrors.length > 0){
+            let contentTitle = document.createElement("h2");
+            contentTitle.innerText = "Education Platform Errors:";
+            contentPanelDiv.append(contentTitle);
 
-                platformErrors.forEach( (err) => {
-                    let content = document.createElement("p");
-                    content.append(document.createTextNode(err.message));
+            platformErrors.forEach( (err) => {
+                let content = document.createElement("p");
+                content.append(document.createTextNode(err.message));
 
-                    contentPanelDiv.append(content);
-                });
+                contentPanelDiv.append(content);
+            });
 
-                contentPanelDiv.append(document.createElement("p"));
-            }
+            contentPanelDiv.append(document.createElement("p"));
+        }
 
-            // Config File Errors
-            const configErrors= errors.filter((e)=> e.constructor.name === ConfigValidationError.name);
+        // Config File Errors
+        const configErrors= errors.filter((e)=> e.constructor.name === ConfigValidationError.name);
 
-            if(configErrors.length > 0){
-                let contentTitle = document.createElement("h2");
-                contentTitle.innerText = "Config File Errors:";
-                contentPanelDiv.append(contentTitle);
+        if(configErrors.length > 0){
+            let contentTitle = document.createElement("h2");
+            contentTitle.innerText = "Config File Errors:";
+            contentPanelDiv.append(contentTitle);
 
-                let contentLabels = document.createElement("b");
-                contentLabels.innerText = "File | Category | Details | Location";
-                contentPanelDiv.append(contentLabels);
+            let contentLabels = document.createElement("b");
+            contentLabels.innerText = "File | Category | Details | Location";
+            contentPanelDiv.append(contentLabels);
 
-                configErrors.forEach( (err) => {
-                    let content = document.createElement("p");
-                    let contentText= `${err.fileType} | ${err.category} | ${err.message} | ${err.location}` ;
-                    content.append(document.createTextNode(contentText));
+            configErrors.forEach( (err) => {
+                let content = document.createElement("p");
+                let contentText= `${err.fileType} | ${err.category} | ${err.message} | ${err.location}` ;
+                content.append(document.createTextNode(contentText));
 
-                    contentPanelDiv.append(content);
-                });
-            }
+                contentPanelDiv.append(content);
+            });
+        }
 
-            const otherErrors = errors.filter((e) => !(configErrors.includes(e) || platformErrors.includes(e)))
-            if (otherErrors.length > 0) {
-                let contentTitle = document.createElement("h2");
-                contentTitle.innerText = "Errors:";
-                contentPanelDiv.append(contentTitle);
+        const otherErrors = errors.filter((e) => !(configErrors.includes(e) || platformErrors.includes(e)))
+        if (otherErrors.length > 0) {
+            let contentTitle = document.createElement("h2");
+            contentTitle.innerText = "Errors:";
+            contentPanelDiv.append(contentTitle);
 
-                otherErrors.forEach( (err) => {
-                    let content = document.createElement("p");
-                    let contentText= `${err.constructor.name}: ${err.message}` ;
-                    content.append(document.createTextNode(contentText));
+            otherErrors.forEach( (err) => {
+                let content = document.createElement("p");
+                let contentText= `${err.constructor.name}: ${err.message}` ;
+                content.append(document.createTextNode(contentText));
 
-                    contentPanelDiv.append(content);
-                });
-            }
+                contentPanelDiv.append(content);
+            });
+        }
     }
 
     initializePanels() {
