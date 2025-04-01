@@ -17,40 +17,39 @@ class StorageController {
         this.router.get('/file', asyncCatch(this.getFile));
         this.router.get('/branches', asyncCatch(this.getBranches));
         this.router.get('/compare-branches', asyncCatch(this.compareBranches));
+
         this.router.post('/store', asyncCatch(this.storeFiles));
-        this.router.post('/fork', asyncCatch(this.forkRepository));
         this.router.post('/create-branch', asyncCatch(this.createBranch));
         this.router.post('/merge-branches', asyncCatch(this.mergeBranches));
     }
 
     getFile = async (req, res) => { 
 
-        let encryptedAuthCookie = req.cookies[getAuthCookieName];
-        let octokit;
+        const encryptedAuthCookie = req.cookies[getAuthCookieName];
+        const octokit = this.initOctokit(encryptedAuthCookie);
 
-        octokit = this.initOctokit(encryptedAuthCookie)
-        
-        var paramOwner = req.query.owner;
-        var paramRepo = req.query.repo;
-        var paramBranch = req.query.ref;
-        var paramPath = req.query.path;
-        
-        if ( paramOwner!=null &&  paramRepo!=null && paramPath!=null && paramBranch!=null ) {
+        const { owner, repo, ref: currentBranch, path } = req.query;
 
-            let repoData = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}?ref={ref}', {
-                owner: paramOwner,
-                repo: paramRepo,
-                path: paramPath,
-                ref: paramBranch,
+        if (!owner || !repo || !currentBranch || !path) {
+            throw new InvalidRequestException();
+        }
+        
+        try {
+            const repoData = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}?ref={branch}', {
+                owner,
+                repo,
+                path,
+                branch: currentBranch,
                 headers: {
                     'X-GitHub-Api-Version': config.githubApiVersion
                 }
             });
 
             res.status(200).json(repoData);
-
-        } else {
-            throw new InvalidRequestException();
+        }
+        catch (error) {
+            console.error("Error while fetching file:", error);
+            throw new GitHubException(error.status);
         }
     }
 
@@ -307,21 +306,18 @@ class StorageController {
     storeFiles = async (req, res) => {
         const encryptedAuthCookie = req.cookies[getAuthCookieName];
         const octokit = this.initOctokit(encryptedAuthCookie);
-        const { files, message } = req.body;
+        const { owner, repo, ref: branch, files, message } = req.body;
 
-        if(!files || !Array.isArray(files) || !files.length === 0 || !message) {
+        if(!owner || !repo || !branch || !files || !Array.isArray(files) || !files.length === 0 || !message) {
             throw new InvalidRequestException();
         }
 
-        // Extract common properties from the request
-        const { owner, repo, ref: branch } = files[0];
-
         try {
             // Get the latest commit SHA from the current branch
-            const { data: branchData } = await octokit.request('GET /repos/{owner}/{repo}/branches/{current_branch}', {
+            const { data: branchData } = await octokit.request('GET /repos/{owner}/{repo}/branches/{branch}', {
                 owner,
                 repo,
-                current_branch: branch,
+                branch,
                 headers: {
                     'X-GitHub-Api-Version': config.githubApiVersion
                 }
@@ -407,51 +403,6 @@ class StorageController {
             console.error("Error while storing files:", error);
             throw new GitHubException(error.status);
         }
-    }
-
-    forkRepository = async (req, res) => { 
-
-        let encryptedAuthCookie = req.cookies[getAuthCookieName];
-        let octokit;
-
-        octokit = this.initOctokit(encryptedAuthCookie)
-
-        var paramOwner = req.body.owner;
-        var paramRepo = req.body.repo;
-        var paramDefaultOnly = req.body.defaultOnly;
-        var paramName =  req.body.name; 
-        var paramOrganization = req.body.organization;
-
-        if ( paramOwner!=null &&  paramRepo!=null ) {
-
-            let request = {
-                owner: paramOwner,
-                repo: paramRepo,
-                headers: {
-                    'X-GitHub-Api-Version': config.githubApiVersion
-                }
-            }
-
-            if (paramOrganization != null){
-                request.organization = paramOrganization;
-            }
-
-            if (paramDefaultOnly != null) {
-                request.default_branch_only =  paramDefaultOnly;
-            }
-
-            if (paramName != null) {
-                request.name =  paramName;
-            }
-
-            let repoData = await octokit.request('POST /repos/{owner}/{repo}/forks', request);
-
-            res.status(200).json(repoData);
-
-        } else {
-            throw new InvalidRequestException();
-        }
-        
     }
 
     initOctokit(authCookie){

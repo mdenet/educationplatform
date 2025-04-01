@@ -921,7 +921,7 @@ class EducationPlatformApp {
                 files.push(panel.exportSaveData());
             }
 
-            this.fileHandler.storeFiles(files, commitMessage, overrideBranch)
+            this.fileHandler.storeFiles(this.activityURL, files, commitMessage, overrideBranch)
             .then(response => {
                 // If the save was to a new branch, skip the panel value updates - this is done in the branch switch
                 if (!overrideBranch) {

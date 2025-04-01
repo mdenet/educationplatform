@@ -3,7 +3,7 @@
  * This class provides a common interface and utility methods for different VCS providers.
  * It is intended to be extended by specific provider classes (e.g., GitHub, GitLab).
  */
-class BaseVcsProvider {
+export class BaseVcsProvider {
 
     /**
      * @param {String} name - A unique name for the provider (e.g. 'mdenet-auth/github')
@@ -45,8 +45,8 @@ class BaseVcsProvider {
      * @param {Object} params - An object containing query parameters.
      * @returns the updated URL object with query parameters appended.
      */
-    addQueryParamsToRequestUrl(requestUrl, params) {
-        const requestUrl = new URL(requestUrl);
+    addQueryParamsToRequestUrl(url, params) {
+        const requestUrl = new URL(url);
         for (const key in params) {
             requestUrl.searchParams.append(key, params[key]);
         }
@@ -74,5 +74,8 @@ class BaseVcsProvider {
     }
     mergeBranchesRequest(activityUrl, branchToMergeFrom, mergeType) {
         throw new Error("mergeBranchesRequest() must be overridden in a subclass.");
+    }
+    forkRepositoryRequest(activityUrl, mainOnly) {
+        throw new Error("forkRepositoryRequest() must be overridden in a subclass.");
     }
 }

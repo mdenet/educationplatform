@@ -1,19 +1,16 @@
-import { jsonRequest, isAuthenticated, getRequest} from './Utility.js';
+import { jsonRequest, getRequest, authenticatedDecorator, base64ToBytes, bytesToBase64} from './Utility.js';
 import { GitHubProvider } from './GitHubProvider.js';
 
 
-class FileHandler {
+export class FileHandler {
     
     tokenHandlerUrl;
     providers = [];
 
     constructor( tokenHandlerUrl ) {
         this.tokenHandlerUrl = tokenHandlerUrl;
-
         this.providers.push(new GitHubProvider(tokenHandlerUrl));
-
-        // If we wish to support more VCS providers, we can add them here.
-        // this.providers.push(new GitLabProvider(tokenHandlerUrl));
+        // Additional VCS providers can be added here
     }
 
     /**
@@ -22,34 +19,24 @@ class FileHandler {
      * @returns a VCS provider object that supports the URL, or null if none found.
      */
     findProvider(url) {
-        const url = new URL(fileUrl);
-        return this.providers.find(provider => 
-            provider.supportedHosts.includes(url.host)
-        );
+        const parsedUrl = new URL(url);
+        const provider = this.providers.find(provider => provider.supportedHosts.includes(parsedUrl.host));
+
+        if (!provider) {
+            throw new Error(`Host URL '${parsedUrl.host}' is not supported.`);
+        }
+        return provider;
     }
 
-
-    base64ToBytes(base64) {
-        const binString = window.atob(base64);
-        return Uint8Array.from(binString, (m) => m.codePointAt(0));
-    }
-
-    bytesToBase64(bytes) {
-        const binString =  String.fromCodePoint(...bytes);
-        return window.btoa(binString);
-    }
-
+    /**
+     * TODO: Remove this function and use the one below - this makes it async, so we need to also go back and update the callers.
+     */
     fetchFile(url, isPrivate){
 
         if (isPrivate){
             // Private so request via token server
             const provider = this.findProvider(url);
-
-            if (!provider) {
-                throw new Error(`URL is not supported: ${url}`);
-            }
-
-            const requestUrl = provider.getPrivateFileRequestUrl(url);
+            const requestUrl = provider.getFileRequestUrl(url);
 
             if (requestUrl != null) {
                 let xhr = new XMLHttpRequest();
@@ -62,7 +49,7 @@ class FileHandler {
                     
                     let response = JSON.parse(xhr.responseText);
 
-                    let contents = new TextDecoder().decode(this.base64ToBytes(response.data.content));
+                    let contents = new TextDecoder().decode(base64ToBytes(response.data.content));
 
                     return { content: contents, sha: response.data.sha };
                 
@@ -88,18 +75,52 @@ class FileHandler {
         }
     }
 
-    async fetchBranches(url) {
-
-        if (!isAuthenticated()) {
-            throw new Error("Not authenticated to fetch branches.");
-        }
-
-        const requestUrl = this.getBranchesRequestUrl(url);
-        if (!requestUrl) {
-            throw new Error("Failed to fetch branches - invalid URL");
-        }
-
+    /**
+     * TODO: Use this instead of the above - this makes it async, so we need to also go back and update the callers.
+     * Rename this to fetchFile and remove the above function.
+     * 
+     * Fetch file contents from a public or private repository.
+     * @param {String} url - The file URL.
+     * @param {boolean} isPrivate - Whether the file is from a private repository.
+     * @returns {Promise<{content: string, sha: string|null} | null>}
+     */
+    async refactoredFetchFile(url, isPrivate) {
         try {
+            if (isPrivate) {
+                const provider = this.findProvider(url);
+                const requestUrl = provider.getFileRequestUrl(url);
+
+                if (requestUrl) {
+                    const responseText = await getRequest(requestUrl, true);
+                    const response = JSON.parse(responseText);
+
+                    const contents = new TextDecoder().decode(base64ToBytes(response.data.content));
+                    return { content: contents, sha: response.data.sha };
+                }
+            }
+
+            // At this point, this is either a public repository, or it's a private repository but an unknown type of URL.
+            // In either case, we assume that we can simply access the URL directly.
+            const responseText = await getRequest(url, false);
+            return { content: responseText, sha: null };
+
+        } 
+        catch (error) {
+            console.error("Failed to fetch file:", error);
+            return null;
+        }
+    }
+
+    /**
+     * Fetch a list of branches from the repository
+     * @param {String} url 
+     * @returns {Promise<Array>} Promise to the response containing the branches array
+     */
+    async fetchBranches(url) {
+        try {
+            const provider = this.findProvider(url);
+            const requestUrl = provider.getBranchesRequestUrl(url);    
+
             const response = await getRequest(requestUrl, true);
             const branches = JSON.parse(response);
             return branches;
@@ -116,23 +137,17 @@ class FileHandler {
      * @param {String} newBranch
      * @returns {Promise} Promise to the response
      */
-    createBranch(url, newBranch) {
+    async createBranch(url, newBranch) {
+        try {
+            const provider = this.findProvider(url);
 
-        if (!isAuthenticated()) {
-            throw new Error("Not authenticated to checkout a branch.");
+            const { url: requestUrl, payload } = provider.createBranchRequest(url, newBranch);
+            return await jsonRequest(requestUrl, JSON.stringify(payload), true);
         }
-
-        const requestUrl = new URL(this.tokenHandlerUrl);
-        requestUrl.pathname = "/mdenet-auth/github/create-branch";
-
-        const requestParams = this.createBranchRequestParams(url);
-        if (!requestParams) {
-            throw new Error("Failed to create branch - invalid URL");
+        catch (error) {
+            console.error("Failed to create branch: " + error);
+            throw error;
         }
-        // Add the remaining branch name parameter to the request
-        requestParams.newBranch = newBranch;
-        
-        return jsonRequest(requestUrl, JSON.stringify(requestParams), true);
     }
 
     /**
@@ -142,16 +157,10 @@ class FileHandler {
      */
     async compareBranches(url, branchToCompare) {
 
-        if (!isAuthenticated()) {
-            throw new Error("Not authenticated to compare branches.");
-        }
-
-        const requestUrl = this.getCompareBranchesRequestUrl(url, branchToCompare);
-        if (!requestUrl) {
-            throw new Error("Failed to compare branches - invalid URL");
-        }
-
         try {
+            const provider = this.findProvider(url);
+            const requestUrl = provider.getCompareBranchesRequestUrl(url, branchToCompare);
+
             const response = await getRequest(requestUrl, true);
             const comparison = JSON.parse(response);
             return comparison;
@@ -160,6 +169,7 @@ class FileHandler {
             console.error("Failed to compare branches: " + error);
             throw error;
         }
+
     }
 
     /**
@@ -171,20 +181,17 @@ class FileHandler {
      */
     async mergeBranches(url, branchToMergeFrom, mergeType) {
 
-        if (!isAuthenticated()) {
-            throw new Error("Not authenticated to merge branches.");
+        try {
+            const provider = this.findProvider(url);
+            const { url: requestUrl, payload } = provider.mergeBranchesRequest(url, branchToMergeFrom, mergeType);
+
+            const response = await jsonRequest(requestUrl, JSON.stringify(payload), true);
+            return JSON.parse(response);
         }
-
-        const requestUrl = new URL(this.tokenHandlerUrl);
-        requestUrl.pathname = "/mdenet-auth/github/merge-branches";
-
-        const requestParams = this.mergeBranchRequestParams(url, branchToMergeFrom, mergeType);
-        if (!requestParams) {
-            throw new Error("Failed to merge branches - invalid URL");
-        }
-
-        const response = await jsonRequest(requestUrl, JSON.stringify(requestParams), true);
-        return JSON.parse(response);
+        catch (error) {
+            console.error("Failed to merge branches: " + error);
+            throw error;
+        }   
     }
 
     /**
@@ -196,309 +203,46 @@ class FileHandler {
      */
     getPullRequestLink(url, baseBranch, headBranch) {
         
-        if (!isAuthenticated()) {
-            throw new Error("Not authenticated to get pull request link.");
+        try {
+            const provider = this.findProvider(url);
+            const pullRequestLink = provider.createPullRequestLink(url, baseBranch, headBranch);
+
+            return pullRequestLink;
         }
-
-        const pullRequestLink = this.createPullRequestLink(url, baseBranch, headBranch);
-        if (!pullRequestLink) {
-            throw new Error("Failed to get pull request link - invalid URL");
-        }
-
-        return pullRequestLink;
-        
-    }
-
-    storeFiles(filesToSave, message, overrideBranch){
-
-        if (!isAuthenticated()) {
-            throw new Error("Files could not be stored - not authenticated.");
-        }
-
-        // Prepare the request payload
-        const requestUrl = new URL(this.tokenHandlerUrl);
-        requestUrl.pathname = "/mdenet-auth/github/store";
-        let request = {
-            files: [],
-            message: message
-        };
-
-        // Collect the request parameters in the url for each file (owner, repo, ref, path)
-        for (let file of filesToSave) {
-            let fileParams = this.getPrivateFileUpdateParams(file.fileUrl);
-            if (!fileParams) {
-                throw new Error(`Failed to generate request parameters for file: ${file.fileUrl}`);
-            }
-
-            if (overrideBranch) {
-                fileParams.ref = overrideBranch;
-            }
-
-            // Add the remaining parameters to the request
-            fileParams.content = file.newFileContent;
-
-            // Add the file to the batch request
-            request.files.push(fileParams);
-        }
-        
-        return jsonRequest( requestUrl.href, JSON.stringify(request), true );
-    }
-
-    forkRepository(url, repository, owner, mainOnly){
-
-        let requestUrl = new URL(this.tokenHandlerUrl);
-
-        requestUrl.pathname = "/mdenet-auth/github/fork";
-
-
-        let request= {};
-
-        request.owner = owner;
-        request.repo = repository;
-        request.defaultOnly = mainOnly;
-
-        jsonRequest( requestUrl.href,  JSON.stringify(), true );
+        catch (error) {
+            console.error("Failed to get pull request link: " + error);
+            throw error;
+        }        
     }
 
     /**
-     * Parses the URL of a file and extracts the key parameters
-     * @param {String} pathName The raw file path obtained using .pathname from a URL object
-     * @returns {object} An object containing the owner, repo, ref and path of the file
+     * Make a new commit to the repository with the specified files.
+     * @param {*} url 
+     * @param {*} filesToSave 
+     * @param {*} message 
+     * @param {*} overrideBranch 
+     * @returns 
      */
-    getPathParts(pathName) {
-        let pathParts = pathName.split("/");
-        const parts = { };
+    storeFiles(url, filesToSave, message, overrideBranch){
 
-        pathParts.shift(); // unused empty
-
-        parts.owner = pathParts.shift();
-        parts.repo = pathParts.shift();
-        parts.ref = pathParts.shift();
-        parts.path = pathParts.join("/");
-
-        return parts;
-    }
-
-    /**
-     * Helper method to construct request URL with search parameters
-     * @param {String} pathname The pathname for the request URL
-     * @param {Object} searchParams The search parameters in the request
-     * @returns {String} The constructed request URL
-     */
-    constructRequestUrl(requestRoute, searchParams) {
-        let requestUrl = new URL(this.tokenHandlerUrl);
-        requestUrl.pathname = requestRoute;
-
-        for (const key in searchParams) {
-            requestUrl.searchParams.append(key, searchParams[key]);
+        try {
+            const provider = this.findProvider(url);
+            const { url: requestUrl, payload } = provider.storeFilesRequest(url, filesToSave, message, overrideBranch);
+    
+            return jsonRequest(requestUrl, JSON.stringify(payload), true);
         }
-
-        return requestUrl.href;
-    }
-
-    /**
-     * Converts file urls from different hosts into requests for the token server
-     * @param {String} fileUrl the url of the file
-     * @returns {String} request url
-     */
-    getPrivateFileRequestUrl(fileUrl){
-
-        let fileSourceUrl = new URL(fileUrl);
-        let fileRequestUrl;
-
-        switch(fileSourceUrl.host){
-
-            case 'raw.githubusercontent.com':
-                fileRequestUrl= this.githubRawUrlToFileRequestUrl(fileSourceUrl.pathname);
-                break;
-
-            default:
-                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
-                fileRequestUrl = null;
-                break;
+        catch (error) {
+            console.error("Failed to store files: " + error);
+            throw error;
         }
-
-        return fileRequestUrl;
-    }
-
-    /**
-     * Converts file urls from different hosts into requests for the token server
-     * @param {String} fileUrl the url of the file
-     * @returns {String} request url
-     */
-    getBranchesRequestUrl(fileUrl) {
-        let fileSourceUrl = new URL(fileUrl);
-        let fileRequestUrl;
-
-        switch(fileSourceUrl.host) {
-            case 'raw.githubusercontent.com':
-                fileRequestUrl = this.githubRawUrlToGetBranchesRequestUrl(fileSourceUrl.pathname);
-                break;
-            default:
-                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
-                fileRequestUrl = null;
-                break;
-        }
-
-        return fileRequestUrl;
-    }
-
-    /**
-     * Converts file urls from different hosts into requests for the token server
-     * @param {String} fileUrl the url of the file
-     * @param {String} branchToCompare the branch to compare with the current one
-     * @returns {String} request url
-     */
-    getCompareBranchesRequestUrl(fileUrl, branchToCompare) {
-        let fileSourceUrl = new URL(fileUrl);
-        let fileRequestUrl;
-
-        switch(fileSourceUrl.host) {
-            case 'raw.githubusercontent.com':
-                fileRequestUrl = this.githubRawUrlToCompareBranchesRequestUrl(fileSourceUrl.pathname, branchToCompare);
-                break;
-            default:
-                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
-                fileRequestUrl = null;
-                break;
-        }
-
-        return fileRequestUrl;
-    }
-
-    createPullRequestLink(fileUrl, baseBranch, headBranch) {
-        let fileSourceUrl = new URL(fileUrl);
-        let fileRequestUrl;
-
-        switch(fileSourceUrl.host) {
-            case 'raw.githubusercontent.com':
-                fileRequestUrl = this.githubRawUrlToPullRequestLink(fileSourceUrl.pathname, baseBranch, headBranch);
-                break;
-            default:
-                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
-                fileRequestUrl = null;
-                break;
-        }
-
-        return fileRequestUrl;
-    }
-
-    githubRawUrlToPullRequestLink(githubUrlPath, baseBranch, headBranch) {
-        const pathParts = this.getPathParts(githubUrlPath);
-        const owner = pathParts.owner;
-        const repo = pathParts.repo;
-
-        return `https://github.com/${owner}/${repo}/compare/${baseBranch}...${headBranch}`;
     }
     
-    /**
-     * Convert github raw file url path into request url
-     * @param {String} githubUrlPath github raw file path without the host
-     * @returns {String} request url
-     */
-    githubRawUrlToFileRequestUrl(githubUrlPath) {
-        const params = this.getPathParts(githubUrlPath);
-        return this.constructRequestUrl("/mdenet-auth/github/file", params);
-    }
-
-    githubRawUrlToGetBranchesRequestUrl(githubUrlPath) {
-        const params = this.getPathParts(githubUrlPath);
-        return this.constructRequestUrl("/mdenet-auth/github/branches", params);
-    }
-
-    githubRawUrlToCompareBranchesRequestUrl(githubUrlPath, branchToCompare) {
-        const pathParts = this.getPathParts(githubUrlPath);
-        const params = {
-            owner: pathParts.owner,
-            repo: pathParts.repo,
-            baseBranch: pathParts.ref,
-            headBranch: branchToCompare
-        }
-        return this.constructRequestUrl("/mdenet-auth/github/compare-branches", params);
-    }
-
-    getPrivateFileUpdateParams(fileUrl){
-
-        let fileSourceUrl = new URL(fileUrl);
-
-        let fileStoreRequest;
-
-
-        switch(fileSourceUrl.host){
-
-            case 'raw.githubusercontent.com':
-                fileStoreRequest= this.githubRawUrlToStoreRequestParams(fileSourceUrl.pathname);
-                break;
-
-            default:
-                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
-                fileStoreRequest = null;
-                break;
-        }
-
-        return fileStoreRequest;        
-    }
-
-    createBranchRequestParams(fileUrl) {
-        let fileSourceUrl = new URL(fileUrl);
-        let fileRequestUrl;
-
-        switch(fileSourceUrl.host) {
-            case 'raw.githubusercontent.com':
-                fileRequestUrl = this.githubRawUrlToCreateBranchRequestParams(fileSourceUrl.pathname);
-                break;
-            default:
-                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
-                fileRequestUrl = null;
-                break;
-        }
-
-        return fileRequestUrl;
-    }
-
-    mergeBranchRequestParams(fileUrl, branchToMergeFrom, mergeType) {
-        let fileSourceUrl = new URL(fileUrl);
-        let fileRequestUrl;
-
-        switch(fileSourceUrl.host) {
-            case 'raw.githubusercontent.com':
-                fileRequestUrl = this.githubRawUrlToMergeBranchRequestParams(fileSourceUrl.pathname, branchToMergeFrom, mergeType);
-                break;
-            default:
-                console.log("FileHandler - fileurl '" + fileSourceUrl.host + "' not supported.");
-                fileRequestUrl = null;
-                break;
-        }
-
-        return fileRequestUrl;
-    }
-
-    githubRawUrlToMergeBranchRequestParams(githubUrlPath, branchToMergeFrom, mergeType) {
-        const pathParts = this.getPathParts(githubUrlPath);
-        const requestParams = {
-            owner: pathParts.owner,
-            repo: pathParts.repo,
-            baseBranch: pathParts.ref,
-            headBranch: branchToMergeFrom,
-            mergeType: mergeType
-        }
-        return requestParams;
-    }
-
-    githubRawUrlToStoreRequestParams(githubUrlPath){
-        const requestParams = this.getPathParts(githubUrlPath);
-        return requestParams;
-    }
-
-    githubRawUrlToCreateBranchRequestParams(githubUrlPath) {
-        const pathParts = this.getPathParts(githubUrlPath);
-        const requestParams = {
-            owner: pathParts.owner,
-            repo: pathParts.repo,
-            ref: pathParts.ref
-        }
-        return requestParams;
+    static {
+        authenticatedDecorator(FileHandler.prototype, 'fetchBranches');
+        authenticatedDecorator(FileHandler.prototype, 'createBranch');
+        authenticatedDecorator(FileHandler.prototype, 'compareBranches');
+        authenticatedDecorator(FileHandler.prototype, 'mergeBranches');
+        authenticatedDecorator(FileHandler.prototype, 'getPullRequestLink');
+        authenticatedDecorator(FileHandler.prototype, 'storeFiles');
     }
 }
-
-export { FileHandler };

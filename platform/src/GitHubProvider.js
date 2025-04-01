@@ -3,7 +3,7 @@ import { BaseVcsProvider } from './BaseVcsProvider.js';
 export class GitHubProvider extends BaseVcsProvider {
 
     constructor(tokenHandlerUrl) {
-        super('mdenet-auth/github', tokenHandlerUrl);
+        super("mdenet-auth/github", tokenHandlerUrl);
         this.supportedHosts = ['raw.githubusercontent.com'];
     }
 
@@ -46,7 +46,7 @@ export class GitHubProvider extends BaseVcsProvider {
     }
 
     createPullRequestLink(activityUrl, baseBranch, headBranch) {
-        const parts = this.parseFileUrl(activityUrl);
+        const parts = super.parseFileUrl(activityUrl);
 
         const owner = parts.owner;
         const repo = parts.repo;
@@ -55,11 +55,10 @@ export class GitHubProvider extends BaseVcsProvider {
     }
 
     storeFilesRequest(activityUrl, files, message, overrideBranch) {
-    
         const requestUrl = super.constructRequestUrl("store").href;
 
         // Parse the URL once for owner, repo, and ref.
-        const parts = this.parseFileUrl(activityUrl);
+        const parts = super.parseFileUrl(activityUrl);
         const payload = {
             owner: parts.owner,
             repo: parts.repo,
@@ -70,7 +69,7 @@ export class GitHubProvider extends BaseVcsProvider {
 
         // Iterate over the files and add their path and content to the payload.
         for (const file of files) {
-            const fileParams = this.parseFileUrl(file.fileUrl);
+            const fileParams = super.parseFileUrl(file.fileUrl);
             payload.files.push({
                 path: fileParams.path,
                 content: file.newFileContent
@@ -83,7 +82,7 @@ export class GitHubProvider extends BaseVcsProvider {
     createBranchRequest(activityUrl, newBranch) {
         const requestUrl = super.constructRequestUrl("create-branch").href;
 
-        const parts = this.parseFileUrl(activityUrl);
+        const parts = super.parseFileUrl(activityUrl);
         const payload = {
             owner: parts.owner,
             repo: parts.repo,
@@ -97,7 +96,7 @@ export class GitHubProvider extends BaseVcsProvider {
     mergeBranchesRequest(activityUrl, branchToMergeFrom, mergeType) {
         const requestUrl = super.constructRequestUrl("merge-branches").href;
 
-        const parts = this.parseFileUrl(activityUrl);
+        const parts = super.parseFileUrl(activityUrl);
         const payload = {
             owner: parts.owner,
             repo: parts.repo,
@@ -105,6 +104,19 @@ export class GitHubProvider extends BaseVcsProvider {
             headBranch: branchToMergeFrom,
             mergeType: mergeType
         }
+
+        return { url: requestUrl, payload: payload };
+    }
+
+    forkRepositoryRequest(activityUrl, mainOnly) {
+        const requestUrl = super.constructRequestUrl("fork").href;
+
+        const parts = super.parseFileUrl(activityUrl);
+        const payload = {
+            owner: parts.owner,
+            repo: parts.repo,
+            mainOnly: mainOnly
+        };
 
         return { url: requestUrl, payload: payload };
     }

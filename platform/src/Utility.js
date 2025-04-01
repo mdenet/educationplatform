@@ -249,6 +249,16 @@ export function isAuthenticated(){
     window.sessionStorage.getItem("isAuthenticated") === "true";
 }
 
+export function authenticatedDecorator(target, methodName) {
+    const originalMethod = target[methodName];
+    target[methodName] = function (...args) {
+        if (!isAuthenticated()) {
+            throw new Error(`Not authenticated to execute ${methodName}`);
+        }
+        return originalMethod.apply(this, args);
+    }
+}
+
 /**
  * Parses the platform configuration files, YAML and JSON types are supported. 
  * @param {String} contents the configuration file contents
@@ -317,6 +327,16 @@ export function setWindowLocationHref(newUrl){
     return window.location.href = newUrl;
 }
 
+export function base64ToBytes(base64) {
+    const binString = window.atob(base64);
+    return Uint8Array.from(binString, (m) => m.codePointAt(0));
+}
+
+export function bytesToBase64(bytes) {
+    const binString =  String.fromCodePoint(...bytes);
+    return window.btoa(binString);
+}
+
 /* ES6 Direct imports cannot be stubbed during unit test. Therefore, to enable unit testing 
    access to functions has to be made using the utility object.  */
 export const utility = {
@@ -330,9 +350,12 @@ export const utility = {
     getActivityURL,
     setAuthenticated,
     isAuthenticated,
+    authenticatedDecorator,
     parseConfigFile,
     getWindowLocationSearch,
     getWindowLocationHref,
     getBaseURL,
-    setWindowLocationHref
+    setWindowLocationHref,
+    base64ToBytes,
+    bytesToBase64,
 }
