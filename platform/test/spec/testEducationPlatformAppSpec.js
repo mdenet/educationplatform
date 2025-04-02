@@ -272,4 +272,43 @@ describe("EducationPlatformApp", () => {
             ]));
         });
     });
+
+    describe("changesHaveBeenMade()", () => {
+        let panels;
+    
+        beforeEach(() => {
+            panels = createVariousPanels();
+        });
+    
+        it("returns true if any saveable panel has unsaved changes", () => {
+            platform.saveablePanels = [
+                panels.saveableClean,
+                panels.saveableDirty, // dirty
+                panels.programClean
+            ];
+            expect(platform.changesHaveBeenMade()).toBeTrue();
+        });
+    
+        it("returns false if all panels are clean", () => {
+            platform.saveablePanels = [
+                panels.saveableClean,
+                panels.programClean
+            ];
+            expect(platform.changesHaveBeenMade()).toBeFalse();
+        });
+    
+        it("returns true if multiple panels have changes", () => {
+            platform.saveablePanels = [
+                panels.saveableDirty,
+                panels.programDirty
+            ];
+            expect(platform.changesHaveBeenMade()).toBeTrue();
+        });
+    
+        it("returns false if saveablePanels is empty", () => {
+            platform.saveablePanels = [];
+            expect(platform.changesHaveBeenMade()).toBeFalse();
+        });
+    });
+    
 })
