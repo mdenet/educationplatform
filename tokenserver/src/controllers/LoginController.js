@@ -1,10 +1,7 @@
-import * as express from "express";
-
 import {InvalidRequestException} from "../exceptions/InvalidRequestException.js";
-import {asyncCatch} from "../middleware/ErrorHandlingMiddleware.js";
-import {getAuthCookieName} from "../cookieName.js";
-import {getEncryptedCookie, decryptCookie} from "../lib-curity/cookieEncrypter";
-import { config } from "../config.js";
+import {getAuthCookieName} from "../config/cookieName.js";
+import {getEncryptedCookie, decryptCookie} from "../lib-curity/cookieEncrypter.js";
+import { config } from "../config/config.js";
 import {Octokit} from "octokit";
 
 const MAX_CODE_LENGTH = 200;  
@@ -14,15 +11,7 @@ const MIN_STATE_LENGTH = 5;
 
 class LoginController {
 
-    router = express.Router();
-
-    octokitApp;
-
     constructor(octokitAppInstance) {
-        this.router.post('/url', asyncCatch(this.getAuthUrl));
-        this.router.post('/token', asyncCatch(this.createToken));
-        this.router.get('/validate', asyncCatch(this.validateAuthCookie));
-
         this.octokitApp = octokitAppInstance;
     }
 

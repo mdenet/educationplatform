@@ -1,33 +1,14 @@
-import * as express from "express";
-
 import {InvalidRequestException} from "../exceptions/InvalidRequestException.js";
 import { GitHubException } from "../exceptions/GitHubException.js";
-import {asyncCatch} from "../middleware/ErrorHandlingMiddleware.js";
-import {getAuthCookieName} from "../cookieName.js";
-import {decryptCookie} from "../lib-curity/cookieEncrypter";
-import { config } from "../config.js";
-
-import {Octokit} from "octokit";
+import { config } from "../config/config.js";
 
 class StorageController { 
 
-    router = express.Router();
-
-    constructor() {
-        this.router.get('/file', asyncCatch(this.getFile));
-        this.router.get('/branches', asyncCatch(this.getBranches));
-        this.router.get('/compare-branches', asyncCatch(this.compareBranches));
-
-        this.router.post('/store', asyncCatch(this.storeFiles));
-        this.router.post('/create-branch', asyncCatch(this.createBranch));
-        this.router.post('/merge-branches', asyncCatch(this.mergeBranches));
-    }
+    constructor() {}
 
     getFile = async (req, res) => { 
 
-        const encryptedAuthCookie = req.cookies[getAuthCookieName];
-        const octokit = this.initOctokit(encryptedAuthCookie);
-
+        const octokit = req.octokit;
         const { owner, repo, ref: currentBranch, path } = req.query;
 
         if (!owner || !repo || !currentBranch || !path) {
@@ -54,9 +35,8 @@ class StorageController {
     }
 
     createBranch = async (req, res) => {
-        const encryptedAuthCookie = req.cookies[getAuthCookieName];
-        const octokit = this.initOctokit(encryptedAuthCookie);
-
+        
+        const octokit = req.octokit;
         const { owner, repo, ref: currentBranch, newBranch } = req.body;
 
         if (!owner || !repo || !currentBranch || !newBranch) {
@@ -96,9 +76,8 @@ class StorageController {
     }
 
     compareBranches = async (req, res) => {
-        const encryptedAuthCookie = req.cookies[getAuthCookieName];
-        const octokit = this.initOctokit(encryptedAuthCookie);
-
+        
+        const octokit = req.octokit;
         const { owner, repo, baseBranch, headBranch } = req.query;
 
         if (!owner || !repo || !baseBranch || !headBranch) {
@@ -140,9 +119,7 @@ class StorageController {
      */
     mergeBranches = async (req, res) => {
 
-        const encryptedAuthCookie = req.cookies[getAuthCookieName];
-        const octokit = this.initOctokit(encryptedAuthCookie);
-
+        const octokit = req.octokit;
         const { owner, repo, baseBranch, headBranch, mergeType } = req.body;
 
         if (!owner || !repo || !baseBranch || !headBranch || !mergeType) {
@@ -273,9 +250,8 @@ class StorageController {
     
     
     getBranches = async (req, res) => {
-        const encryptedAuthCookie = req.cookies[getAuthCookieName];
-        const octokit = this.initOctokit(encryptedAuthCookie);
 
+        const octokit = req.octokit;
         const { owner, repo } = req.query;
 
         if (!owner || !repo) {
@@ -304,8 +280,8 @@ class StorageController {
     }
 
     storeFiles = async (req, res) => {
-        const encryptedAuthCookie = req.cookies[getAuthCookieName];
-        const octokit = this.initOctokit(encryptedAuthCookie);
+
+        const octokit = req.octokit;
         const { owner, repo, ref: branch, files, message } = req.body;
 
         if(!owner || !repo || !branch || !files || !Array.isArray(files) || !files.length === 0 || !message) {
@@ -405,25 +381,6 @@ class StorageController {
         }
     }
 
-    initOctokit(authCookie){
-        let octokit;
-
-        if (authCookie != null){
-
-            let token = decryptCookie(config.encKey, authCookie);
-
-            octokit = new Octokit({
-                auth: token
-              })
-              
-        } 
-        else {
-            octokit = new Octokit({})
-        }
-
-        return octokit;
-    }
-
     /**
      * Filters out bot commits and recalculates branch comparison status based only on human commits.
      * This filtering is **optional** and can be removed if bot commits should be treated as meaningful.
@@ -483,8 +440,6 @@ class StorageController {
             comparison.status = "diverged";
         }
     }
-    
-
 }
 
 export { StorageController };
