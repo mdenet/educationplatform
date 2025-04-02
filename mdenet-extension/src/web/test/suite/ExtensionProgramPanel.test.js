@@ -29,7 +29,7 @@ suite('ExtensionProgramPanel Test Suite', () => {
     });
 
     test('initialize() should open local file when fileLocation is local', async () => {
-        const panel = new ExtensionProgramPanel('panel1', 'localFile.txt');
+        const panel = new ExtensionProgramPanel('panel1', vscode.Uri.file('/mock/path/localFile.txt'));
         await panel.initialize();
         assert.strictEqual(panel.doc, mockDoc);
     });
@@ -45,20 +45,29 @@ suite('ExtensionProgramPanel Test Suite', () => {
         assert.strictEqual(panel.content, 'remote file content');
     });
 
-    test('fetchRemoteFile() should handle failed fetch and create error doc', async () => {
+    test('fetchRemoteFile() should handle failed fetch and show error message', async () => {
         global.fetch = async () => ({
             ok: false,
             status: 404
         });
-
-        vscode.workspace.openTextDocument = async ({ content }) => {
-            return { getText: () => content, isClosed: false };
+    
+        let shownError = '';
+        const originalShowError = vscode.window.showErrorMessage;
+    
+        vscode.window.showErrorMessage = (msg) => {
+            shownError = msg;
         };
-
+    
         const panel = new ExtensionProgramPanel('panel3', 'http://bad-url.com');
         await panel.fetchRemoteFile();
-        assert.ok(panel.doc.getText().includes('Error fetching URL content: HTTP error! status: 404'));
+    
+        assert.ok(shownError.includes('HTTP error! status: 404'));
+        assert.strictEqual(panel.doc, null);
+        assert.strictEqual(panel.content, null);
+    
+        vscode.window.showErrorMessage = originalShowError;
     });
+    
 
     test('displayPanel() should open existing doc if available', async () => {
         let showCalled = false;
@@ -68,7 +77,7 @@ suite('ExtensionProgramPanel Test Suite', () => {
             assert.deepStrictEqual(options, { preview: false, viewColumn: vscode.ViewColumn.One });
         };
 
-        const panel = new ExtensionProgramPanel('panel4', 'localFile.txt');
+        const panel = new ExtensionProgramPanel('panel4', vscode.Uri.file('localFile.txt'));
         panel.doc = mockDoc;
         await panel.displayPanel();
         assert.ok(showCalled);
@@ -83,7 +92,7 @@ suite('ExtensionProgramPanel Test Suite', () => {
             return fallbackDoc;
         };
 
-        const panel = new ExtensionProgramPanel('panel5', 'localFile.txt');
+        const panel = new ExtensionProgramPanel('panel5', vscode.Uri.file('localFile.txt'));
         panel.content = 'cached remote content';
         panel.doc = mockDoc;
         await panel.displayPanel();
@@ -92,7 +101,7 @@ suite('ExtensionProgramPanel Test Suite', () => {
     });
 
     test('getValue() should return doc text if doc exists', () => {
-        const panel = new ExtensionProgramPanel('panel6', 'localFile.txt');
+        const panel = new ExtensionProgramPanel('panel6', vscode.Uri.file('localFile.txt'));
         panel.doc = mockDoc;
         const value = panel.getValue();
         assert.strictEqual(value, 'mock file contents');
@@ -124,6 +133,25 @@ suite('ExtensionProgramPanel Test Suite', () => {
     
         vscode.window.showErrorMessage = originalShowError;
     });
+
+    test('displayPanel() should show error if no content or document is available', async () => {
+        let shownError = '';
+        const originalShowError = vscode.window.showErrorMessage;
+      
+        vscode.window.showErrorMessage = (msg) => {
+          shownError = msg;
+        };
+      
+        const panel = new ExtensionProgramPanel('panel8', 'remoteFile');
+        panel.doc = null;
+        panel.content = null;
+      
+        await panel.displayPanel();
+      
+        assert.ok(shownError.includes("Unable to display panel: no content or document."));
+      
+        vscode.window.showErrorMessage = originalShowError;
+      });
     
 
 });

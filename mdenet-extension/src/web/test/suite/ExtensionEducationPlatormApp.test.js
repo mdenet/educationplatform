@@ -115,7 +115,7 @@ suite('ExtensionEducationPlatformApp Test Suite', () => {
         app.updateSessionInfo('editor1', 'https://ep.mde-network.org/some/path');
 
         assert.strictEqual(updatedKey, 'editor1');
-        assert.strictEqual(updatedValue.startsWith('http://localhost:8080'), true);
+        assert.strictEqual(updatedValue, 'https://ep.mde-network.org/some/path');
     });
 
     test('displayLongMessage() should call showInformationMessage', () => {

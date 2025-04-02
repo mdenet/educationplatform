@@ -447,8 +447,25 @@ class EducationPlatformApp extends GeneralEducationPlatformApp {
         });
     }
 
-    updateSessionInfo(editorPanelId, editorInstanceUrl){
+    updateSessionInfo(editorPanelId, editorInstanceUrl) {
         sessionStorage.setItem(editorPanelId,editorInstanceUrl);
+    }
+
+    renderHtml(outputPanel, responseText) {
+        var iframe = document.getElementById("htmlIframe");
+        if (iframe == null) {
+            iframe = document.createElement("iframe");
+            iframe.id = "htmlIframe"
+            iframe.style.height = "100%";
+            iframe.style.width = "100%";
+            document.getElementById(outputPanel.getId() + "Diagram").appendChild(iframe);
+        }
+        
+        iframe.srcdoc = responseText;
+    }
+
+    displayGeneratedText(outputPanel, responseText) {
+        outputPanel.getEditor().setValue(responseText.trim(), 1);
     }
 }
 

@@ -36,16 +36,12 @@ class GeneralEducationPlatformApp{
 
         if (errors.length==0){
             // The activities have been validated
-            console.log("Initializing tools manager");
             this.toolsManager.setToolsUrls( this.activityManager.getToolUrls().add(COMMON_UTILITY_URL) );
-            console.log("Tools urls: ", this.toolsManager.tools);
             errors = errors.concat(this.toolsManager.getConfigErrors());
-            console.log("Errors: ", errors);
         }
 
         if (errors.length==0){
             // The tools have been validated 
-            console.log("Showing activities nav entries");
             this.activityManager.showActivitiesNavEntries();
 
             // Import tool grammar highlighting 
@@ -59,16 +55,13 @@ class GeneralEducationPlatformApp{
             }
             
             this.activity = this.activityManager.getSelectedActivity(); 
-            console.log("Selected activity: " + this.activity);
 
             // Validate the resolved activity
             errors = errors.concat( ActivityValidator.validate(this.activity, this.toolsManager.tools) );
-            console.log("Activity errors: ", errors);
         }
 
         if  (errors.length==0){
             // The resolved activity has been validated
-            console.log("Initializing panels");
             await this.initializePanels();
         }
 
@@ -158,11 +151,8 @@ class GeneralEducationPlatformApp{
     runAction(source, sourceButton) {
 
         // Get the action
-        // console.log("Running Action: " + source + " " + sourceButton);
         var action = this.activityManager.getActionForCurrentActivity(source, sourceButton);
-        console.log("Action: ", action);
         if (!action){
-            console.log("Cannot find action given panel '" + source + "' and button '" + sourceButton + "'");
             let err = new EducationPlatformError(`Cannot find action given panel '${source}' and button '${sourceButton}'`);
             this.errorHandler.notify("Failed to invoke action.", err);
 
@@ -178,7 +168,6 @@ class GeneralEducationPlatformApp{
                 buttonConfig = action.source.ref.buttons.find (btn => btn.id == sourceButton);
             }  
 
-            console.log("Button config: ", buttonConfig);
 
             // Create map containing panel values
             let parameterMap = new Map();
@@ -202,7 +191,6 @@ class GeneralEducationPlatformApp{
 
                 parameterMap.set(paramName, param);
             }
-            console.log("Parameter map: ", parameterMap);
 
             // Add the platform language parameter
             let languageParam = {};
@@ -215,9 +203,7 @@ class GeneralEducationPlatformApp{
             //actionRequestData.outputLanguage = outputLanguage;
 
             // Call backend conversion and service functions
-            console.log("Invoking action function: " + buttonConfig.actionfunction);
             let actionResultPromise = this.toolsManager.invokeActionFunction(buttonConfig.actionfunction, parameterMap);
-            console.log("Action sent")
             
             this.handleResponseActionFunction(action , actionResultPromise);
 
@@ -236,7 +222,6 @@ class GeneralEducationPlatformApp{
         requestPromise.then( (responseText) => {
 
             var response = JSON.parse(responseText);
-            console.log("Response", response)
             const outputPanel = this.activityManager.findPanel( action.output.id, this.panels);
 
             var outputConsole;
@@ -246,8 +231,6 @@ class GeneralEducationPlatformApp{
                 outputConsole = outputPanel;
             }
 
-            console.log("Output panel: ", outputPanel);
-            // Metro.notify.killAll();
             this.removeNotification();
 
             if ( Object.prototype.hasOwnProperty.call(response, "error")) {
@@ -262,8 +245,6 @@ class GeneralEducationPlatformApp{
                 }
                 
                 if (response.editorID) {
-                    // Language workbench
-                    // PlaygroundUtility.longNotification("Building editor");
                     this.displayLongMessage("Building editor");
 
                     this.checkEditorReady(response.editorID, response.editorUrl, action.source.editorPanel, action.source.editorActivity, outputConsole);
@@ -279,26 +260,16 @@ class GeneralEducationPlatformApp{
 
                 } else if (response.generatedText) {
                     // Generated file
-                    console.log("Action output type: " + action.outputType);
                     switch (action.outputType){
                         case "code":
                             // Text
-                            outputPanel.getEditor().setValue(response.generatedText.trim(), 1);
+                            this.displayGeneratedText(outputPanel,response.generatedText);
                             break;
 
                         case "html":
                             // Html
                             outputPanel.setOutput(response.output);
-                            var iframe = document.getElementById("htmlIframe");
-                            if (iframe == null) {
-                                iframe = document.createElement("iframe");
-                                iframe.id = "htmlIframe"
-                                iframe.style.height = "100%";
-                                iframe.style.width = "100%";
-                                document.getElementById(outputPanel.getId() + "Diagram").appendChild(iframe);
-                            }
-                            
-                            iframe.srcdoc = response.generatedText;
+                            this.renderHtml(outputPanel,response.generatedText);
                             break; 
 
                         case "puml": 
@@ -336,9 +307,24 @@ class GeneralEducationPlatformApp{
 
     }
 
-    // renderHtml( html, panelId) {
-    //     throw new Error("Implement renderHtml in subclass");
-    // }
+    /**
+     * Renders the HTML for the output panel.
+     * @override
+     * @param {*} outputPanel 
+     */
+    renderHtml(outputPanel,responseText) {
+        throw new Error("Implement renderHtml in subclass");
+    }
+
+    /**
+     * Display the generated text in the output panel.
+     * @override
+     * @param {*} outputPanel 
+     * @param {*} responseText 
+     */
+    displayGeneratedText(outputPanel, responseText){
+        throw new Error("Implement displayGeneratedText in subclass");
+    }
 
     /**
          * Open a websockets connection to receive status updates on editor build. 
@@ -349,7 +335,6 @@ class GeneralEducationPlatformApp{
          * @param {Panel} logPanel - the panel to log progress to.
          */
         checkEditorReady(editorID, editorInstanceUrl, editorPanelId, editorActivityId, logPanel){
-            console.log("this.wsUri: ", this.wsUri);
             var socket = new WebSocket(this.wsUri);   
             var editorReady = false;
             socket.onopen = function(){
@@ -364,11 +349,9 @@ class GeneralEducationPlatformApp{
                 if(resultData.editorReady){
                     editorReady = true;
                     socket.close();
-                    // sessionStorage.setItem( editorPanelId , editorInstanceUrl );
                     this.updateSessionInfo(editorPanelId, editorInstanceUrl);
                     this.activityManager.setActivityVisibility(editorActivityId, true);
                     this.removeNotification();
-                    // PlaygroundUtility.successNotification("Building complete.");
                     this.displaySuccessMessage("Building complete");
                     
                 }

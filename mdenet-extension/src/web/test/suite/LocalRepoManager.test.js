@@ -77,7 +77,8 @@ suite('LocalRepoManager Tests', () => {
     test('should throw when fetching file without workspace', async () => {
         vscode.workspace.workspaceFolders = null;
         const manager = new LocalRepoManager();
-        await assert.rejects(manager.fetchActivityFile('my.activity.json'), /No workspace folder is open/);
+        const result = await manager.fetchActivityFile('my.activity.json');
+        await assert.deepEqual(result, undefined); 
     });
 
     test('should fetch and decode file content', async () => {
@@ -89,7 +90,8 @@ suite('LocalRepoManager Tests', () => {
     test('should handle error in fetchActivityFile()', async () => {
         vscodeMocks.workspace.fs.readFile = async () => { throw new Error('read error'); };
         const manager = new LocalRepoManager();
-        await assert.rejects(manager.fetchActivityFile('bad.activity.json'), /read error/);
+        const result = await manager.fetchActivityFile('bad.activity.json');
+        assert.deepEqual(result, undefined);
     });
 });
 

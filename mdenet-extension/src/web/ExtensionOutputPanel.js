@@ -87,15 +87,17 @@ class ExtensionOutputPanel extends ExtensionPanel {
         this.selectedFilePath = path;
         const selectedFile = this.generatedFiles.find(f => f.path === path);
         if (selectedFile && this.panel) {
-            this.currentContent = selectedFile.content;
-            this.isSvgContent = selectedFile.content.trim().startsWith('<svg');
-            this.postUpdate();
+            this.setContent(selectedFile.content, selectedFile.content.trim().startsWith('<svg'));
         }
     }
 
     renderDiagram(svg) {
-        this.currentContent = svg;
-        this.isSvgContent = true;
+        this.setContent(svg, true);
+    }
+
+    setContent(content, isSvg=false) {
+        this.currentContent = content;
+        this.isSvgContent = isSvg;
         this.ensurePanel();
         this.postUpdate();
     }

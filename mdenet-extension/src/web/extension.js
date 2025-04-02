@@ -6,7 +6,6 @@ import { ExtensionEducationPlatformApp } from './ExtensionEducationPlatformApp';
 import { LocalRepoManager } from './LocalRepoManager';
 
 export function activate(context, injectedApp = null) {
-	console.log("MDENet extension is now active!");
 	const localRepoManager = new LocalRepoManager();
 	const activityProvider = new ActivityTreeDataProvider(localRepoManager);
 	const taskProvider = new TaskTreeDataProvider();
@@ -61,7 +60,6 @@ export function activate(context, injectedApp = null) {
 				return;
 			}
 
-			console.log("All panels", app.panels);
 			const selectedPanel = app.panels.find(panel => panel.doc === selectedEditor.document);
 			const buttonMap = new Map();
 
@@ -76,16 +74,11 @@ export function activate(context, injectedApp = null) {
 			// Print the selected option
 			if (selectedOption) {
 				const selectedButton = buttonMap.get(selectedOption);
-				console.log("Running button", selectedButton.action);
-				// eval(selectedButton.action);
 				actionHandlers[selectedButton.actionData.type](selectedButton.actionData);
 			}
 		}),
 		vscode.commands.registerCommand('button.run', (button) => {
-			// console.log("Running button", button.action);
-			const selectedButton = button;
-    		actionHandlers[selectedButton.actionData.type](selectedButton.actionData);
-			// actionHandlers[button.actionData.type](button.actionData);
+			actionHandlers[button.actionData.type](button.actionData);
 		}),
 		vscode.commands.registerCommand('tasks.select', async (task) => {
 			if(app?.activity?.id == task){
@@ -104,7 +97,6 @@ export function activate(context, injectedApp = null) {
 			}
 		}),
 		vscode.commands.registerCommand('extension.insertGuillemets', () => {
-			console.log('Inserting guillemets');
 			const editor = getActiveEditor();
 			if (editor) {
 				editor.insertSnippet(new vscode.SnippetString('«$0»'));

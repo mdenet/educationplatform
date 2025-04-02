@@ -9,18 +9,24 @@ import * as vscode from 'vscode';
 import { ExtensionActivityManager } from "./ExtensionActivityManager";
 import { LocalRepoManager } from "./LocalRepoManager";
 import { ToolManager } from "../../../platform/src/ToolsManager";
+import { ExtensionPanel } from "./ExtensionPanel";
+import { ExtensionHtmlPanel } from "./ExtensionHtmlPanel";
 
 class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     constructor(context, provider, activityLabel){;
         const errorHandler = new ExtensionErrorHandler();
         super(errorHandler);
-        this.wsUri = "ws://localhost:8080/tools/xtext/services/xtext/ws";
+        this.wsUri = "ws://localhost:8080/tools/xtext/services/xtext/ws"; //Change this to the deployment URI when published
         this.context = context;
         this.provider = provider;
         this.activityLabel = activityLabel;
         this.fileHandler = new LocalRepoManager();
     }
 
+    /**
+     * Initializes the activity.
+     * @override
+     */
     async initializeActivity(){
         const toolManager = new ToolManager(this.errorHandler.notify.bind(this.errorHandler));
         const activityManager = new ExtensionActivityManager(toolManager.getPanelDefinition.bind(toolManager), this.fileHandler, this.provider, this.context, this.activityLabel);
@@ -28,22 +34,46 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
 
     }
 
+    /**
+     * Dynamically add syntax highlighting for tools.
+     * @override
+     * @param {Object} toolImports The tool imports object that contains the tool import urls.
+     */
     handleToolImports(toolImports){
         //TODO: Implement tool imports
     }
 
+    /**
+     * Dynamically add tool icon styles.
+     * @override
+     * @param {String} toolUrl 
+     */
     addToolIconStyles(toolUrl){
-        //TODO: Implement tool icon styles
+        //TODO: Implement tool icon styles. Currently uses VSCode default styles.
     }
 
+    /**
+     * Display errors in the extension.
+     * @override
+     * @param {Array} errors 
+     */
     displayErrors(errors){
         for (let error of errors){
             vscode.window.showErrorMessage(error.message);
         }
     }
 
+    /**
+     * Create corresponding panels for the panel definitions.
+     * @override
+     * @param {Object} panel The panel object.
+     * @param {Object} panelDefinition The panel definition object that is referenced by the panel.
+     * @param {String} newPanelId The ID of the new panel to be created.
+     * @returns {ExtensionPanel} 
+     */
     async createPanel(panel, panelDefinition, newPanelId){
         let newPanel = null;
+        console.log("Panel Definition: ", panelDefinition);
         switch(panelDefinition.panelclass){
 			case "ProgramPanel":{
 				newPanel = new ExtensionProgramPanel(newPanelId,panel.file);
@@ -87,10 +117,20 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
         return newPanel;
     }
 
+    /**
+     * Creates buttons for a specific panel.
+     * @override
+     * @param {Array} buttons Array of button definitions.
+     * @param {String} panelId The ID of the panel to associate the buttons with.
+     * @returns {Array} Array of created button instances.
+     */
     createButtons(buttons, panelId){
         return ExtensionButton.createButtons(buttons, panelId);
     }
     
+    /**
+     * @returns {Array} Array of panels that are currently visible in the layout.
+     */
     getVisiblePanels(){
         let visiblePanels = [];
         const layout = this.activity.layout.area;
@@ -108,10 +148,18 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
         return visiblePanels;
     }
 
+    /**
+     * @override
+     * @param {String} message The message to be displayed.
+     */
     displayLongMessage(message){
         vscode.window.showInformationMessage(message);
     }
 
+    /**
+     * @override
+     * @param {String} message The message to be displayed.
+     */
     displaySuccessMessage(message){
         vscode.window.showInformationMessage(message);
     }
@@ -119,10 +167,20 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
     removeNotification(){
     }
 
+    /**
+     * Stores the editor instance URL in the workspace state.
+     * @override
+     * @param {String} editorPanelId 
+     * @param {String} editorInstanceUrl 
+     */
     updateSessionInfo(editorPanelId, editorInstanceUrl){
         this.context.workspaceState.update(editorPanelId,editorInstanceUrl);
     }
 
+    /**
+     * Swtiches the activity task.
+     * @param {String} task 
+     */
     async switchActivityTask(task){
         await this.initializeActivity();
         this.panels = [];
@@ -131,7 +189,26 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
         await this.initializePanels();
     }
 
+    /**
+     * Displays the html content in a new panel.
+     * @override
+     * @param {*} outputPanel 
+     * @param {*} responseText 
+     */
+    renderHtml(outputPanel,responseText){
+        const panel = new ExtensionHtmlPanel(outputPanel.getId(), outputPanel.getTitle());
+        panel.initialize(responseText);
+    }
 
+    /**
+     * Displays the generated text in the output panel.
+     * @override
+     * @param {*} outputPanel 
+     * @param {*} responseText 
+     */
+    displayGeneratedText(outputPanel, responseText){
+        outputPanel.setContent(responseText.trim());
+    }
 
 }
 

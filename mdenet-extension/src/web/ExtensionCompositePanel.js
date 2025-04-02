@@ -22,7 +22,6 @@ class ExtensionCompositePanel extends ExtensionPanel{
         return this.childPanels;
     }
 
-
 }
 
 export { ExtensionCompositePanel };
