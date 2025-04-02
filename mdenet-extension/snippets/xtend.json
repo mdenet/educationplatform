@@ -1,0 +1,7 @@
+{
+    "Guillemets Expansion": {
+        "prefix": "gggg",
+        "body": "«$0»",
+        "description": "Insert guillemets"
+    }
+}

@@ -1,0 +1,226 @@
+{
+  "name": "mdenet-extension",
+  "displayName": "mdenet-extension",
+  "description": "Runs the MDENet Education Platform in VS Code.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "browser": "./dist/web/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "xtext",
+        "aliases": [
+          "Xtext",
+          "xtext"
+        ],
+        "extensions": [
+          ".xtext"
+        ],
+        "configuration": "./language-config/language-config.json"
+      },
+      {
+        "id": "xtend",
+        "aliases": ["Xtend","xtend"],
+        "extensions": [
+          ".xtend"
+        ],
+        "configuration": "./language-config/language-config.json"
+      },
+      {
+        "id": "ocl",
+        "aliases": [
+          "OCL",
+          "ocl"
+        ],
+        "extensions": [
+          ".ocl"
+        ],
+        "configuration": "./language-config/language-config.json"
+      },
+      {
+        "id": "emf",
+        "aliases": [
+          "EMF",
+          "emf"
+        ],
+        "extensions": [
+          ".emf"
+        ],
+        "configuration": "./language-config/language-config.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "xtend",
+        "path": "./snippets/xtend.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "xtext",
+        "scopeName": "source.xtext",
+        "path": "./syntaxes/xtext.tmLanguage.json"
+      },
+      {
+        "language": "xtend",
+        "scopeName": "source.xtend",
+        "path": "./syntaxes/xtend.tmLanguage.json"
+      },
+      {
+        "language": "ocl",
+        "scopeName": "source.ocl",
+        "path": "./syntaxes/ocl.tmLanguage.json"
+      },
+      {
+        "language": "emf",
+        "scopeName": "source.emfatic",
+        "path": "./syntaxes/emf.tmLanguage.json"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "panels.run",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "activities.refresh",
+          "when": "view == activities",
+          "group": "navigation"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "activities.refresh",
+        "title": "Refresh Activities",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "tasks.refresh",
+        "title": "Refresh Tasks"
+      },
+      {
+        "command": "panels.refresh",
+        "title": "Refresh Panels"
+      },
+      {
+        "command": "activities.play",
+        "title": "Play Activity"
+      },
+      {
+        "command": "activities.stop",
+        "title": "Stop Activity"
+      },
+      {
+        "command": "tasks.select",
+        "title": "Select Task"
+      },
+      {
+        "command": "panels.displayPanel",
+        "title": "Display Panel"
+      },
+      {
+        "command": "panels.run",
+        "title": "Run Panel",
+        "icon": "public/images/M.svg"
+      },
+      {
+        "command": "button.run",
+        "title": "Run button"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mdenetActivity",
+          "title": "MDENet",
+          "icon": "public/images/M.svg"
+        }
+      ]
+    },
+    "views": {
+      "mdenetActivity": [
+        {
+          "id": "activities",
+          "name": "Activities",
+          "icon": "public/images/M.svg"
+        },
+        {
+          "id": "tasks",
+          "name": "Tasks",
+          "icon": "public/images/M.svg"
+        },
+        {
+          "id": "panels",
+          "name": "Panels",
+          "icon": "public/images/M.svg"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "test": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. --extensionTestsPath=dist/web/test/suite/index.js",
+    "pretest": "npm run compile-web",
+    "vscode:prepublish": "npm run package-web",
+    "compile-web": "webpack",
+    "watch-web": "webpack --watch",
+    "package-web": "webpack --mode production --devtool hidden-source-map",
+    "lint": "eslint src",
+    "run-in-browser": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. .",
+    "coverage": "nyc npm run test",
+    "start-coverage-server": "node coverage-server.js",
+    "test-with-coverage": "concurrently \"npm run start-coverage-server\" \"npm run test\"",
+    "coverage-report": "nyc report --reporter=html && npx open-cli ./coverage/index.html"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "@types/assert": "^1.5.11",
+    "@types/mocha": "^10.0.10",
+    "@types/vscode": "^1.98.0",
+    "@types/webpack-env": "^1.18.8",
+    "@typescript-eslint/eslint-plugin": "^8.25.0",
+    "@typescript-eslint/parser": "^8.25.0",
+    "@vscode/test-web": "^0.0.67",
+    "assert": "^2.1.0",
+    "babel-loader": "^10.0.0",
+    "babel-plugin-istanbul": "^7.0.0",
+    "c8": "^10.1.3",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.21.0",
+    "jest": "^29.7.0",
+    "mocha": "^11.1.0",
+    "process": "^0.11.10",
+    "testdouble": "^3.20.2",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.7.3",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  },
+  "nyc": {
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "all": true,
+    "include": [
+      "src/web/**/*.js"
+    ],
+    "exclude": [
+      "**/test/**",
+      "**/*.test.js"
+    ],
+    "extension": [
+      ".js"
+    ]
+  }
+}

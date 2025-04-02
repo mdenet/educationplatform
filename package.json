@@ -1,12 +1,14 @@
-
 {
   "name": "MDENet-Education-Platform",
   "workspaces": [
     "platform",
     "tokenserver"
   ],
-  "overrides": { 
+  "overrides": {
     "socket.io-parser": ">=4.2.3",
     "@octokit/webhooks": ">=10.9.2"
-  } 
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
 }

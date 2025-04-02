@@ -1,5 +1,5 @@
 
-import { parse as yamlParse, YAMLParseError} from 'yaml' 
+import yaml from 'js-yaml';
 
 export const ARRAY_ANY_ELEMENT = '*';
 
@@ -66,7 +66,6 @@ export function jsonRequest(url, json, useCredentials=false){
             statusText: xhr.statusText
         });
         };
-
         xhr.send(json);
     });
 }
@@ -193,7 +192,7 @@ export function parseConfigFile(contents, extension="yml"){
 
 
             case "yml":
-                configObject= yamlParse(contents);
+                configObject= yaml.load(contents);
                 break;
 
             default:
@@ -201,7 +200,7 @@ export function parseConfigFile(contents, extension="yml"){
                 configObject = null;
         }
     } catch(err){
-        if (err instanceof YAMLParseError || err instanceof SyntaxError){
+        if (err instanceof yaml.YAMLException || err instanceof SyntaxError){
             configObject = err;
         } else {
             throw err;
@@ -232,7 +231,11 @@ export function getWindowLocationHref(){
  * @returns 
  */
 export function getBaseURL(){
-    return window.location.origin;
+    try{
+        return window.location.origin;
+    } catch(err){
+        return "http://127.0.0.1:8080";
+    }
 }
 
 /**
