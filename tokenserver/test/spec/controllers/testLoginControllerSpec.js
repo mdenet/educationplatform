@@ -14,9 +14,9 @@ describe("LoginController", () => {
             getWebFlowAuthorizationUrl: jasmine.createSpy(),
             createToken: jasmine.createSpy()
         };
-    
+
         controller = new LoginController(mockOctokitApp);
-    
+
         req = { body: {}, cookies: {} };
         res = {
             status: jasmine.createSpy().and.callFake(function () { return this; }),
@@ -27,7 +27,6 @@ describe("LoginController", () => {
 
         config.encKey = getMockEncryptionKey();
     });
-    
 
     describe("getAuthUrl", () => {
         it("should call octokitApp.getWebFlowAuthorizationUrl and respond with data", async () => {
@@ -68,6 +67,12 @@ describe("LoginController", () => {
                 state: "validState456"
             });
             expect(res.set).toHaveBeenCalledWith("Set-Cookie", jasmine.any(Array));
+
+            const cookieArray = res.set.calls.mostRecent().args[1];
+            const cookie = cookieArray[0];
+            expect(cookie).toContain("Path=/");
+            expect(cookie).toContain("HttpOnly");
+            expect(cookie).toContain("SameSite");
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith({ isLoggedIn: true });
         });
@@ -103,7 +108,6 @@ describe("LoginController", () => {
             const token = "valid-token";
             req.cookies = createMockAuthCookie(token);
 
-            // Inject a mock octokit into req.octokit (simulate middleware)
             req.octokit = {
                 request: jasmine.createSpy().and.returnValue(Promise.resolve({
                     data: { login: "testuser" }
@@ -121,8 +125,8 @@ describe("LoginController", () => {
             req.cookies = createMockAuthCookie("valid-token");
 
             req.octokit = {
-                request: jasmine.createSpy().and.returnValue(Promise.resolve({ 
-                    data: {} 
+                request: jasmine.createSpy().and.returnValue(Promise.resolve({
+                     data: {} 
                 }))
             };
 
@@ -141,6 +145,33 @@ describe("LoginController", () => {
 
             await controller.validateAuthCookie(req, res, next);
             expect(next).toHaveBeenCalledWith(jasmine.any(Error));
+        });
+    });
+
+    describe("validateTokenRequest", () => {
+        it("should throw if code or state are null", () => {
+            expect(() =>
+                LoginController.validateTokenRequest({ code: null, state: "abc" })
+            ).toThrowError(InvalidRequestException);
+
+            expect(() =>
+                LoginController.validateTokenRequest({ code: "abc", state: null })
+            ).toThrowError(InvalidRequestException);
+        });
+
+        it("should throw if code or state are not strings of correct length", () => {
+            expect(() =>
+                LoginController.validateTokenRequest({ code: "1", state: "2" })
+            ).toThrowError(InvalidRequestException);
+        });
+
+        it("should not throw on valid inputs", () => {
+            expect(() =>
+                LoginController.validateTokenRequest({
+                    code: "validCode123", // length 12
+                    state: "validState456" // length 13
+                })
+            ).not.toThrow();
         });
     });
 });
