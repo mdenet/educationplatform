@@ -1,6 +1,6 @@
 import {InvalidRequestException} from "../exceptions/InvalidRequestException.js";
 import {getAuthCookieName} from "../config/cookieName.js";
-import {getEncryptedCookie} from "../lib-curity/cookieEncrypter.ts";
+import {getEncryptedCookie} from "../lib-curity/cookieEncrypter";
 import { config } from "../config/config.js";
 
 const MAX_CODE_LENGTH = 200;  
