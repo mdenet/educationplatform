@@ -33,7 +33,7 @@ class SaveablePanel extends Panel {
      * Uses jsdiff's `diffLines` to compute the differences.
      */
     updatePanelDiff() {
-        this.diff = Diff.diffLines(this.lastSavedContent, this.getValue())
+        this.diff = Diff.diffLines(this.lastSavedContent ?? "", this.getValue() ?? "")
             .map(part => {
                 let change = {};
                 if (part.added) {

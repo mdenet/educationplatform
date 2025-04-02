@@ -1,32 +1,9 @@
 /*global describe, it, expect, beforeEach*/
 import { Panel } from "../../src/Panel";
+import { createBaseMockEditor } from "../resources/TestMockEditor";
 
 function createMockEditor() {
-    const resetSpy = jasmine.createSpy("reset");
-    const markCleanSpy = jasmine.createSpy("markClean");
-
-    const editor = {
-        getValue: jasmine.createSpy("getValue").and.returnValue("mocked value"),
-        setValue: jasmine.createSpy("setValue"),
-        session: {
-            getUndoManager: () => ({
-                reset: resetSpy,
-                markClean: markCleanSpy
-            })
-        },
-        setShowPrintMargin: jasmine.createSpy("setShowPrintMargin"),
-        setTheme: jasmine.createSpy("setTheme"),
-        renderer: {
-            setShowGutter: jasmine.createSpy("setShowGutter")
-        },
-        setFontSize: jasmine.createSpy("setFontSize"),
-        setOptions: jasmine.createSpy("setOptions")
-    };
-
-    editor._resetSpy = resetSpy;
-    editor._markCleanSpy = markCleanSpy;
-
-    return editor;
+    return createBaseMockEditor();
 }
 
 describe("Panel", () => {
