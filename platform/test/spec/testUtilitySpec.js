@@ -205,16 +205,20 @@ describe("Utility", () => {
         });
     });
 
-    describe("window location helpers", () => {
-        it("getWindowLocationSearch returns window.location.search", () => {
+    describe("getWindowLocationSearch", () => {
+        it("returns the search parameters", () => {
             expect(getWindowLocationSearch({ search: "?test=1" })).toBe("?test=1");
         });
+    });
 
-        it("getWindowLocationHref returns href", () => {
+    describe("getWindowLocationHref", () => {
+        it("returns the url", () => {
             expect(getWindowLocationHref({ href: "http://test" })).toBe("http://test");
         });
+    });
 
-        it("getBaseURL returns origin", () => {
+    describe("getBaseURL", () => {
+        it("returns the base url", () => {
             expect(getBaseURL({ origin: "http://base" })).toBe("http://base");
         });
     });
