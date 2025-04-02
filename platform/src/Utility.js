@@ -133,24 +133,23 @@ export function getRequest(url, useCredentials = false) {
  * 
  * @returns the private url parameter value
  */
-export function urlParamPrivateRepo(){
-    let urlParams = new URLSearchParams(window.location.search);    
-
-    return urlParams.has("privaterepo") && urlParams.get("privaterepo")==='true';
+export function urlParamPrivateRepo(location = window.location) {
+    const params = new URLSearchParams(location.search);
+    return params.get("privaterepo") === "true";
 }
 
 /**
  * Get the activity URL
  * @returns {String} the activity URL, or null if not found
  */
-export function getActivityURL() {
-    let urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get("activities");
+export function getActivityURL(location = window.location) {
+    const params = new URLSearchParams(location.search);
+    return params.get("activities") || null;
 }
 
 /**
  * Get the current branch from the URL 
- * @returns {String} the branch name
+ * @returns {String} the branch name, or null if not found
  */
 export function getCurrentBranch() {
     const url = new URL(this.getActivityURL());
@@ -159,7 +158,7 @@ export function getCurrentBranch() {
     // pathParts[1] => repo
     // pathParts[2] => branch
     // pathParts[3] => rest
-    return pathParts[2];
+    return pathParts[2] || null;
 }
 
 /**
@@ -269,32 +268,32 @@ export function parseConfigFile(contents, extension="yml"){
  * Gets query string of the current url - window.location.search.
  * @returns {string} the query string
  */
-export function getWindowLocationSearch(){
-    return window.location.search;
+export function getWindowLocationSearch(location = window.location) {
+    return location.search;
 }
 
 /**
  * Gets the current url - window.location.href.
  * @returns {string} the url
  */
-export function getWindowLocationHref(){
-    return window.location.href;
+export function getWindowLocationHref(location = window.location) {
+    return location.href;
 }
 
 /**
  * Gets the base url - window.location.origin
  * @returns 
  */
-export function getBaseURL(){
-    return window.location.origin;
+export function getBaseURL(location = window.location) {
+    return location.origin;
 }
 
 /**
  * Sets the current url - window.location.href.
  * @newUrl {string} the url to navigate to
  */
-export function setWindowLocationHref(newUrl){
-    return window.location.href = newUrl;
+export function setWindowLocationHref(newUrl, location = window.location){
+    return location.href = newUrl;
 }
 
 export function base64ToBytes(base64) {
