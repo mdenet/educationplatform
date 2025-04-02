@@ -155,13 +155,47 @@ describe("Utility", () => {
 
     describe("validateBranchName", () => {
         it("returns true for valid branch names", () => {
-            expect(validateBranchName("feature-123"))
-                .toBeTrue();
+            expect(validateBranchName("feature-123")).toBeTrue();
         });
 
-        it("returns false for branch names with special characters", () => {
-            expect(validateBranchName("branch name"))
-                .toBeFalse();
+        it("returns false for branch names with whitespaces", () => {
+            expect(validateBranchName("branch name")).toBeFalse();
+        });
+
+        it("returns false for empty string", () => {
+            expect(validateBranchName("")).toBeFalse();
+        });
+
+        it("returns false for whitespace-only string", () => {
+            expect(validateBranchName("   ")).toBeFalse();
+        });
+
+        it("returns false for branch name shorter than 3 characters", () => {
+            expect(validateBranchName("ab")).toBeFalse();
+        });
+
+        it("returns false for branch name longer than 100 characters", () => {
+            const longName = "a".repeat(101);
+            expect(validateBranchName(longName)).toBeFalse();
+        });
+
+        it("returns false for branch name with consecutive dots", () => {
+            expect(validateBranchName("invalid..branch")).toBeFalse();
+        });
+
+        it("returns false for branch name with disallowed characters", () => {
+            expect(validateBranchName("bad/branch")).toBeFalse();
+            expect(validateBranchName("bad~branch")).toBeFalse();
+            expect(validateBranchName("bad*branch")).toBeFalse();
+            expect(validateBranchName("bad^branch")).toBeFalse();
+        });
+
+        it("returns true for branch name with dot, underscore, and dash", () => {
+            expect(validateBranchName("feature.branch_name-123")).toBeTrue();
+        });
+
+        it("trims leading/trailing spaces before validating", () => {
+            expect(validateBranchName("  valid-name  ")).toBeTrue();
         });
     });
 
