@@ -25,4 +25,3 @@ window.toggle = platform.toggle.bind(platform);
 window.togglePanelById = platform.togglePanelById.bind(platform);
 //window.renderDiagram = renderDiagram;
 window.longNotification = PlaygroundUtility.longNotification;
-window.getPanelTitle = platform.getPanelTitle.bind(platform);

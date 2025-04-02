@@ -6,9 +6,9 @@ import {EducationPlatformApp} from "../../src/EducationPlatformApp.js";
 import { ActionFunction } from "../../src/ActionFunction.js";
 import { Panel } from "../../src/Panel.js";
 import { ErrorHandler } from "../../src/ErrorHandler.js";
-import "jasmine-ajax";
 import { PlaygroundUtility } from "../../src/PlaygroundUtility.js";
 import { createVariousPanels } from "../resources/TestPanels.js";
+import { DEFAULT_COMMIT_MESSAGE } from "../../src/EducationPlatformApp.js";
 
 describe("EducationPlatformApp", () => {
     let platform;
@@ -308,6 +308,125 @@ describe("EducationPlatformApp", () => {
         it("returns false if saveablePanels is empty", () => {
             platform.saveablePanels = [];
             expect(platform.changesHaveBeenMade()).toBeFalse();
+        });
+    });
+
+    describe("isLocalEnvironmentOutdated()", () => {
+        let panels;
+    
+        beforeEach(() => {
+            panels = createVariousPanels();
+    
+            platform.fileHandler = {
+                fetchFile: jasmine.createSpy("fetchFile")
+            };
+    
+            // Set up mock file URLs and SHAs for dirty panels
+            panels.saveableDirty.getFileUrl = () => "file1";
+            panels.saveableDirty.getValueSha = () => "localSha1";
+    
+            panels.programDirty.getFileUrl = () => "file2";
+            panels.programDirty.getValueSha = () => "localSha2";
+    
+            platform.saveablePanels = [panels.saveableDirty, panels.programDirty];
+    
+            // getPanelsWithChanges returns both dirty panels
+            platform.getPanelsWithChanges = () => platform.saveablePanels;
+        });
+    
+        it("returns true if at least one panel has a different remote SHA", async () => {
+            platform.fileHandler.fetchFile.withArgs("file1", false).and.resolveTo({ sha: "remoteShaDifferent" });
+            platform.fileHandler.fetchFile.withArgs("file2", false).and.resolveTo({ sha: "localSha2" });
+    
+            const result = await platform.isLocalEnvironmentOutdated();
+            expect(result).toBeTrue();
+        });
+    
+        it("returns false if all remote SHAs match local SHAs", async () => {
+            platform.fileHandler.fetchFile.withArgs("file1", false).and.resolveTo({ sha: "localSha1" });
+            platform.fileHandler.fetchFile.withArgs("file2", false).and.resolveTo({ sha: "localSha2" });
+    
+            const result = await platform.isLocalEnvironmentOutdated();
+            expect(result).toBeFalse();
+        });
+    
+        it("throws an error if fetchFile returns null", async () => {
+            platform.fileHandler.fetchFile.withArgs("file1", false).and.resolveTo(null);
+    
+            platform.saveablePanels = [panels.saveableDirty];
+            platform.getPanelsWithChanges = () => platform.saveablePanels;
+    
+            await expectAsync(platform.isLocalEnvironmentOutdated()).toBeRejectedWithError(/No remote file found/);
+        });
+
+        it("throws an error if fetchFile returns undefined", async () => {
+            platform.fileHandler.fetchFile.withArgs("file1", false).and.resolveTo(undefined);
+    
+            platform.saveablePanels = [panels.saveableDirty];
+            platform.getPanelsWithChanges = () => platform.saveablePanels;
+    
+            await expectAsync(platform.isLocalEnvironmentOutdated()).toBeRejectedWithError(/No remote file found/);
+        });
+    });
+
+    describe("getCommitMessage()", () => {
+    
+        beforeEach(() => {
+            spyOn(window, "prompt");
+        });
+    
+        it("returns the user's input when a non-empty message is entered", () => {
+            window.prompt.and.returnValue("My commit message");
+            const result = platform.getCommitMessage();
+            expect(result).toBe("My commit message");
+        });
+    
+        it("returns null if user cancels the prompt", () => {
+            window.prompt.and.returnValue(null);
+            const result = platform.getCommitMessage();
+            expect(result).toBeNull();
+        });
+    
+        it("returns the default message if input is empty", () => {
+            window.prompt.and.returnValue("");
+            const result = platform.getCommitMessage();
+            expect(result).toBe(DEFAULT_COMMIT_MESSAGE);
+        });
+    
+        it("returns the default message if input is just whitespace", () => {
+            window.prompt.and.returnValue("     ");
+            const result = platform.getCommitMessage();
+            expect(result).toBe(DEFAULT_COMMIT_MESSAGE);
+        });
+    });
+    
+    describe("refreshBranches()", () => {
+        beforeEach(() => {
+            platform.activityURL = "https://activity.example.com";
+            platform.fileHandler = {
+                fetchBranches: jasmine.createSpy("fetchBranches")
+            };
+        });
+    
+        it("fetches branches and sets them on the instance", async () => {
+            const fakeBranches = ["fakeBranch1", "fakeBranch2"];
+            platform.fileHandler.fetchBranches.and.resolveTo(fakeBranches);
+    
+            await platform.refreshBranches();
+    
+            expect(platform.fileHandler.fetchBranches).toHaveBeenCalledWith(platform.activityURL);
+            expect(platform.branches).toEqual(fakeBranches);
+        });
+    
+        it("logs an error if fetchBranches fails", async () => {
+            const error = new Error("network error");
+            platform.fileHandler.fetchBranches.and.rejectWith(error);
+    
+            spyOn(console, "error");
+    
+            await platform.refreshBranches();
+    
+            expect(console.error).toHaveBeenCalledWith("Error fetching branches:", error);
         });
     });
     

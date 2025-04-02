@@ -39,7 +39,7 @@ import { ErrorHandler } from './ErrorHandler.js';
 
 const COMMON_UTILITY_URL = utility.getWindowLocationHref().replace( utility.getWindowLocationSearch(), "" ) + "common/utility.json";
 const ACTION_FUNCTION_LANGUAGE_TYPE = "text";
-const DEFAULT_COMMIT_MESSAGE = "MDENet Education Platform save.";
+export const DEFAULT_COMMIT_MESSAGE = "MDENet Education Platform save.";
 
 class EducationPlatformApp {
     outputType;
@@ -502,12 +502,6 @@ class EducationPlatformApp {
         }
         return newPanel;
     }
-
-
-    getPanelTitle(panelId) {
-        return $("#" + panelId)[0].dataset.titleCaption;
-    }
-
    
     /**
      * Handle the response from the remote tool service
@@ -799,6 +793,11 @@ class EducationPlatformApp {
     async showSaveConfirmation(event) {
         event.preventDefault();
 
+        if (this.modalIsVisible("save-confirmation-container")) {
+            this.toggleSaveConfirmationVisibility(false);
+            return;
+        }
+
         this.closeAllModalsExcept("save-confirmation-container");
         this.toggleSaveConfirmationVisibility(true);
        
@@ -840,7 +839,6 @@ class EducationPlatformApp {
         for (const panel of panelsToSave) {
 
             const remoteFile = await this.fileHandler.fetchFile(panel.getFileUrl(), utility.urlParamPrivateRepo());
-
             if (!remoteFile) {
                 throw new Error(`No remote file found for ${panel.getTitle()}`);
             }
@@ -850,6 +848,7 @@ class EducationPlatformApp {
                 return true;
             }
         }
+        return false;
     }
 
     /**
@@ -956,6 +955,11 @@ class EducationPlatformApp {
      */
     async reviewChanges(event) {
         event.preventDefault();
+
+        if (this.modalIsVisible("review-changes-container")) {
+            this.toggleReviewChangesVisibility(false);
+            return;
+        }
 
         this.closeAllModalsExcept("review-changes-container");
         this.toggleReviewChangesVisibility(true);
@@ -1082,6 +1086,11 @@ class EducationPlatformApp {
      */
     async showBranches(event) {
         event.preventDefault();
+
+        if (this.modalIsVisible("switch-branch-container")) {
+            this.toggleSwitchBranchVisibility(false);
+            return;
+        }
 
         try {
             this.closeAllModalsExcept("switch-branch-container");
@@ -1564,6 +1573,11 @@ class EducationPlatformApp {
                 container.style.display = "none";
             }
         });
+    }
+
+    modalIsVisible(modalId) {
+        const container = document.getElementById(modalId);
+        return container.style.display === "block";
     }
 
     setCurrentBranchText() {
