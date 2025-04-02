@@ -22,13 +22,17 @@ function mockEditor(initialValue = "") {
         }),
         _value: initialValue,
         session: {
-            getUndoManager: () => ({
-                reset: jasmine.createSpy("reset"),
-                markClean: jasmine.createSpy("markClean")
-            }),
+            getUndoManager: () => sharedUndoManager,
             on: jasmine.createSpy("on")
         }
     }));
+
+    const sharedUndoManager = {
+        reset: jasmine.createSpy("reset"),
+        markClean: jasmine.createSpy("markClean")
+    };
+    editor._undoManager = sharedUndoManager; // optional access for inspection
+    
     return editor;
 }
 

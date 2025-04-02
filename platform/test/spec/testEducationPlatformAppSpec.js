@@ -484,4 +484,252 @@ describe("EducationPlatformApp", () => {
         });
     
     });
+
+    describe("showSaveConfirmation()", () => {
+        let eventMock, saveText, closeBtn, cancelBtn, saveBtn;
+    
+        beforeEach(() => {
+            // Add needed DOM elements
+            saveText = document.createElement("div");
+            saveText.id = "save-body-text";
+            document.body.appendChild(saveText);
+    
+            closeBtn = document.createElement("button");
+            closeBtn.id = "save-confirmation-close-button";
+            document.body.appendChild(closeBtn);
+    
+            cancelBtn = document.createElement("button");
+            cancelBtn.id = "cancel-save-btn";
+            document.body.appendChild(cancelBtn);
+    
+            saveBtn = document.createElement("button");
+            saveBtn.id = "confirm-save-btn";
+            document.body.appendChild(saveBtn);
+    
+            eventMock = { preventDefault: jasmine.createSpy("preventDefault") };
+    
+            // Spies for internal methods
+            spyOn(platform, "modalIsVisible").and.returnValue(false);
+            spyOn(platform, "closeAllModalsExcept");
+            spyOn(platform, "toggleSaveConfirmationVisibility");
+            spyOn(platform, "toggleReviewChangesLink");
+            spyOn(platform, "savePanelContents").and.resolveTo();
+    
+            // Default to dirty panels
+            spyOn(platform, "changesHaveBeenMade").and.returnValue(true);
+        });
+    
+        afterEach(() => {
+            saveText.remove();
+            closeBtn.remove();
+            cancelBtn.remove();
+            saveBtn.remove();
+        });
+    
+        
+        it("hides modal if already visible", async () => {
+            platform.modalIsVisible.and.returnValue(true);
+    
+            await platform.showSaveConfirmation(eventMock);
+    
+            expect(platform.toggleSaveConfirmationVisibility).toHaveBeenCalledWith(false);
+            expect(platform.closeAllModalsExcept).not.toHaveBeenCalled();
+        });
+    
+        it("shows the correct message if changes exist", async () => {
+            await platform.showSaveConfirmation(eventMock);
+    
+            expect(saveText.textContent).toBe("You can review your changes before saving:");
+            expect(platform.toggleReviewChangesLink).toHaveBeenCalledWith(true);
+            expect(platform.toggleSaveConfirmationVisibility).toHaveBeenCalledWith(true);
+        });
+    
+        it("shows the correct message if no changes exist", async () => {
+            platform.changesHaveBeenMade.and.returnValue(false);
+    
+            await platform.showSaveConfirmation(eventMock);
+    
+            expect(saveText.textContent).toBe("There are no changes to be saved.");
+            expect(platform.toggleReviewChangesLink).toHaveBeenCalledWith(false);
+        });
+    
+        it("closes modal when close or cancel button is clicked", async () => {
+            await platform.showSaveConfirmation(eventMock);
+    
+            closeBtn.click();
+            expect(platform.toggleSaveConfirmationVisibility).toHaveBeenCalledWith(false);
+    
+            cancelBtn.click();
+            expect(platform.toggleSaveConfirmationVisibility).toHaveBeenCalledWith(false);
+        });
+    
+        it("calls savePanelContents and hides modal on save", async () => {
+            await platform.showSaveConfirmation(eventMock);
+    
+            await saveBtn.onclick(); // manually trigger async save click
+    
+            expect(platform.savePanelContents).toHaveBeenCalled();
+            expect(platform.toggleSaveConfirmationVisibility).toHaveBeenCalledWith(false);
+        });
+    });
+
+    describe("savePanelContents()", () => {
+        beforeEach(() => {
+            spyOn(platform, "changesHaveBeenMade");
+            spyOn(platform, "isLocalEnvironmentOutdated").and.resolveTo(false);
+            spyOn(platform, "getCommitMessage").and.returnValue("Commit message");
+            spyOn(platform, "saveFiles").and.returnValue(Promise.resolve());
+            spyOn(PlaygroundUtility, "warningNotification");
+            spyOn(PlaygroundUtility, "successNotification");
+            platform.errorHandler = {
+                notify: jasmine.createSpy("notify")
+            };
+        });
+    
+        it("shows a warning if no changes have been made", async () => {
+            platform.changesHaveBeenMade.and.returnValue(false);
+    
+            await platform.savePanelContents();
+    
+            expect(PlaygroundUtility.warningNotification).toHaveBeenCalledWith("There are no panels to save.");
+            expect(platform.saveFiles).not.toHaveBeenCalled();
+        });
+    
+        it("shows a warning if environment is outdated", async () => {
+            platform.changesHaveBeenMade.and.returnValue(true);
+            platform.isLocalEnvironmentOutdated.and.resolveTo(true);
+    
+            await platform.savePanelContents();
+    
+            expect(PlaygroundUtility.warningNotification).toHaveBeenCalledWith(
+                "The changes made to the panels are outdated - please save your work to a new branch."
+            );
+            expect(platform.saveFiles).not.toHaveBeenCalled();
+        });
+    
+        it("does not proceed if user cancels the commit prompt", async () => {
+            platform.changesHaveBeenMade.and.returnValue(true);
+            platform.getCommitMessage.and.returnValue(null);
+    
+            await platform.savePanelContents();
+    
+            expect(platform.saveFiles).not.toHaveBeenCalled();
+        });
+    
+        it("saves files if changes are made, environment is not outdated, and user provides a message", async () => {
+            platform.changesHaveBeenMade.and.returnValue(true);
+    
+            await platform.savePanelContents();
+    
+            expect(platform.saveFiles).toHaveBeenCalledWith("Commit message");
+            expect(PlaygroundUtility.successNotification).toHaveBeenCalledWith(
+                "The activity panel contents have been saved."
+            );
+        });
+    
+        it("shows an error if saving fails", async () => {
+            const error = new Error("Save failed");
+            platform.saveFiles.and.returnValue(Promise.reject(error));
+    
+            platform.changesHaveBeenMade.and.returnValue(true);
+    
+            await new Promise(resolve => {
+                platform.savePanelContents().then(resolve).catch(resolve);
+            });
+        
+    
+            expect(platform.errorHandler.notify).toHaveBeenCalledWith(
+                "An error occurred while trying to save the panel contents."
+            );
+        });
+    });
+
+    describe("saveFiles()", () => {
+        let panels, saveable1, saveable2;
+    
+        beforeEach(() => {
+            panels = createVariousPanels();
+            saveable1 = panels.saveableDirty;
+            saveable2 = panels.programDirty;
+    
+            // Force getFilePath to return matching strings for the mocked response
+            saveable1.getFilePath = () => "file1";
+            saveable2.getFilePath = () => "file2";
+    
+            // Mock export data
+            spyOn(saveable1, "exportSaveData").and.returnValue({ path: "file1", content: "..." });
+            spyOn(saveable2, "exportSaveData").and.returnValue({ path: "file2", content: "..." });
+    
+            // Mock value getters for lastSavedContent update
+            spyOn(saveable1, "getValue").and.returnValue("changed");
+            spyOn(saveable2, "getValue").and.returnValue("changed");
+    
+            // Spy on valueSha and content setters
+            spyOn(saveable1, "setValueSha");
+            spyOn(saveable2, "setValueSha");
+            spyOn(saveable1, "setLastSavedContent");
+            spyOn(saveable2, "setLastSavedContent");
+    
+            // Setup platform
+            platform.activityURL = "https://activity.example.com";
+            platform.fileHandler = {
+                storeFiles: jasmine.createSpy("storeFiles")
+            };
+            platform.getPanelsWithChanges = () => [saveable1, saveable2];
+        });
+    
+        it("saves files and updates SHAs and content for each panel", async () => {
+            platform.fileHandler.storeFiles.and.resolveTo(JSON.stringify({
+                files: [
+                    { path: "file1", sha: "newSha1" },
+                    { path: "file2", sha: "newSha2" }
+                ]
+            }));
+    
+            await platform.saveFiles("Update commit");
+    
+            expect(platform.fileHandler.storeFiles).toHaveBeenCalledWith(
+                platform.activityURL,
+                [
+                    { path: "file1", content: "..." },
+                    { path: "file2", content: "..." }
+                ],
+                "Update commit",
+                undefined
+            );
+    
+            expect(saveable1.setValueSha).toHaveBeenCalledWith("newSha1");
+            expect(saveable2.setValueSha).toHaveBeenCalledWith("newSha2");
+    
+            expect(saveable1.setLastSavedContent).toHaveBeenCalledWith("changed");
+            expect(saveable2.setLastSavedContent).toHaveBeenCalledWith("changed");
+    
+            expect(saveable1.getEditor().session.getUndoManager().markClean).toHaveBeenCalled();
+            expect(saveable2.getEditor().session.getUndoManager().markClean).toHaveBeenCalled();
+        });
+    
+        it("skips panel updates if overrideBranch is passed", async () => {
+            platform.fileHandler.storeFiles.and.resolveTo("{}");
+    
+            await platform.saveFiles("Commit message", "feature/new-branch");
+    
+            expect(saveable1.setValueSha).not.toHaveBeenCalled();
+            expect(saveable2.setValueSha).not.toHaveBeenCalled();
+    
+            expect(saveable1.setLastSavedContent).not.toHaveBeenCalled();
+            expect(saveable2.setLastSavedContent).not.toHaveBeenCalled();
+    
+            expect(saveable1.getEditor().session.getUndoManager().markClean).not.toHaveBeenCalled();
+            expect(saveable2.getEditor().session.getUndoManager().markClean).not.toHaveBeenCalled();
+        });
+    
+        it("rejects the promise if storeFiles fails", async () => {
+            const error = new Error("store failed");
+            platform.fileHandler.storeFiles.and.rejectWith(error);
+    
+            await expectAsync(platform.saveFiles("Failing commit")).toBeRejectedWith(error);
+        });
+    });
+    
+    
 })
