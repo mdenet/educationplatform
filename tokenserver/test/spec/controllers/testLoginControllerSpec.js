@@ -4,7 +4,7 @@ import { InvalidRequestException } from "../../../src/exceptions/InvalidRequestE
 import { createMockAuthCookie } from "../../helpers/createMockAuthCookie.js";
 import { getMockEncryptionKey } from "../../helpers/getMockEncryptionKey.js";
 
-describe("LoginController (unit)", () => {
+describe("LoginController", () => {
     let controller;
     let mockOctokitApp;
     let req, res, next;
