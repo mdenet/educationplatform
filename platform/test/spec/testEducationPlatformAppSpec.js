@@ -9,6 +9,7 @@ import { ErrorHandler } from "../../src/ErrorHandler.js";
 import { PlaygroundUtility } from "../../src/PlaygroundUtility.js";
 import { createVariousPanels } from "../resources/TestPanels.js";
 import { DEFAULT_COMMIT_MESSAGE } from "../../src/EducationPlatformApp.js";
+import { utility } from "../../src/Utility.js";
 
 describe("EducationPlatformApp", () => {
     let platform;
@@ -429,5 +430,58 @@ describe("EducationPlatformApp", () => {
             expect(console.error).toHaveBeenCalledWith("Error fetching branches:", error);
         });
     });
+
+    describe("discardPanelChanges()", () => {
+        let panels;
     
+        beforeEach(() => {
+            panels = createVariousPanels();
+    
+            // Spy on resetChanges for dirty panels
+            spyOn(panels.saveableDirty, "resetChanges");
+            spyOn(panels.programDirty, "resetChanges");
+    
+            // Also test that clean ones are called (they usually no-op)
+            spyOn(panels.saveableClean, "resetChanges");
+            spyOn(panels.programClean, "resetChanges");
+    
+            platform.saveablePanels = [
+                panels.saveableClean,
+                panels.saveableDirty,
+                panels.programClean,
+                panels.programDirty
+            ];
+        });
+    
+        it("calls resetChanges on all saveable panels", () => {
+            platform.discardPanelChanges();
+    
+            expect(panels.saveableClean.resetChanges).toHaveBeenCalled();
+            expect(panels.saveableDirty.resetChanges).toHaveBeenCalled();
+            expect(panels.programClean.resetChanges).toHaveBeenCalled();
+            expect(panels.programDirty.resetChanges).toHaveBeenCalled();
+        });
+    
+        it("does nothing if saveablePanels is empty", () => {
+            platform.saveablePanels = [];
+            expect(() => platform.discardPanelChanges()).not.toThrow();
+        });
+    });
+
+    describe("switchBranch()", () => {
+        beforeEach(() => {
+            platform.currentBranch = "main";
+    
+            spyOn(utility, "getWindowLocationHref").and.returnValue("https://example.com/activity/main/");
+            spyOn(utility, "setWindowLocationHref");
+        });
+    
+        it("updates the window location to the new branch in the URL", () => {
+            platform.switchBranch("dev");
+    
+            expect(utility.getWindowLocationHref).toHaveBeenCalled();
+            expect(utility.setWindowLocationHref).toHaveBeenCalledWith("https://example.com/activity/dev/");
+        });
+    
+    });
 })
