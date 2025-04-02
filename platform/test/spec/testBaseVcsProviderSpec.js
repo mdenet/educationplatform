@@ -12,7 +12,6 @@ class MockProvider extends BaseVcsProvider {
     storeFilesRequest() { return "store-files"; }
     createBranchRequest() { return "create-branch"; }
     mergeBranchesRequest() { return "merge-branches"; }
-    forkRepositoryRequest() { return "fork-repo"; }
 }
 
 describe("BaseVcsProvider", () => {
@@ -71,7 +70,6 @@ describe("BaseVcsProvider", () => {
             expect(provider.storeFilesRequest()).toBe("store-files");
             expect(provider.createBranchRequest()).toBe("create-branch");
             expect(provider.mergeBranchesRequest()).toBe("merge-branches");
-            expect(provider.forkRepositoryRequest()).toBe("fork-repo");
         });
     });
 
@@ -85,7 +83,6 @@ describe("BaseVcsProvider", () => {
             () => base.storeFilesRequest("url", [], "msg", false),
             () => base.createBranchRequest("url", "newBranch"),
             () => base.mergeBranchesRequest("url", "branch", "merge"),
-            () => base.forkRepositoryRequest("url", true)
         ];
 
         for (const call of abstractCalls) {

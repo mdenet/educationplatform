@@ -75,7 +75,4 @@ export class BaseVcsProvider {
     mergeBranchesRequest(activityUrl, branchToMergeFrom, mergeType) {
         throw new Error("mergeBranchesRequest() must be overridden in a subclass.");
     }
-    forkRepositoryRequest(activityUrl, mainOnly) {
-        throw new Error("forkRepositoryRequest() must be overridden in a subclass.");
-    }
 }

@@ -107,17 +107,4 @@ export class GitHubProvider extends BaseVcsProvider {
 
         return { url: requestUrl, payload: payload };
     }
-
-    forkRepositoryRequest(activityUrl, mainOnly) {
-        const requestUrl = super.constructRequestUrl("fork").href;
-
-        const parts = super.parseFileUrl(activityUrl);
-        const payload = {
-            owner: parts.owner,
-            repo: parts.repo,
-            mainOnly: mainOnly
-        };
-
-        return { url: requestUrl, payload: payload };
-    }
 }
