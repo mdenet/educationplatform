@@ -121,7 +121,9 @@ describe("LoginController", () => {
             req.cookies = createMockAuthCookie("valid-token");
 
             req.octokit = {
-                request: jasmine.createSpy().and.returnValue(Promise.resolve({ data: {} }))
+                request: jasmine.createSpy().and.returnValue(Promise.resolve({ 
+                    data: {} 
+                }))
             };
 
             await controller.validateAuthCookie(req, res, next);
