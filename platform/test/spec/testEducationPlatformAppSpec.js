@@ -8,8 +8,14 @@ import { Panel } from "../../src/Panel.js";
 import { ErrorHandler } from "../../src/ErrorHandler.js";
 import "jasmine-ajax";
 import { PlaygroundUtility } from "../../src/PlaygroundUtility.js";
+import { createVariousPanels } from "../resources/TestPanels.js";
 
 describe("EducationPlatformApp", () => {
+    let platform;
+
+    beforeEach(() => {
+        platform = new EducationPlatformApp();
+    });
 
     describe("runAction()", () => {
 
@@ -21,15 +27,11 @@ describe("EducationPlatformApp", () => {
         const PARAM_NAME = "param1";
         const PANEL_LANGUAGE = "lang";
 
-        let platform;
         let activityManagerSpy;
         let invokeReturnedPromise;
         let resolvedActivity;
 
         beforeEach(()=>{
-
-            // Setup
-            platform = new EducationPlatformApp();
 
             //    platform - panels
             const panel1 = new Panel(PANEL_ID);
@@ -142,12 +144,8 @@ describe("EducationPlatformApp", () => {
 
 
     describe("handleResponseActionFunction()", () => {
-        let platform;
 
         beforeEach(()=>{
-            // Setup
-            platform = new EducationPlatformApp();
-
             //    platform - notifications
             spyOn(ErrorHandler.prototype, "notify");
         })
@@ -169,4 +167,65 @@ describe("EducationPlatformApp", () => {
             })
         })
     })
+
+    describe("getSaveablePanels()", () => {
+        let panels;
+    
+        beforeEach(() => {
+            panels = createVariousPanels();
+        });
+    
+        it("returns only SaveablePanels from a flat list of panels", () => {
+            const flatPanels = [
+                panels.blank,
+                panels.console,
+                panels.output,
+                panels.test,
+                panels.xtext,
+                panels.saveableClean,
+                panels.programClean
+            ];
+    
+            const result = platform.getSaveablePanels(flatPanels);
+    
+            expect(result).toContain(panels.saveableClean);
+            expect(result).toContain(panels.programClean);
+            expect(result).toContain(panels.xtext);
+            expect(result).not.toContain(panels.blank);
+            expect(result).not.toContain(panels.console);
+            expect(result).not.toContain(panels.output);
+            expect(result).not.toContain(panels.test);
+        });
+    
+        it("collects SaveablePanels from a CompositePanel with flat children", () => {
+            const result = platform.getSaveablePanels([panels.compositeFlat]);
+            expect(result).toEqual(jasmine.arrayContaining([
+                panels.saveableClean,
+                panels.programClean
+            ]));
+        });
+    
+        it("collects SaveablePanels from a CompositePanel with nested composite children", () => {
+            const result = platform.getSaveablePanels([panels.compositeNested]);
+            expect(result).toEqual(jasmine.arrayContaining([
+                panels.saveableDirty,
+                panels.programDirty
+            ]));
+        });
+    
+        it("handles a mix of standalone and composite panels", () => {
+            const result = platform.getSaveablePanels([
+                panels.saveableClean,
+                panels.compositeNested,
+                panels.blank
+            ]);
+    
+            expect(result).toEqual(jasmine.arrayContaining([
+                panels.saveableClean,
+                panels.saveableDirty,
+                panels.programDirty
+            ]));
+            expect(result).not.toContain(panels.blank);
+        });
+    });
 })
