@@ -59,6 +59,9 @@ class SaveablePanel extends Panel {
         this.fileUrl = url;
     }
 
+    /**
+     * Currently only supports GitHub URLs.
+     */
     getFilePath() {
         return this.getFileUrl().split("/").slice(6).join("/");
     }
@@ -89,7 +92,7 @@ class SaveablePanel extends Panel {
         this.setFileUrl(fileUrl);
         this.setLastSavedContent(fileContent);
         this.setValueSha(fileSha);
-        this.setValue(fileContent);
+        super.setValue(fileContent);
     }
 
     /**
@@ -97,7 +100,7 @@ class SaveablePanel extends Panel {
      * @returns {boolean} true if the content has changed since the last save
      */
     canSave() {
-        return this.getValue() !== this.getLastSavedContent();
+        return super.getValue() !== this.getLastSavedContent();
     }
 
     /**
@@ -115,7 +118,7 @@ class SaveablePanel extends Panel {
      * Bring the panel state back to the last saved state.
      */
     resetChanges() {
-        this.setValue(this.getLastSavedContent());
+        super.setValue(this.getLastSavedContent());
     }
 }
 

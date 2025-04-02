@@ -148,6 +148,7 @@ export function getActivityURL(location = window.location) {
 }
 
 /**
+ * Currently only supports GitHub URLs.
  * Get the current branch from the URL 
  * @returns {String} the branch name, or null if not found
  */
