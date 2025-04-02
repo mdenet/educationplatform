@@ -228,4 +228,48 @@ describe("EducationPlatformApp", () => {
             expect(result).not.toContain(panels.blank);
         });
     });
+
+    describe("getPanelsWithChanges()", () => {
+        let panels;
+    
+        beforeEach(() => {
+            panels = createVariousPanels();
+            platform.saveablePanels = [
+                panels.saveableClean,
+                panels.saveableDirty,
+                panels.programClean,
+                panels.programDirty
+            ];
+        });
+    
+        it("returns only panels with unsaved changes", () => {
+            const result = platform.getPanelsWithChanges();
+    
+            expect(result).toContain(panels.saveableDirty);
+            expect(result).toContain(panels.programDirty);
+            expect(result).not.toContain(panels.saveableClean);
+            expect(result).not.toContain(panels.programClean);
+        });
+    
+        it("returns an empty array when all panels are clean", () => {
+            platform.saveablePanels = [
+                panels.saveableClean,
+                panels.programClean
+            ];
+            const result = platform.getPanelsWithChanges();
+            expect(result).toEqual([]);
+        });
+    
+        it("returns all panels when all are dirty", () => {
+            platform.saveablePanels = [
+                panels.saveableDirty,
+                panels.programDirty
+            ];
+            const result = platform.getPanelsWithChanges();
+            expect(result).toEqual(jasmine.arrayContaining([
+                panels.saveableDirty,
+                panels.programDirty
+            ]));
+        });
+    });
 })
