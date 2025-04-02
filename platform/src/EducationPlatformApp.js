@@ -1,6 +1,6 @@
-/*global $ -- jquery is externally imported*/
-/*global FEEDBACK_SURVEY_URL -- is set by environment variable*/
-/*global Metro -- Metro is externally imported*/
+// global $ -- jquery is externally imported
+// global FEEDBACK_SURVEY_URL -- is set by environment variable
+// global Metro
 
 import * as ace from 'ace-builds/src-min-noconflict/ace';
 import 'ace-builds/src-min-noconflict/theme-eclipse';
@@ -33,7 +33,7 @@ import { Button } from './Button.js';
 import { Preloader } from './Preloader.js';
 import { Layout, PANEL_HOLDER_ID } from './Layout.js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
-import { jsonRequest, urlParamPrivateRepo, utility, getRequest, setAuthenticated } from './Utility.js';
+import { jsonRequest, utility, getRequest, setAuthenticated } from './Utility.js';
 import { ErrorHandler } from './ErrorHandler.js';
 
 

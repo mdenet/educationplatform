@@ -54,25 +54,25 @@ export class BaseVcsProvider {
     }
 
     // These methods should be overridden by concrete provider classes.
-    getFileRequestUrl(fileUrl) {
+    getFileRequestUrl() {
         throw new Error("getFileRequest() must be overridden in a subclass.");
     }
-    getBranchesRequestUrl(activityUrl) {
+    getBranchesRequestUrl() {
         throw new Error("getBranchesRequest() must be overridden in a subclass.");
     }
-    getCompareBranchesRequestUrl(activityUrl, branchToCompare) {
+    getCompareBranchesRequestUrl() {
         throw new Error("getCompareBranchesRequestUrl() must be overridden in a subclass.");
     }
-    createPullRequestLink(activityUrl, baseBranch, headBranch) {
+    createPullRequestLink() {
         throw new Error("createPullRequestLink() must be overridden in a subclass.");
     }
-    storeFilesRequest(activityUrl, files, message, overrideBranch) {
+    storeFilesRequest() {
         throw new Error("storeFilesRequest() must be overridden in a subclass.");
     }
-    createBranchRequest(activityUrl, newBranch) {
+    createBranchRequest() {
         throw new Error("createBranchRequest() must be overridden in a subclass.");
     }
-    mergeBranchesRequest(activityUrl, branchToMergeFrom, mergeType) {
+    mergeBranchesRequest() {
         throw new Error("mergeBranchesRequest() must be overridden in a subclass.");
     }
 }
