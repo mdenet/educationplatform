@@ -21,7 +21,7 @@ import {
     bytesToBase64
 } from "../../src/Utility";
 
-import { JSON_ACTIVITY_CONFIG, YML_ACTIVITY_CONFIG, INVALID_FILE } from "../resources/exampleActivityConfigs";
+import { JSON_ACTIVITY_CONFIG, YML_ACTIVITY_CONFIG, INVALID_FILE } from "../resources/TestActivityFiles";
 
 function mockXHR(responseBody = {}, status = 200) {
     const xhrMock = {
