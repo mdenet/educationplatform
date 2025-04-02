@@ -1,8 +1,7 @@
 import {InvalidRequestException} from "../exceptions/InvalidRequestException.js";
 import {getAuthCookieName} from "../config/cookieName.js";
-import {getEncryptedCookie, decryptCookie} from "../lib-curity/cookieEncrypter.js";
+import {getEncryptedCookie} from "../lib-curity/cookieEncrypter.ts";
 import { config } from "../config/config.js";
-import {Octokit} from "octokit";
 
 const MAX_CODE_LENGTH = 200;  
 const MIN_CODE_LENGTH = 10;  
@@ -18,13 +17,16 @@ class LoginController {
     getAuthUrl = async (req, res, next) => {
         try {
             //TODO validate request url
+            
+            const { url } = req.body;
 
             let userData = await this.octokitApp.getWebFlowAuthorizationUrl({
-                redirectUrl: req.body.url,
+                redirectUrl: url,
             });
 
             res.status(200).json(userData);
-        } catch (err) {
+        } 
+        catch (err) {
             next(err);
         }
 
@@ -41,18 +43,20 @@ class LoginController {
 
             let reply = await this.octokitApp.createToken( tokenReq );
 
-
             // Create cookie
-            cookies.push( getEncryptedCookie(config.cookieOptions, reply.authentication.token, getAuthCookieName, config.encKey ) );
+            cookies.push(getEncryptedCookie(
+                config.cookieOptions, 
+                reply.authentication.token, 
+                getAuthCookieName, 
+                config.encKey
+            ));
 
             res.set('Set-Cookie', cookies);
 
-            let responseBody = { isLoggedIn: true }
-            
+            res.status(200).json({isLoggedIn: true});
 
-            res.status(200).json(responseBody);
-
-        } catch (err) {
+        } 
+        catch (err) {
             next(err);
         }
     } 
@@ -68,8 +72,7 @@ class LoginController {
                 return res.status(200).json(badResponse);
             }
 
-            let token = decryptCookie(config.encKey, authCookie);
-            const octokit = new Octokit({ auth: token });
+            const octokit = req.octokit; // Use the Octokit instance attached to the request
 
             // Validate the token by making a simple API call to GitHub
             const { data } = await octokit.request('GET /user');
