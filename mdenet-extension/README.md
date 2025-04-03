@@ -1,65 +1,93 @@
-# mdenet-extension README
+# MDENet VS Code Extension – User Guide
 
-This is the README for your extension "mdenet-extension". After writing up a brief description, we recommend including the following sections.
-
-## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+This guide explains how to set up and run the **MDENet VS Code Extension**, both on desktop and in the browser via [vscode.dev](https://vscode.dev).
 
 ---
 
-## Working with Markdown
+## Prerequisites
 
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
+Ensure the following are installed on your machine:
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+- [Node.js](https://nodejs.org/)
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
 
-## For more information
+---
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+## Installing Dependencies
 
-**Enjoy!**
+1. Open a terminal.
+2. Navigate to the `educationplatform` directory.
+3. Run:
+
+   ```bash
+   npm install
+   ```
+
+This installs all the required Node.js dependencies.
+
+---
+
+## Starting Tool Services
+
+Make sure a `.env` file exists in the [dockerized-version](https://github.com/mdenet/educationplatform-docker) with the following contents for local testing:
+
+```env
+TS_PORT=10000
+ES_DEPLOY_ADDRESS=http://127.0.0.1:8080/tools/xtext/editors
+WEBSOCKETS_URI=ws://127.0.0.1:8080/tools/xtext/services/xtext/ws
+TRUSTED_ORIGINS=vscode-file://vscode-app
+ES_ADDRESS=http://127.0.0.1:8080/tools/xtext/project
+```
+
+Then, start the tool services by running:
+
+```bash
+docker compose up --build
+```
+
+---
+
+## Running on VS Code Desktop
+
+1. Open the `educationplatform` directory in VS Code as the root workspace.
+2. Press `F5` to launch the extension in a new Extension Development Host window.
+3. In the new window, open a folder containing an activity.
+4. Click on the MDENet icon in the Activity Bar on the left.
+5. A list of all `activity.json` files in the root directory will appear.
+6. Click on one of the activities to start it.
+
+---
+
+## Running on vscode.dev
+
+The MDENet Extension also supports running in [vscode.dev](https://vscode.dev).
+
+### SSL Setup with mkcert
+
+First, install [`mkcert`](https://github.com/FiloSottile/mkcert) and generate SSL certificates:
+
+```bash
+mkdir -p $HOME/certs
+cd $HOME/certs
+mkcert -install
+mkcert localhost
+```
+
+This generates `localhost.pem` and `localhost-key.pem`.
+
+### Start HTTPS Server
+
+In the `mdenet-extension` directory, start a local HTTPS server:
+
+```bash
+npx serve --cors -l 5000 --ssl-cert $HOME/certs/localhost.pem --ssl-key $HOME/certs/localhost-key.pem
+```
+
+### Install Extension on vscode.dev
+
+1. Open [vscode.dev](https://vscode.dev).
+2. Run `Developer: Install Extension From Location...` from the Command Palette.
+3. Paste the URL shown by the local server (usually `https://localhost:5000`).
+
+The extension will now be available in vscode.dev and usable as long as the server is running.

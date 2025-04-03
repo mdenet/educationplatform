@@ -49,7 +49,6 @@ export function activate(context, injectedApp = null) {
 			activityProvider.refresh();
 		}),
 		vscode.commands.registerCommand('panels.displayPanel', async (panel) => {
-			console.log('Displaying panel:', panel);
 			panel.displayPanel();
 		}),
 		vscode.commands.registerCommand('panels.run', async () => {
@@ -82,7 +81,6 @@ export function activate(context, injectedApp = null) {
 		}),
 		vscode.commands.registerCommand('tasks.select', async (task) => {
 			if(app?.activity?.id == task){
-				console.log("Task already selected");
 				return;
 			}
 			if(app){
