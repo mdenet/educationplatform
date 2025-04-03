@@ -896,5 +896,155 @@ describe("EducationPlatformApp", () => {
             expect(container.style.height).toBe("");
         });
     });
+
+    describe("showBranches()", () => {
+        let event;
+    
+        beforeEach(() => {
+            event = { preventDefault: jasmine.createSpy("preventDefault") };
+    
+            spyOn(platform, "modalIsVisible").and.returnValue(false);
+            spyOn(platform, "closeAllModalsExcept");
+            spyOn(platform, "toggleSwitchBranchVisibility").and.resolveTo(true);
+            spyOn(platform, "setCurrentBranchText");
+            spyOn(platform, "setupSearchInput");
+            spyOn(platform, "renderSwitchBranchList");
+            spyOn(platform, "showCreateBranchPrompt");
+            spyOn(platform, "showMergeBranchPrompt");
+            platform.errorHandler = { notify: jasmine.createSpy("notify") };
+    
+            // DOM setup
+            document.body.innerHTML = `
+                <div id="switch-branch-close-button"></div>
+                <div id="new-branch-button"></div>
+                <div id="merge-branch-button"></div>
+            `;
+        });
+    
+        it("hides modal if already visible", async () => {
+            platform.modalIsVisible.and.returnValue(true);
+    
+            await platform.showBranches(event);
+            expect(platform.toggleSwitchBranchVisibility).toHaveBeenCalledWith(false);
+        });
+
+        it("displays the switch branch modal", async () => {
+            await platform.showBranches(event);
+    
+            expect(platform.closeAllModalsExcept).toHaveBeenCalledWith("switch-branch-container");
+            expect(platform.toggleSwitchBranchVisibility).toHaveBeenCalledWith(true);
+        });
+    
+        it("binds the current branch text elements to the current branch", async () => {
+            await platform.showBranches(event);
+            expect(platform.setCurrentBranchText).toHaveBeenCalled();
+        });
+
+        it("setups up the search input and renders the list of branches", async () => {
+            await platform.showBranches(event);
+    
+            expect(platform.setupSearchInput).toHaveBeenCalledWith("switch-branch-search", "switch-branch-list");
+            expect(platform.renderSwitchBranchList).toHaveBeenCalled();
+        });
+
+        it("hides the modal when the close button is clicked", async () => {
+            await platform.showBranches(event);
+    
+            const closeButton = document.getElementById("switch-branch-close-button");
+            closeButton.click();
+    
+            expect(platform.toggleSwitchBranchVisibility).toHaveBeenCalledWith(false);
+        });
+
+        it("assigns the new branch and merge branch buttons", async () => {
+            await platform.showBranches(event);
+    
+            const newBranchButton = document.getElementById("new-branch-button");
+            const mergeBranchButton = document.getElementById("merge-branch-button");
+    
+            expect(newBranchButton).toBeTruthy();
+            expect(mergeBranchButton).toBeTruthy();
+
+            newBranchButton.click();
+            expect(platform.showCreateBranchPrompt).toHaveBeenCalled();
+
+            mergeBranchButton.click();
+            expect(platform.showMergeBranchPrompt).toHaveBeenCalled();
+        });
+    
+        it("logs and notifies on error", async () => {
+            const error = new Error("Test error");
+            platform.toggleSwitchBranchVisibility.and.rejectWith(error);
+            spyOn(console, "error");
+    
+            await platform.showBranches(event);
+    
+            expect(console.error).toHaveBeenCalledWith(error);
+            expect(platform.errorHandler.notify).toHaveBeenCalledWith("An error occurred while displaying the branches.");
+        });
+    });
+    
+    describe("renderBranchList()", () => {
+        let container;
+    
+        beforeEach(() => {
+            // Set up the DOM with a dummy <ul>
+            container = document.createElement("ul");
+            container.id = "branch-list";
+            document.body.appendChild(container);
+    
+            // Provide mock branches
+            platform.branches = ["main", "dev", "feature-1"];
+        });
+    
+        afterEach(() => {
+            document.body.removeChild(container);
+        });
+    
+        it("displays added items in the list", () => {
+            const createListItem = (branch) => {
+                const li = document.createElement("li");
+                li.textContent = branch;
+                return li;
+            };
+    
+            platform.renderBranchList("branch-list", createListItem);
+    
+            const listItems = container.querySelectorAll("li");
+            expect(listItems.length).toBe(3);
+            expect(listItems[0].textContent).toBe("main");
+            expect(listItems[1].textContent).toBe("dev");
+            expect(listItems[2].textContent).toBe("feature-1");
+        });
+    
+        it("does not append null list items", () => {
+            const createListItem = (branch) => {
+                return branch === "dev" ? null : document.createElement("li");
+            };
+    
+            platform.renderBranchList("branch-list", createListItem);
+    
+            const listItems = container.querySelectorAll("li");
+            expect(listItems.length).toBe(2); // dev is skipped
+        });
+    
+        it("clears any previous list items before rendering", () => {
+            // Add an old item
+            const oldItem = document.createElement("li");
+            oldItem.textContent = "itemToBeCleared";
+            container.appendChild(oldItem);
+    
+            const createListItem = (branch) => {
+                const li = document.createElement("li");
+                li.textContent = branch;
+                return li;
+            };
+    
+            platform.renderBranchList("branch-list", createListItem);
+    
+            const items = container.querySelectorAll("li");
+            expect([...items].map(el => el.textContent)).not.toContain("itemToBeCleared");
+        });
+    });
     
 })
