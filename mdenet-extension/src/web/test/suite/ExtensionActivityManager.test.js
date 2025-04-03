@@ -183,4 +183,11 @@ suite('ExtensionActivityManager Test Suite', () => {
         ]);
     });
 
+    test('fetchFile() should return local path using fileHandler.getPath when not a URL', () => {
+        mockFileHandler.getPath = (filePath) => `/mock/root/${filePath}`;
+        const result = manager.fetchFile('local/path/file.json');
+        assert.strictEqual(result, '/mock/root/local/path/file.json');
+    });
+    
+
 });

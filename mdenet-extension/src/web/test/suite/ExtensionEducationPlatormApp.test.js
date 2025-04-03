@@ -1,10 +1,7 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { ExtensionEducationPlatformApp } from '../../ExtensionEducationPlatformApp';
-import { ExtensionProgramPanel } from '../../ExtensionProgramPanel';
-import { ExtensionConsolePanel } from '../../ExtensionConsolePanel';
-import { ExtensionCompositePanel } from '../../ExtensionCompositePanel';
-import { ExtensionOutputPanel } from '../../ExtensionOutputPanel';
+
 
 suite('ExtensionEducationPlatformApp Test Suite', () => {
     let mockContext;
@@ -28,17 +25,10 @@ suite('ExtensionEducationPlatformApp Test Suite', () => {
                 keys: () => []
             }
         };
-        app = new ExtensionEducationPlatformApp(mockContext, mockProvider, 'testLabel');
-
-        app.ExtensionProgramPanel = ExtensionProgramPanel;
-        app.ExtensionConsolePanel = ExtensionConsolePanel;
-        app.ExtensionCompositePanel = ExtensionCompositePanel;
-        app.ExtensionOutputPanel = ExtensionOutputPanel;
+        app = new ExtensionEducationPlatformApp(mockContext, mockProvider, 'activity.json');
     });
 
     test('initializeActivity() should create ToolManager and ExtensionActivityManager and call super.initializeActivity', async () => {
-        const app = new ExtensionEducationPlatformApp(mockContext, mockProvider, 'activityLabel');
-    
         app.errorHandler = { notify: () => {} };
         app.fileHandler = {};
         app.displayErrors = () => {};
@@ -63,7 +53,6 @@ suite('ExtensionEducationPlatformApp Test Suite', () => {
     });
     
     test('should create instance with correct properties', () => {
-        const app = new ExtensionEducationPlatformApp(mockContext, mockProvider, 'activity.json');
         assert.strictEqual(app.wsUri, "ws://localhost:8080/tools/xtext/services/xtext/ws");
         assert.strictEqual(app.activityLabel, 'activity.json');
     });
@@ -72,21 +61,18 @@ suite('ExtensionEducationPlatformApp Test Suite', () => {
         let shownMessages = [];
         vscode.window.showErrorMessage = (msg) => { shownMessages.push(msg); };
 
-        const app = new ExtensionEducationPlatformApp(mockContext, mockProvider, 'activity.json');
         app.displayErrors([{ message: 'Error1' }, { message: 'Error2' }]);
 
         assert.deepStrictEqual(shownMessages, ['Error1', 'Error2']);
     });
 
     test('createButtons() should return ExtensionButton instances', () => {
-        const app = new ExtensionEducationPlatformApp(mockContext, mockProvider, 'activity.json');
         const buttons = app.createButtons([{ id: 'b1', icon: '', hint: '', url: 'http://example.com' }], 'panelId');
         assert.strictEqual(buttons.length, 1);
         assert.strictEqual(buttons[0].id, 'b1');
     });
 
     test('getVisiblePanels() should throw if panel not found', () => {
-        const app = new ExtensionEducationPlatformApp(mockContext, mockProvider, 'activity.json');
         app.activity = { layout: { area: [['panel1']] } };
         app.panels = [];
 
@@ -94,7 +80,6 @@ suite('ExtensionEducationPlatformApp Test Suite', () => {
     });
 
     test('getVisiblePanels() should return visible panels', () => {
-        const app = new ExtensionEducationPlatformApp(mockContext, mockProvider, 'activity.json');
         app.activity = { layout: { area: [['panel1']] } };
         app.panels = [{ getId: () => 'panel1' }];
 
@@ -111,7 +96,6 @@ suite('ExtensionEducationPlatformApp Test Suite', () => {
             updatedValue = value;
         };
 
-        const app = new ExtensionEducationPlatformApp(mockContext, mockProvider, 'activity.json');
         app.updateSessionInfo('editor1', 'https://ep.mde-network.org/some/path');
 
         assert.strictEqual(updatedKey, 'editor1');
@@ -122,7 +106,6 @@ suite('ExtensionEducationPlatformApp Test Suite', () => {
         let msgShown = '';
         vscode.window.showInformationMessage = (msg) => { msgShown = msg; };
 
-        const app = new ExtensionEducationPlatformApp(mockContext, mockProvider, 'activity.json');
         app.displayLongMessage('Test message');
 
         assert.strictEqual(msgShown, 'Test message');
@@ -224,6 +207,18 @@ suite('ExtensionEducationPlatformApp Test Suite', () => {
     
         assert.strictEqual(app.activity, 'activity');
         assert.deepStrictEqual(app.panels, ['panel1']);
+    });
+
+    test('displayGeneratedText() should set trimmed content in output panel', () => {
+        let contentSet = '';
+        const outputPanel = {
+            setContent: (content) => {
+                contentSet = content;
+            }
+        };
+    
+        app.displayGeneratedText(outputPanel, '  Some output text  \n');
+        assert.strictEqual(contentSet, 'Some output text');
     });
 
 });

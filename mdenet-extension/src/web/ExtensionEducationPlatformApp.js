@@ -73,7 +73,6 @@ class ExtensionEducationPlatformApp extends GeneralEducationPlatformApp {
      */
     async createPanel(panel, panelDefinition, newPanelId){
         let newPanel = null;
-        console.log("Panel Definition: ", panelDefinition);
         switch(panelDefinition.panelclass){
 			case "ProgramPanel":{
 				newPanel = new ExtensionProgramPanel(newPanelId,panel.file);

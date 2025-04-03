@@ -6,7 +6,6 @@ suite('ExtensionHtmlPanel Test Suite', () => {
   let createdPanel;
 
   setup(() => {
-    // Mock vscode.window.createWebviewPanel
     vscode.window.createWebviewPanel = (id, title, column, options) => {
       createdPanel = {
         id,
