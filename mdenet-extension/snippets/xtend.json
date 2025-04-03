@@ -1,6 +1,6 @@
 {
     "Guillemets Expansion": {
-        "prefix": "gggg",
+        "prefix": "gui",
         "body": "«$0»",
         "description": "Insert guillemets"
     }

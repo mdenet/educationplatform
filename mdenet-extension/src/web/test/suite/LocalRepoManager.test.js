@@ -93,11 +93,13 @@ suite('LocalRepoManager Tests', () => {
         const result = await manager.fetchActivityFile('bad.activity.json');
         assert.deepEqual(result, undefined);
     });
-});
 
-//
-// ---- Spy Helpers ----
-//
+    test('should return correct path using getPath()', () => {
+        const manager = new LocalRepoManager();
+        const result = manager.getPath('some/file.txt');
+        assert.equal(result, '/mock/path/some/file.txt');
+    });
+});
 
 function patchVSCode(vscodeModule, mock) {
     vscodeModule.workspace = mock.workspace;

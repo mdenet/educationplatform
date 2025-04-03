@@ -2,7 +2,8 @@
   "name": "MDENet-Education-Platform",
   "workspaces": [
     "platform",
-    "tokenserver"
+    "tokenserver",
+    "mdenet-extension"
   ],
   "overrides": {
     "socket.io-parser": ">=4.2.3",
