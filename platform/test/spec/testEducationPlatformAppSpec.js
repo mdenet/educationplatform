@@ -897,6 +897,68 @@ describe("EducationPlatformApp", () => {
         });
     });
 
+    describe("setupSearchInput()", () => {
+        let searchInput, list, li1, li2, li3;
+    
+        beforeEach(() => {
+            // Create DOM elements
+            searchInput = document.createElement("input");
+            searchInput.id = "search-box";
+    
+            list = document.createElement("ul");
+            list.id = "branch-list";
+    
+            li1 = document.createElement("li");
+            li1.textContent = "main";
+            li2 = document.createElement("li");
+            li2.textContent = "dev";
+            li3 = document.createElement("li");
+            li3.textContent = "feature";
+    
+            list.appendChild(li1);
+            list.appendChild(li2);
+            list.appendChild(li3);
+    
+            document.body.appendChild(searchInput);
+            document.body.appendChild(list);
+    
+            platform.setupSearchInput("search-box", "branch-list");
+        });
+    
+        afterEach(() => {
+            document.body.removeChild(searchInput);
+            document.body.removeChild(list);
+        });
+    
+        it("filters the list based on input text", () => {
+            searchInput.value = "dev";
+            searchInput.dispatchEvent(new Event("input"));
+    
+            expect(li1.style.display).toBe("none");   // main
+            expect(li2.style.display).toBe("");       // dev
+            expect(li3.style.display).toBe("none");   // feature
+        });
+    
+        it("restores all items when input is cleared", () => {
+            searchInput.value = "";
+            searchInput.dispatchEvent(new Event("input"));
+    
+            expect(li1.style.display).toBe("");
+            expect(li2.style.display).toBe("");
+            expect(li3.style.display).toBe("");
+        });
+    
+        it("filters case-insensitively", () => {
+            searchInput.value = "FeAtUrE";
+            searchInput.dispatchEvent(new Event("input"));
+    
+            expect(li1.style.display).toBe("none");
+            expect(li2.style.display).toBe("none");
+            expect(li3.style.display).toBe(""); // feature matches
+        });
+    });
+    
+
     describe("showBranches()", () => {
         let event;
     
@@ -1122,6 +1184,410 @@ describe("EducationPlatformApp", () => {
     
             expect(platform.discardPanelChanges).not.toHaveBeenCalled();
             expect(platform.switchBranch).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("showMergeBranchPrompt()", () => {
+        let mergeButton, closeButton, backButton, mergeList, infoText;
+    
+        beforeEach(() => {
+            // Setup DOM
+            closeButton = document.createElement("button");
+            closeButton.id = "merge-branch-close-button";
+    
+            backButton = document.createElement("button");
+            backButton.id = "merge-branch-back-button";
+    
+            mergeButton = document.createElement("button");
+            mergeButton.id = "confirm-merge-button";
+    
+            mergeList = document.createElement("ul");
+            mergeList.id = "merge-branch-list";
+            mergeList.dataset.selectedBranch = "dev";
+            mergeList.dataset.mergeType = "fast-forward";
+    
+            infoText = document.createElement("div");
+            infoText.id = "merge-branch-info-text";
+    
+            document.body.append(closeButton, backButton, mergeButton, mergeList, infoText);
+    
+            // Platform setup
+            platform.saveablePanels = [createSaveablePanel("panel1", { canSave: true })];
+            platform.activityURL = "https://activity.url";
+            platform.currentBranch = "main";
+    
+            spyOn(platform, "closeAllModalsExcept");
+            spyOn(platform, "toggleMergeBranchVisibility").and.resolveTo();
+            spyOn(platform, "toggleSwitchBranchVisibility").and.resolveTo();
+            spyOn(platform, "setupSearchInput");
+            spyOn(platform, "renderMergeBranchList");
+            spyOn(platform, "discardPanelChanges");
+            spyOn(platform, "displayMergeConflictModal");
+    
+            platform.fileHandler = {
+                mergeBranches: jasmine.createSpy("mergeBranches").and.resolveTo({
+                    success: true,
+                    files: [
+                        {
+                            path: "panel1.txt",
+                            sha: "newSha",
+                            content: "newContent"
+                        }
+                    ]
+                })
+            };
+    
+            spyOn(PlaygroundUtility, "warningNotification");
+            spyOn(PlaygroundUtility, "successNotification");
+            platform.errorHandler = { notify: jasmine.createSpy("notify") };
+            spyOn(platform, "changesHaveBeenMade").and.returnValue(false);
+        });
+    
+        afterEach(() => {
+            document.body.innerHTML = "";
+        });
+    
+        it("sets up the modal and renders merge list", async () => {
+            await platform.showMergeBranchPrompt();
+    
+            expect(platform.closeAllModalsExcept).toHaveBeenCalledWith("merge-branch-container");
+            expect(platform.toggleMergeBranchVisibility).toHaveBeenCalledWith(true);
+            expect(platform.setupSearchInput).toHaveBeenCalledWith("merge-branch-search", "merge-branch-list");
+            expect(platform.renderMergeBranchList).toHaveBeenCalled();
+        });
+    
+        it("closes modal on close button click", async () => {
+            await platform.showMergeBranchPrompt();
+            closeButton.click();
+            expect(platform.toggleMergeBranchVisibility).toHaveBeenCalledWith(false);
+        });
+    
+        it("returns to switch view on back button click", async () => {
+            await platform.showMergeBranchPrompt();
+            await backButton.click();
+            expect(platform.toggleMergeBranchVisibility).toHaveBeenCalledWith(false);
+            expect(platform.toggleSwitchBranchVisibility).toHaveBeenCalledWith(true);
+        });
+    
+        it("shows warning if no branch is selected", async () => {
+            mergeList.dataset.selectedBranch = "";
+            await platform.showMergeBranchPrompt();
+            await mergeButton.click();
+            expect(PlaygroundUtility.warningNotification).toHaveBeenCalledWith("Please select a branch to merge.");
+        });
+
+        it("checks for unsaved changes before merging branches", async () => {
+            spyOn(window, "confirm").and.returnValue(false);
+        
+            await platform.showMergeBranchPrompt();
+            await mergeButton.click();
+        
+            expect(platform.changesHaveBeenMade).toHaveBeenCalled();
+        });
+
+        it("attempts to merge branches if there are no unsaved changes", async () => {
+            platform.changesHaveBeenMade.and.returnValue(false);
+    
+            await platform.showMergeBranchPrompt();
+            await mergeButton.click();
+    
+            expect(platform.fileHandler.mergeBranches).toHaveBeenCalled();
+            expect(PlaygroundUtility.successNotification).toHaveBeenCalledWith("Branches merged successfully.");
+        });
+    
+        it("discards changes before merging if the user confirms", async () => {
+            platform.changesHaveBeenMade.and.returnValue(true);
+            spyOn(window, "confirm").and.returnValue(true);
+    
+            await platform.showMergeBranchPrompt();
+            await mergeButton.click();
+    
+            expect(platform.discardPanelChanges).toHaveBeenCalled();
+            expect(platform.fileHandler.mergeBranches).toHaveBeenCalled();
+            expect(PlaygroundUtility.successNotification).toHaveBeenCalledWith("Branches merged successfully.");
+        });
+    
+        it("cancels merge if the user cancels to discard changes", async () => {
+            platform.changesHaveBeenMade.and.returnValue(true);
+            spyOn(window, "confirm").and.returnValue(false);
+    
+            await platform.showMergeBranchPrompt();
+            await mergeButton.click();
+    
+            expect(platform.discardPanelChanges).not.toHaveBeenCalled();
+            expect(PlaygroundUtility.successNotification).not.toHaveBeenCalled();
+        });
+
+        it("updates panel SHAs, content, and marks them clean after successful merge", async () => {
+            const panel = platform.saveablePanels[0];
+            const undoManager = panel.getEditor().session.getUndoManager();
+        
+            spyOn(panel, "setValueSha");
+            spyOn(panel, "setLastSavedContent");
+            spyOn(panel, "setValue");
+        
+            await platform.showMergeBranchPrompt();
+            await mergeButton.click();
+        
+            expect(panel.setValueSha).toHaveBeenCalledWith("newSha");
+            expect(panel.setLastSavedContent).toHaveBeenCalledWith("newContent");
+            expect(panel.setValue).toHaveBeenCalledWith("newContent");
+            expect(undoManager.markClean).toHaveBeenCalled();
+        });
+        
+        it("handles merge conflict case and displays the merge conflict modal", async () => {
+            platform.fileHandler.mergeBranches.and.resolveTo({
+                conflict: true
+            });
+    
+            await platform.showMergeBranchPrompt();
+            await mergeButton.click();
+    
+            expect(PlaygroundUtility.warningNotification).toHaveBeenCalledWith(
+                "Merge conflicts detected while attempting to merge branches."
+            );
+            expect(platform.displayMergeConflictModal).toHaveBeenCalledWith("main", "dev");
+        });
+    
+        it("shows error notification on merge failure", async () => {
+            platform.fileHandler.mergeBranches.and.rejectWith(new Error("merge error"));
+    
+            await platform.showMergeBranchPrompt();
+            await mergeButton.click();
+    
+            expect(platform.errorHandler.notify).toHaveBeenCalledWith("An error occurred while merging branches.");
+        });
+    });
+    
+    describe("renderMergeBranchList()", () => {
+        let mergeList, infoText;
+    
+        beforeEach(() => {
+            mergeList = document.createElement("ul");
+            mergeList.id = "merge-branch-list";
+    
+            infoText = document.createElement("div");
+            infoText.id = "merge-branch-info-text";
+    
+            document.body.appendChild(mergeList);
+            document.body.appendChild(infoText);
+    
+            platform.branches = ["main", "dev", "feature"];
+            platform.currentBranch = "main";
+            platform.activityURL = "https://activity.test";
+    
+            platform.fileHandler = {
+                compareBranches: jasmine.createSpy("compareBranches").and.resolveTo({ diff: "someDiff" })
+            };
+    
+            spyOn(platform, "renderBranchList").and.callThrough();
+            spyOn(platform, "updateMergeInfoText");
+        });
+    
+        afterEach(() => {
+            document.body.removeChild(mergeList);
+            document.body.removeChild(infoText);
+        });
+    
+        const simulateClick = async (branchName) => {
+            platform.renderMergeBranchList();
+        
+            const createItem = platform.renderBranchList.calls.mostRecent().args[1];
+            const item = createItem(branchName);        
+            mergeList.appendChild(item);
+        
+            await item.click();
+            return item;
+        };
+    
+        it("skips rendering the current branch", () => {
+            platform.renderMergeBranchList();
+    
+            const createItem = platform.renderBranchList.calls.mostRecent().args[1];
+            const result = createItem("main");
+    
+            expect(result).toBeNull();
+        });
+    
+        it("selects a new branch and shows merge info", async () => {
+            const item = await simulateClick("dev");
+    
+            expect(item.classList.contains("selected-branch")).toBeTrue();
+            expect(mergeList.dataset.selectedBranch).toBe("dev");
+            expect(platform.fileHandler.compareBranches).toHaveBeenCalledWith(platform.activityURL, "dev");
+            expect(platform.updateMergeInfoText).toHaveBeenCalledWith(jasmine.anything(), "dev");
+        });
+    
+        it("unselects an already selected branch", async () => {
+            const item = await simulateClick("feature");
+        
+            expect(item.classList.contains("selected-branch")).toBeTrue();
+            expect(mergeList.dataset.selectedBranch).toBe("feature");
+        
+            await item.click();
+        
+            expect(item.classList.contains("selected-branch")).toBeFalse();
+            expect(mergeList.dataset.selectedBranch).toBeUndefined();
+            expect(infoText.textContent).toContain("Select a branch to merge");
+        });
+        
+        it("shows error text if compareBranches fails", async () => {
+            platform.fileHandler.compareBranches.and.rejectWith(new Error("network error"));
+    
+            await simulateClick("dev");
+    
+            expect(infoText.textContent).toContain("There was an error comparing the branches.");
+        });
+    });
+    
+    describe("updateMergeInfoText()", () => {
+        let infoText, mergeButton, mergeList;
+    
+        beforeEach(() => {
+            infoText = document.createElement("div");
+            infoText.id = "merge-branch-info-text";
+    
+            mergeButton = document.createElement("button");
+            mergeButton.id = "confirm-merge-button";
+    
+            mergeList = document.createElement("ul");
+            mergeList.id = "merge-branch-list";
+    
+            document.body.appendChild(infoText);
+            document.body.appendChild(mergeButton);
+            document.body.appendChild(mergeList);
+    
+            platform.currentBranch = "main";
+        });
+    
+        afterEach(() => {
+            document.body.removeChild(infoText);
+            document.body.removeChild(mergeButton);
+            document.body.removeChild(mergeList);
+        });
+    
+        it("shows a message and disables merge button for identical status", () => {
+            platform.updateMergeInfoText({ status: "identical", head: { ref: "dev" }, base: { ref: "main" } }, "dev");
+    
+            expect(infoText.innerHTML).toContain("up to date");
+            expect(mergeButton.disabled).toBeTrue();
+        });
+    
+        it("enables merge button for ahead status and sets merge type as fast-forward", () => {
+            platform.updateMergeInfoText({ status: "ahead", ahead_by: 3 }, "dev");
+    
+            expect(infoText.innerHTML).toContain("ahead");
+            expect(mergeButton.disabled).toBeFalse();
+            expect(mergeList.dataset.mergeType).toBe("fast-forward");
+        });
+    
+        it("shows a message and disables merge button for behind status", () => {
+            platform.updateMergeInfoText({ status: "behind", behind_by: 2 }, "dev");
+    
+            expect(infoText.innerHTML).toContain("behind");
+            expect(mergeButton.disabled).toBeTrue();
+        });
+    
+        it("shows warning for diverged branches and sets merge type as merge", () => {
+            platform.updateMergeInfoText({ status: "diverged" }, "dev");
+    
+            expect(infoText.innerHTML).toContain("diverged");
+            expect(mergeButton.disabled).toBeFalse();
+            expect(mergeList.dataset.mergeType).toBe("merge");
+        });
+    
+        it("shows generic fallback text for unknown status", () => {
+            platform.updateMergeInfoText({ status: "unexpected" }, "dev");
+    
+            expect(infoText.innerHTML).toContain("Merge status: unexpected");
+            expect(mergeButton.disabled).toBeTrue();
+        });
+    
+        it("shows a fallback text if comparisonInfo is invalid", () => {
+            platform.updateMergeInfoText(null, "dev");
+    
+            expect(infoText.textContent).toContain("Unable to determine merge status.");
+        });
+    });
+
+    describe("displayMergeConflictModal()", () => {
+        let closeBtn, backBtn, headEl, baseEl;
+    
+        beforeEach(() => {
+            closeBtn = document.createElement("button");
+            closeBtn.id = "merge-conflict-close-button";
+    
+            backBtn = document.createElement("button");
+            backBtn.id = "merge-conflict-back-button";
+    
+            headEl = document.createElement("span");
+            headEl.id = "head-branch";
+    
+            baseEl = document.createElement("span");
+            baseEl.id = "base-branch";
+    
+            document.body.append(closeBtn, backBtn, headEl, baseEl);
+    
+            platform.activityURL = "https://example.com";
+            spyOn(platform, "toggleMergeBranchVisibility");
+            spyOn(platform, "toggleMergeConflictVisibility");
+            spyOn(platform, "displayPullRequestLink");
+            platform.errorHandler = { notify: jasmine.createSpy("notify") };
+        });
+    
+        afterEach(() => {
+            document.body.innerHTML = "";
+        });
+    
+        it("displays the merge conflict modal", async () => {
+            await platform.displayMergeConflictModal("main", "dev");
+    
+            expect(platform.toggleMergeBranchVisibility).toHaveBeenCalledWith(false);
+            expect(platform.toggleMergeConflictVisibility).toHaveBeenCalledWith(true);
+        });
+
+        it("uses the correct branch names in the modal", async () => {
+            await platform.displayMergeConflictModal("main", "dev");
+    
+            expect(headEl.textContent).toBe("dev");
+            expect(baseEl.textContent).toBe("main");
+        });
+    
+        it("closes the modal when close button is clicked", async () => {
+            await platform.displayMergeConflictModal("main", "dev");
+            closeBtn.click();
+            expect(platform.toggleMergeConflictVisibility).toHaveBeenCalledWith(false);
+        });
+    
+        it("goes back to merge modal when back button is clicked", async () => {
+            await platform.displayMergeConflictModal("main", "dev");
+            backBtn.click();
+            expect(platform.toggleMergeConflictVisibility).toHaveBeenCalledWith(false);
+            expect(platform.toggleMergeBranchVisibility).toHaveBeenCalledWith(true);
+        });
+
+        it("displays the pull request link", async () => {
+            const mockLink = "https://example.com/pull-request";
+            platform.fileHandler = {
+                getPullRequestLink: () => mockLink
+            };
+
+            await platform.displayMergeConflictModal("main", "dev");
+        
+            expect(platform.displayPullRequestLink).toHaveBeenCalledWith(mockLink);
+        });
+    
+        it("shows error if getPullRequestLink fails", async () => {
+            platform.fileHandler = {
+                getPullRequestLink: () => { throw new Error("link error"); }
+            };
+    
+            spyOn(console, "error");
+    
+            await platform.displayMergeConflictModal("main", "dev");
+    
+            expect(console.error).toHaveBeenCalledWith("Error creating pull request:", jasmine.any(Error));
+            expect(platform.errorHandler.notify).toHaveBeenCalledWith("An error occurred while creating the pull request.");
         });
     });
     

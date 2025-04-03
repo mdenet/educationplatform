@@ -1245,15 +1245,15 @@ class EducationPlatformApp {
         const infoText = document.getElementById("merge-branch-info-text");
         const mergeButton = document.getElementById("confirm-merge-button");
 
-        const head = comparisonInfo.head?.ref ?? branchCompared;
-        const base = comparisonInfo.base?.ref ?? this.currentBranch;
-        const status = comparisonInfo.status;
-
         if (!comparisonInfo || !comparisonInfo.status) {
             infoText.textContent = "ℹ️ Unable to determine merge status.";
             return;
         }
 
+        const head = comparisonInfo.head?.ref ?? branchCompared;
+        const base = comparisonInfo.base?.ref ?? this.currentBranch;
+        const status = comparisonInfo.status;
+                
         // Default: assume merge is allowed
         mergeButton.disabled = false;
 
