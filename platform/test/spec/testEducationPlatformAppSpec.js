@@ -16,6 +16,8 @@ describe("EducationPlatformApp", () => {
 
     beforeEach(() => {
         platform = new EducationPlatformApp();
+        platform.activityURL = "https://activity.example.com"
+        platform.currentBranch = "main";
     });
 
     describe("runAction()", () => {
@@ -403,7 +405,6 @@ describe("EducationPlatformApp", () => {
     
     describe("refreshBranches()", () => {
         beforeEach(() => {
-            platform.activityURL = "https://activity.example.com";
             platform.fileHandler = {
                 fetchBranches: jasmine.createSpy("fetchBranches")
             };
@@ -468,10 +469,137 @@ describe("EducationPlatformApp", () => {
         });
     });
 
-    describe("switchBranch()", () => {
-        beforeEach(() => {
-            platform.currentBranch = "main";
+    describe("Modal visibility helpers", () => {
+        let modalA, modalB, modalC;
     
+        beforeEach(() => {
+            modalA = document.createElement("div");
+            modalA.id = "modal-a";
+            modalA.className = "container-modal";
+            modalA.style.display = "block";
+    
+            modalB = document.createElement("div");
+            modalB.id = "modal-b";
+            modalB.className = "container-modal";
+            modalB.style.display = "block";
+    
+            modalC = document.createElement("div");
+            modalC.id = "modal-c";
+            modalC.className = "container-modal";
+            modalC.style.display = "block";
+    
+            document.body.append(modalA, modalB, modalC);
+        });
+    
+        afterEach(() => {
+            document.body.innerHTML = "";
+        });
+    
+        it("hides all modals except the one specified", () => {
+            platform.closeAllModalsExcept("modal-b");
+    
+            expect(modalA.style.display).toBe("none");
+            expect(modalB.style.display).toBe("block");
+            expect(modalC.style.display).toBe("none");
+        });
+    
+        it("modalIsVisible returns true if modal is shown", () => {
+            modalA.style.display = "block";
+            expect(platform.modalIsVisible("modal-a")).toBeTrue();
+        });
+    
+        it("modalIsVisible returns false if modal is hidden", () => {
+            modalA.style.display = "none";
+            expect(platform.modalIsVisible("modal-a")).toBeFalse();
+        });
+    });
+
+    describe("toggleSwitchBranchVisibility()", () => {
+        let container;
+    
+        beforeEach(() => {
+            container = document.createElement("div");
+            container.id = "switch-branch-container";
+            document.body.appendChild(container);
+    
+            spyOn(platform, "refreshBranches").and.resolveTo();
+            spyOn(platform, "renderSwitchBranchList");
+        });
+    
+        afterEach(() => {
+            document.body.innerHTML = "";
+        });
+    
+        it("shows the container when visibility is true", async () => {
+            await platform.toggleSwitchBranchVisibility(true);
+            expect(container.style.display).toBe("block");
+        });
+    
+        it("hides the container when visibility is false", async () => {
+            await platform.toggleSwitchBranchVisibility(false);
+    
+            expect(container.style.display).toBe("none");
+        });
+
+        it("refreshes branches when showing the container", async () => {
+            await platform.toggleSwitchBranchVisibility(true);
+    
+            expect(platform.refreshBranches).toHaveBeenCalled();
+        });
+
+        it("re-renders the branch list when showing the container", async () => {
+            await platform.toggleSwitchBranchVisibility(true);
+    
+            expect(platform.renderSwitchBranchList).toHaveBeenCalled();
+        });
+    });
+
+    describe("toggleMergeBranchVisibility()", () => {
+        let container, infoText;
+    
+        beforeEach(() => {
+            container = document.createElement("div");
+            container.id = "merge-branch-container";
+            document.body.appendChild(container);
+    
+            infoText = document.createElement("div");
+            infoText.id = "merge-branch-info-text";
+            document.body.appendChild(infoText);
+    
+            spyOn(platform, "renderMergeBranchList");
+        });
+    
+        afterEach(() => {
+            document.body.innerHTML = "";
+        });
+    
+        it("shows the merge branch modal when showing the modal", async () => {
+            await platform.toggleMergeBranchVisibility(true);
+    
+            expect(container.style.display).toBe("block");
+        });
+    
+        it("hides the merge branch modal when hiding the modal", async () => {
+            await platform.toggleMergeBranchVisibility(false);
+
+            expect(container.style.display).toBe("none");
+        });
+
+        it("re-renders the branch list when showing the modal", async () => {
+            await platform.toggleMergeBranchVisibility(true);
+    
+            expect(platform.renderMergeBranchList).toHaveBeenCalled();
+        });
+
+        it("resets the info text when hiding the modal", async () => { 
+            await platform.toggleMergeBranchVisibility(false);
+    
+            expect(infoText.textContent).toBe("Select a branch to merge into " + platform.currentBranch);
+        });
+    });
+
+    describe("switchBranch()", () => {
+        beforeEach(() => {    
             spyOn(utility, "getWindowLocationHref").and.returnValue("https://example.com/activity/main/");
             spyOn(utility, "setWindowLocationHref");
         });
@@ -670,8 +798,6 @@ describe("EducationPlatformApp", () => {
             spyOn(saveable1, "setLastSavedContent");
             spyOn(saveable2, "setLastSavedContent");
     
-            // Setup platform
-            platform.activityURL = "https://activity.example.com";
             platform.fileHandler = {
                 storeFiles: jasmine.createSpy("storeFiles")
             };
@@ -1125,7 +1251,6 @@ describe("EducationPlatformApp", () => {
             document.body.appendChild(switchList);
     
             platform.branches = ["main", "dev", "feature"];
-            platform.currentBranch = "main";
     
             spyOn(platform, "renderBranchList").and.callThrough();
             spyOn(platform, "changesHaveBeenMade").and.returnValue(false);
@@ -1211,10 +1336,7 @@ describe("EducationPlatformApp", () => {
     
             document.body.append(closeButton, backButton, mergeButton, mergeList, infoText);
     
-            // Platform setup
             platform.saveablePanels = [createSaveablePanel("panel1", { canSave: true })];
-            platform.activityURL = "https://activity.url";
-            platform.currentBranch = "main";
     
             spyOn(platform, "closeAllModalsExcept");
             spyOn(platform, "toggleMergeBranchVisibility").and.resolveTo();
@@ -1373,8 +1495,6 @@ describe("EducationPlatformApp", () => {
             document.body.appendChild(infoText);
     
             platform.branches = ["main", "dev", "feature"];
-            platform.currentBranch = "main";
-            platform.activityURL = "https://activity.test";
     
             platform.fileHandler = {
                 compareBranches: jasmine.createSpy("compareBranches").and.resolveTo({ diff: "someDiff" })
@@ -1456,8 +1576,6 @@ describe("EducationPlatformApp", () => {
             document.body.appendChild(infoText);
             document.body.appendChild(mergeButton);
             document.body.appendChild(mergeList);
-    
-            platform.currentBranch = "main";
         });
     
         afterEach(() => {
@@ -1528,7 +1646,6 @@ describe("EducationPlatformApp", () => {
     
             document.body.append(closeBtn, backBtn, headEl, baseEl);
     
-            platform.activityURL = "https://example.com";
             spyOn(platform, "toggleMergeBranchVisibility");
             spyOn(platform, "toggleMergeConflictVisibility");
             spyOn(platform, "displayPullRequestLink");
@@ -1591,5 +1708,233 @@ describe("EducationPlatformApp", () => {
         });
     });
     
+    describe("showCreateBranchPrompt()", () => {
+        let closeButton, backButton, submitButton, branchInput;
+
+        beforeEach(() => {
+            closeButton = document.createElement("button");
+            closeButton.id = "create-branch-close-button";
+
+            backButton = document.createElement("button");
+            backButton.id = "create-branch-back-button";
+
+            submitButton = document.createElement("button");
+            submitButton.id = "create-branch-submit-button";
+
+            branchInput = document.createElement("input");
+            branchInput.id = "new-branch-name";
+
+            document.body.append(closeButton, backButton, submitButton, branchInput);
+
+            platform.branches = ["main", "dev"];
+
+            spyOn(platform, "closeAllModalsExcept");
+            spyOn(platform, "toggleCreateBranchVisibility");
+            spyOn(platform, "toggleSwitchBranchVisibility").and.resolveTo();
+            spyOn(platform, "displayCreateBranchConfirmModal");
+            spyOn(platform, "displaySwitchToBranchLink");
+            platform.errorHandler = { notify: jasmine.createSpy("notify") };
+
+            spyOn(PlaygroundUtility, "warningNotification");
+            spyOn(PlaygroundUtility, "successNotification");
+
+            platform.fileHandler = {
+                createBranch: jasmine.createSpy("createBranch").and.resolveTo()
+            };
+
+            spyOn(utility, "validateBranchName").and.returnValue(true);
+            spyOn(platform, "changesHaveBeenMade").and.returnValue(false);
+        });
+
+        afterEach(() => {
+            document.body.innerHTML = "";
+        });
+
+        async function submitCreateBranch(name) {
+            branchInput.value = name;
+            submitButton.click();
+
+            await Promise.resolve(); // flush any promises
+        }
+
+        it("displays the branch creation modal", async () => {
+            await platform.showCreateBranchPrompt();
+            expect(platform.closeAllModalsExcept).toHaveBeenCalledWith("create-branch-container");
+            expect(platform.toggleCreateBranchVisibility).toHaveBeenCalledWith(true);
+        });
+
+        it("clears input field when modal is shown", async () => {
+            branchInput.value = "to-clear";
+            await platform.showCreateBranchPrompt();
+            expect(branchInput.value).toBe("");
+        });
+
+        it("closes modal when close button is clicked", async () => {
+            await platform.showCreateBranchPrompt();
+            closeButton.click();
+            expect(platform.toggleCreateBranchVisibility).toHaveBeenCalledWith(false);
+        });
+
+        it("returns to switch view on back button click", async () => {
+            await platform.showCreateBranchPrompt();
+            await backButton.click();
+            expect(platform.toggleCreateBranchVisibility).toHaveBeenCalledWith(false);
+            expect(platform.toggleSwitchBranchVisibility).toHaveBeenCalledWith(true);
+        });
+
+        it("warns if branch already exists", async () => {
+            await platform.showCreateBranchPrompt();
+            await submitCreateBranch("main");
+            expect(PlaygroundUtility.warningNotification).toHaveBeenCalledWith("Branch main already exists.");
+        });
+
+        it("warns if branch name is invalid", async () => {
+            utility.validateBranchName.and.returnValue(false);
+            await platform.showCreateBranchPrompt();
+            await submitCreateBranch("bad name!");
+            expect(PlaygroundUtility.warningNotification).toHaveBeenCalledWith("Invalid branch name. Please try again.");
+        });
+
+        it("shows confirmation modal if unsaved changes exist", async () => {
+            platform.changesHaveBeenMade.and.returnValue(true);
+            await platform.showCreateBranchPrompt();
+            await submitCreateBranch("new-branch-name");
+            expect(platform.displayCreateBranchConfirmModal).toHaveBeenCalledWith("new-branch-name");
+        });
+
+        it("replaces whitespaces with dashes in branch name", async () => {
+            await platform.showCreateBranchPrompt();
+            await submitCreateBranch("new feature branch");
+            expect(platform.fileHandler.createBranch).toHaveBeenCalledWith(platform.activityURL, "new-feature-branch");
+        });
+
+        it("creates branch and shows success message if no changes exist", async () => {
+            await platform.showCreateBranchPrompt();
+            await submitCreateBranch("new-branch");
+            expect(platform.fileHandler.createBranch).toHaveBeenCalledWith(platform.activityURL, "new-branch");
+            expect(PlaygroundUtility.successNotification).toHaveBeenCalledWith("Branch new-branch created successfully");
+            expect(platform.displaySwitchToBranchLink).toHaveBeenCalledWith("new-branch");
+        });
+
+        it("shows error notification if branch creation fails", async () => {
+            platform.fileHandler.createBranch.and.rejectWith(new Error("network fail"));
+            await platform.showCreateBranchPrompt();
+            await submitCreateBranch("fail-branch");
+            expect(platform.errorHandler.notify).toHaveBeenCalledWith("An error occurred while creating a branch.");
+        });
+    });
+
+    describe("displayCreateBranchConfirmModal()", () => {
+        let confirmButton, discardButton, closeButton, backButton;
+        let newBranchSpans;
+    
+        beforeEach(() => {
+            confirmButton = document.createElement("button");
+            confirmButton.id = "confirm-bring-changes";
+    
+            discardButton = document.createElement("button");
+            discardButton.id = "discard-changes";
+    
+            closeButton = document.createElement("button");
+            closeButton.id = "create-branch-confirm-close-button";
+    
+            backButton = document.createElement("button");
+            backButton.id = "create-branch-confirm-back-button";
+    
+            newBranchSpans = [document.createElement("span"), document.createElement("span")];
+            newBranchSpans.forEach(el => el.id = "new-branch");
+    
+            document.body.append(confirmButton, discardButton, closeButton, backButton, ...newBranchSpans);
+    
+            platform.saveablePanels = [createSaveablePanel("panel1", { canSave: true })];
+    
+            spyOn(platform, "toggleCreateBranchVisibility");
+            spyOn(platform, "toggleCreateBranchConfirmVisibility");
+            spyOn(platform, "displaySwitchToBranchLink");
+            spyOn(platform, "discardPanelChanges");
+            spyOn(platform, "saveFiles").and.resolveTo();
+            spyOn(PlaygroundUtility, "successNotification");
+            platform.errorHandler = { notify: jasmine.createSpy("notify") };
+    
+            platform.fileHandler = {
+                createBranch: jasmine.createSpy("createBranch").and.resolveTo()
+            };
+        });
+    
+        afterEach(() => {
+            document.body.innerHTML = "";
+        });
+    
+        async function submitConfirmBranch() {
+            const button = document.getElementById("confirm-bring-changes");
+            button.click();
+            return Promise.resolve();
+        }
+    
+        async function submitDiscardBranch() {
+            const button = document.getElementById("discard-changes");
+            button.click();
+            return Promise.resolve();
+        }
+    
+        it("displays the new branch name in all spans", async () => {
+            await platform.displayCreateBranchConfirmModal("feature-xyz");
+            newBranchSpans.forEach(span => {
+                expect(span.textContent).toBe("feature-xyz");
+            });
+        });
+    
+        it("closes the modal when close button is clicked", async () => {
+            await platform.displayCreateBranchConfirmModal("test");
+            closeButton.click();
+            expect(platform.toggleCreateBranchConfirmVisibility).toHaveBeenCalledWith(false);
+        });
+    
+        it("returns to the create branch modal when back button is clicked", async () => {
+            await platform.displayCreateBranchConfirmModal("test");
+            await backButton.click();
+            expect(platform.toggleCreateBranchConfirmVisibility).toHaveBeenCalledWith(false);
+            expect(platform.toggleCreateBranchVisibility).toHaveBeenCalledWith(true);
+        });
+    
+        it("creates branch and saves changes to that branch when user confirms to bring changes", async () => {
+            await platform.displayCreateBranchConfirmModal("feature-xyz");
+            await submitConfirmBranch();
+    
+            expect(platform.fileHandler.createBranch).toHaveBeenCalledWith(platform.activityURL, "feature-xyz");
+            expect(platform.saveFiles).toHaveBeenCalledWith("Merge changes from main to feature-xyz", "feature-xyz");
+
+            expect(PlaygroundUtility.successNotification).toHaveBeenCalledWith("Branch feature-xyz created successfully");
+            expect(platform.displaySwitchToBranchLink).toHaveBeenCalledWith("feature-xyz");
+            expect(platform.discardPanelChanges).toHaveBeenCalled();
+        });
+    
+        it("creates the branch and doesn't save when the user chooses to discard changes and continue", async () => {
+            await platform.displayCreateBranchConfirmModal("cleanup-branch");
+            await submitDiscardBranch();
+    
+            expect(platform.fileHandler.createBranch).toHaveBeenCalledWith(platform.activityURL, "cleanup-branch");
+            expect(platform.discardPanelChanges).toHaveBeenCalled();
+
+            expect(PlaygroundUtility.successNotification).toHaveBeenCalledWith("Branch cleanup-branch created successfully");
+            expect(platform.displaySwitchToBranchLink).toHaveBeenCalledWith("cleanup-branch");
+        });
+    
+        it("shows error if createBranch fails", async () => {
+            platform.fileHandler.createBranch.and.rejectWith(new Error("fail"));
+            await platform.displayCreateBranchConfirmModal("bugfix");
+            await submitConfirmBranch();
+    
+            expect(platform.errorHandler.notify).toHaveBeenCalledWith("An error occurred while creating a branch.");
+        });
+    
+        it("shows error if saveFiles fails after creating branch", async () => {
+            platform.saveFiles.and.rejectWith(new Error("save failed"));
+            await platform.displayCreateBranchConfirmModal("bugfix");
+            await submitConfirmBranch();
+    
+            expect(platform.errorHandler.notify).toHaveBeenCalledWith("An error occured while trying to bring the changes over to the new branch");
+        });
+    });
     
 })
