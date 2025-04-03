@@ -171,6 +171,170 @@ describe("EducationPlatformApp", () => {
         })
     })
 
+    describe("handleInitialLoad()", () => {
+        let urlParams, tokenHandlerUrl;
+    
+        beforeEach(() => {
+            urlParams = new URLSearchParams();
+            tokenHandlerUrl = "https://auth.example.com";
+    
+            spyOn(utility, "getRequest").and.resolveTo(JSON.stringify({ authenticated: true }));
+            spyOn(PlaygroundUtility, "hideLogin");
+            spyOn(PlaygroundUtility, "showLogin");
+            spyOn(console, "log");
+            spyOn(console, "error");
+            spyOn(platform, "setupAuthenticatedState").and.returnValue(true);
+        });
+    
+        it("calls setupAuthenticatedState if auth cookie is valid", async () => {
+            await platform.handleInitialLoad(urlParams, tokenHandlerUrl);
+    
+            expect(utility.getRequest).toHaveBeenCalledWith(tokenHandlerUrl + "/mdenet-auth/login/validate", true);
+            expect(platform.setupAuthenticatedState).toHaveBeenCalledWith(urlParams);
+            expect(PlaygroundUtility.hideLogin).toHaveBeenCalled();
+        });
+    
+        it("shows login if authenticated is false", async () => {
+            utility.getRequest.and.resolveTo(JSON.stringify({ authenticated: false }));
+    
+            await platform.handleInitialLoad(urlParams, tokenHandlerUrl);
+    
+            expect(platform.setupAuthenticatedState).not.toHaveBeenCalled();
+            expect(PlaygroundUtility.showLogin).toHaveBeenCalled();
+        });
+    
+        it("shows login if setupAuthenticatedState fails", async () => {
+            platform.setupAuthenticatedState.and.returnValue(false);
+    
+            await platform.handleInitialLoad(urlParams, tokenHandlerUrl);
+    
+            expect(PlaygroundUtility.showLogin).toHaveBeenCalled();
+        });
+    
+        it("shows login if the request throws an error", async () => {
+            utility.getRequest.and.rejectWith(new Error("network"));
+    
+            await platform.handleInitialLoad(urlParams, tokenHandlerUrl);
+    
+            expect(console.error).toHaveBeenCalledWith("Error while checking authentication cookie:", jasmine.any(Error));
+            expect(PlaygroundUtility.showLogin).toHaveBeenCalled();
+        });
+    });
+
+    describe("handleAuthRedirect()", () => {
+        let urlParams, tokenHandlerUrl;
+    
+        beforeEach(() => {
+            urlParams = new URLSearchParams({
+                code: "1234",
+                state: "abcd"
+            });
+    
+            tokenHandlerUrl = "https://auth.example.com";
+    
+            spyOn(utility, "jsonRequest").and.resolveTo({ token: "fake-token" });
+            spyOn(PlaygroundUtility, "hideLogin");
+            spyOn(PlaygroundUtility, "showLogin");
+            spyOn(platform, "setupAuthenticatedState").and.returnValue(true);
+            spyOn(console, "error");
+        });
+    
+        it("sends token request and sets up authenticated state", async () => {
+            await platform.handleAuthRedirect(urlParams, tokenHandlerUrl);
+    
+            expect(utility.jsonRequest).toHaveBeenCalledWith(
+                tokenHandlerUrl + "/mdenet-auth/login/token",
+                jasmine.any(String),
+                true
+            );
+            
+            const actualCall = utility.jsonRequest.calls.mostRecent().args[1];
+            const parsed = JSON.parse(actualCall);
+            expect(parsed).toEqual(jasmine.objectContaining({ code: "1234", state: "abcd" }));
+        });
+    
+        it("shows login if setupAuthenticatedState fails", async () => {
+            platform.setupAuthenticatedState.and.returnValue(false);
+    
+            await platform.handleAuthRedirect(urlParams, tokenHandlerUrl);
+    
+            expect(PlaygroundUtility.showLogin).toHaveBeenCalled();
+        });
+    
+        it("shows login and logs error if the request throws", async () => {
+            utility.jsonRequest.and.rejectWith(new Error("network error"));
+    
+            await platform.handleAuthRedirect(urlParams, tokenHandlerUrl);
+    
+            expect(console.error).toHaveBeenCalledWith("Error while completing authentication:", jasmine.any(Error));
+            expect(PlaygroundUtility.showLogin).toHaveBeenCalled();
+        });
+    });
+    
+
+    describe("setupAuthenticatedState()", () => {
+        let saveButton, branchButton, reviewButton;
+    
+        beforeEach(() => {
+            saveButton = document.createElement("button");
+            saveButton.id = "save";
+            saveButton.classList.add("hidden");
+    
+            branchButton = document.createElement("button");
+            branchButton.id = "branch";
+            branchButton.classList.add("hidden");
+    
+            reviewButton = document.createElement("button");
+            reviewButton.id = "review-changes";
+            reviewButton.classList.add("hidden");
+    
+            document.body.append(saveButton, branchButton, reviewButton);
+    
+            spyOn(platform, "initializeActivity");
+            spyOn(platform, "setupEventListeners");
+            spyOn(utility, "setAuthenticated");
+            spyOn(utility, "getActivityURL").and.returnValue("https://activity.example.com");
+            spyOn(utility, "getCurrentBranch").and.returnValue("main");
+        });
+    
+        afterEach(() => {
+            document.body.innerHTML = "";
+        });
+    
+        it("initializes activity and sets up UI for authenticated user", () => {
+            const result = platform.setupAuthenticatedState(new URLSearchParams());
+            expect(platform.initializeActivity).toHaveBeenCalled();
+
+            expect(utility.setAuthenticated).toHaveBeenCalledWith(true);
+            expect(platform.setupEventListeners).toHaveBeenCalled();
+
+            expect(document.getElementById("save").classList.contains("hidden")).toBeFalse();
+            expect(document.getElementById("branch").classList.contains("hidden")).toBeFalse();
+            expect(document.getElementById("review-changes").classList.contains("hidden")).toBeFalse();
+            
+            expect(platform.activityURL).toBe("https://activity.example.com");
+            expect(platform.currentBranch).toBe("main");
+
+            expect(result).toBeTrue();
+        });
+    
+        it("returns false if initializeActivity throws", () => {
+            platform.initializeActivity.and.throwError("init failed");
+    
+            const result = platform.setupAuthenticatedState(new URLSearchParams());
+    
+            expect(result).toBeFalse();
+        });
+    
+        it("returns false if setupEventListeners throws", () => {
+            platform.setupEventListeners.and.throwError("event error");
+    
+            const result = platform.setupAuthenticatedState(new URLSearchParams());
+    
+            expect(result).toBeFalse();
+        });
+    });
+    
     describe("getSaveablePanels()", () => {
         let panels;
     
@@ -610,7 +774,65 @@ describe("EducationPlatformApp", () => {
             expect(utility.getWindowLocationHref).toHaveBeenCalled();
             expect(utility.setWindowLocationHref).toHaveBeenCalledWith("https://example.com/activity/dev/");
         });
+    });
+
+    describe("Switch to branch links", () => {
+        let nameSpans, linkDivs, anchors;
     
+        beforeEach(() => {
+            nameSpans = [document.createElement("span"), document.createElement("span")];
+            linkDivs = [document.createElement("div"), document.createElement("div")];
+            anchors = [document.createElement("a"), document.createElement("a")];
+    
+            nameSpans.forEach(el => {
+                el.id = "switch-branch-name";
+                document.body.appendChild(el);
+            });
+    
+            linkDivs.forEach(el => {
+                el.id = "switch-to-branch-link";
+                document.body.appendChild(el);
+            });
+    
+            anchors.forEach(el => {
+                el.id = "switch-branch-anchor";
+                document.body.appendChild(el);
+            });
+    
+            spyOn(platform, "switchBranch");
+        });
+    
+        afterEach(() => {
+            document.body.innerHTML = "";
+        });
+    
+        it("hides all links", () => {
+            linkDivs.forEach(div => div.style.display = "block");
+            anchors.forEach(a => a.onclick = () => {});
+    
+            platform.hideSwitchToBranchLink();
+    
+            nameSpans.forEach(span => expect(span.textContent).toBe(""));
+            linkDivs.forEach(div => expect(div.style.display).toBe("none"));
+            anchors.forEach(a => expect(a.onclick).toBeNull());
+        });
+    
+        it("shows all links and sets the correct onclick handlers", () => {
+            platform.displaySwitchToBranchLink("feature/new");
+    
+            nameSpans.forEach(span => expect(span.textContent).toBe("feature/new"));
+            linkDivs.forEach(div => expect(div.style.display).toBe("block"));
+    
+            anchors.forEach(anchor => {
+                expect(typeof anchor.onclick).toBe("function");
+
+                // simulate the click
+                const fakeEvent = { preventDefault: jasmine.createSpy("preventDefault") };
+                anchor.onclick(fakeEvent);
+                expect(fakeEvent.preventDefault).toHaveBeenCalled();
+                expect(platform.switchBranch).toHaveBeenCalledWith("feature/new");
+            });
+        });
     });
 
     describe("showSaveConfirmation()", () => {
@@ -1936,5 +2158,45 @@ describe("EducationPlatformApp", () => {
             expect(platform.errorHandler.notify).toHaveBeenCalledWith("An error occured while trying to bring the changes over to the new branch");
         });
     });
+
+    describe("Pull request calls", () => {
+        let linkContainer, anchor;
+    
+        beforeEach(() => {
+            linkContainer = document.createElement("div");
+            linkContainer.id = "pull-request-link";
+            anchor = document.createElement("a");
+            anchor.id = "pull-request-anchor";
+    
+            document.body.append(linkContainer, anchor);
+        });
+    
+        afterEach(() => {
+            document.body.innerHTML = "";
+        });
+    
+        it("shows the link and sets the anchor href", () => {
+            const testLink = "https://github.com/pull/123";
+            platform.displayPullRequestLink(testLink);
+    
+            expect(linkContainer.style.display).toBe("block");
+            expect(anchor.style.display).toBe("block");
+            expect(anchor.href).toBe(testLink);
+        });
+    
+        it("hides the link and disables anchor click", () => {
+            // Setup fake visible elements
+            linkContainer.style.display = "block";
+            anchor.style.display = "block";
+            anchor.onclick = () => "something";
+    
+            platform.hidePullRequestLink();
+    
+            expect(linkContainer.style.display).toBe("none");
+            expect(anchor.style.display).toBe("none");
+            expect(anchor.onclick).toBeNull();
+        });
+    });
+    
     
 })

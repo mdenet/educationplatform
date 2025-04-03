@@ -33,7 +33,7 @@ import { Button } from './Button.js';
 import { Preloader } from './Preloader.js';
 import { Layout, PANEL_HOLDER_ID } from './Layout.js';
 import { PlaygroundUtility } from './PlaygroundUtility.js';
-import { jsonRequest, utility, getRequest, setAuthenticated } from './Utility.js';
+import { utility } from './Utility.js';
 import { ErrorHandler } from './ErrorHandler.js';
 
 
@@ -71,7 +71,7 @@ class EducationPlatformApp {
     initialize( urlParameters, tokenHandlerUrl , wsUri){
         this.fileHandler = new FileHandler(tokenHandlerUrl);
         this.wsUri = wsUri;
-        setAuthenticated(false);
+        utility.setAuthenticated(false);
 
         /* 
         *  Setup the browser environment 
@@ -91,7 +91,7 @@ class EducationPlatformApp {
         }
 
         document.getElementById("btnnologin").onclick = async () => {
-            setAuthenticated(false);
+            utility.setAuthenticated(false);
             PlaygroundUtility.hideLogin();
         }
 
@@ -99,7 +99,7 @@ class EducationPlatformApp {
 
             // Get github url
             const urlRequest = { url: utility.getWindowLocationHref() };
-            let authServerDetails = await jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/url",
+            let authServerDetails = await utility.jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/url",
                                                     JSON.stringify(urlRequest) );
 
             authServerDetails = JSON.parse(authServerDetails);
@@ -122,7 +122,7 @@ class EducationPlatformApp {
 
         try {
             //TODO loading box
-            await jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/token",
+            await utility.jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/token",
                 JSON.stringify(tokenRequest), true );
             
             const success = this.setupAuthenticatedState(urlParameters);
@@ -137,7 +137,7 @@ class EducationPlatformApp {
     async handleInitialLoad(urlParameters, tokenHandlerUrl) {
         try {
             // Check if there is a valid authentication cookie, if there is then skip login process
-            let hasAuthCookie = await getRequest(tokenHandlerUrl + "/mdenet-auth/login/validate", true);
+            let hasAuthCookie = await utility.getRequest(tokenHandlerUrl + "/mdenet-auth/login/validate", true);
             hasAuthCookie = JSON.parse(hasAuthCookie);
 
             if (hasAuthCookie.authenticated) {
@@ -196,7 +196,7 @@ class EducationPlatformApp {
         }
 
         try {
-            setAuthenticated(true);
+            utility.setAuthenticated(true);
             this.setupEventListeners();
 
             document.getElementById('save').classList.remove('hidden');
