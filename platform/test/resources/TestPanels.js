@@ -43,6 +43,7 @@ export function createSaveablePanel(id, { canSave = false } = {}) {
     const panel = new SaveablePanel(id);
     panel.initialize(mockEditor(canSave ? "changed" : "original"));
     panel.setLastSavedContent("original");
+    panel.getTitle = () => id; // for testing purposes
     return panel;
 }
 
@@ -53,6 +54,7 @@ export function createProgramPanel(id, { canSave = false } = {}) {
     const panel = new ProgramPanel(id);
     panel.initialize(mockEditor(canSave ? "changed" : "original"));
     panel.setLastSavedContent("original");
+    panel.getTitle = () => id; // for testing purposes
     return panel;
 }
 

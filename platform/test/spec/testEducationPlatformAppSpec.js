@@ -7,7 +7,7 @@ import { ActionFunction } from "../../src/ActionFunction.js";
 import { Panel } from "../../src/Panel.js";
 import { ErrorHandler } from "../../src/ErrorHandler.js";
 import { PlaygroundUtility } from "../../src/PlaygroundUtility.js";
-import { createVariousPanels } from "../resources/TestPanels.js";
+import { createVariousPanels, createSaveablePanel } from "../resources/TestPanels.js";
 import { DEFAULT_COMMIT_MESSAGE } from "../../src/EducationPlatformApp.js";
 import { utility } from "../../src/Utility.js";
 
@@ -695,7 +695,7 @@ describe("EducationPlatformApp", () => {
                     { path: "file2", content: "..." }
                 ],
                 "Update commit",
-                undefined
+                undefined // No overrideBranch provided
             );
     
             expect(saveable1.setValueSha).toHaveBeenCalledWith("newSha1");
@@ -710,8 +710,10 @@ describe("EducationPlatformApp", () => {
     
         it("skips panel updates if overrideBranch is passed", async () => {
             platform.fileHandler.storeFiles.and.resolveTo("{}");
+
+            const overrideBranch = "new-branch";
     
-            await platform.saveFiles("Commit message", "feature/new-branch");
+            await platform.saveFiles("Commit message", overrideBranch);
     
             expect(saveable1.setValueSha).not.toHaveBeenCalled();
             expect(saveable2.setValueSha).not.toHaveBeenCalled();
@@ -731,5 +733,168 @@ describe("EducationPlatformApp", () => {
         });
     });
     
+    describe("reviewChanges()", () => {
+        let panels;
+        let event;
+    
+        beforeEach(() => {
+            panels = createVariousPanels();
+            event = { preventDefault: jasmine.createSpy("preventDefault") };
+    
+            platform.getPanelsWithChanges = () => [panels.saveableDirty, panels.programDirty];
+            platform.changesHaveBeenMade = () => true;
+    
+            spyOn(platform, "modalIsVisible").and.returnValue(false);
+            spyOn(platform, "toggleReviewChangesVisibility");
+            spyOn(platform, "closeAllModalsExcept");
+            spyOn(platform, "discardPanelChanges");
+            spyOn(platform, "displayChangesForPanel");
+    
+            document.body.innerHTML = `
+                <div id="review-changes-container"></div>
+                <div id="review-changes-close-button"></div>
+                <div id="discard-changes-btn"></div>
+                <div id="changed-panels-list"></div>
+                <div id="changed-panels-title"></div>
+                <div id="discard-changes-footer" style="display:none"></div>
+            `;
+        });
+    
+        it("toggles modal off if already visible", async () => {
+            platform.modalIsVisible.and.returnValue(true);
+    
+            await platform.reviewChanges(event);
+    
+            expect(event.preventDefault).toHaveBeenCalled();
+            expect(platform.toggleReviewChangesVisibility).toHaveBeenCalledWith(false);
+        });
+    
+        it("renders changed panels and sets up close and discard buttons", async () => {
+            await platform.reviewChanges(event);
+    
+            expect(platform.closeAllModalsExcept).toHaveBeenCalledWith("review-changes-container");
+            expect(platform.toggleReviewChangesVisibility).toHaveBeenCalledWith(true);
+    
+            const titleText = document.getElementById("changed-panels-title").textContent;
+            expect(titleText).toContain("Review the changes");
+    
+            const footer = document.getElementById("discard-changes-footer");
+            expect(footer.style.display).toBe("block");
+    
+            const panelList = document.getElementById("changed-panels-list");
+            const items = panelList.querySelectorAll("li");
+            expect(items.length).toBe(2);
+            expect(items[0].textContent).toBe(panels.saveableDirty.getTitle());
+        });
+    
+        it("discards changes and reloads modal if user confirms discard", async () => {
+            spyOn(window, "confirm").and.returnValue(true);
+            spyOn(platform, "reviewChanges").and.callThrough();
+    
+            await platform.reviewChanges(event);
+    
+            // Simulate click
+            document.getElementById("discard-changes-btn").click();
+    
+            expect(platform.discardPanelChanges).toHaveBeenCalled();
+            expect(platform.reviewChanges).toHaveBeenCalledWith(event);
+        });
+    
+        it("does not discard if user cancels confirm dialog", async () => {
+            spyOn(window, "confirm").and.returnValue(false);
+    
+            await platform.reviewChanges(event);
+            document.getElementById("discard-changes-btn").click();
+    
+            expect(platform.discardPanelChanges).not.toHaveBeenCalled();
+        });
+    
+        it("shows no message if there are no changes", async () => {
+            platform.changesHaveBeenMade = () => false;
+    
+            await platform.reviewChanges(event);
+    
+            const titleText = document.getElementById("changed-panels-title").textContent;
+            expect(titleText).toContain("no changes");
+    
+            const footer = document.getElementById("discard-changes-footer");
+            expect(footer.style.display).toBe("none");
+        });
+    });
+    
+    describe("displayChangesForPanel()", () => {
+        let panel;
+    
+        beforeEach(() => {
+            // Create a dummy SaveablePanel
+            panel = createSaveablePanel("panel1", { canSave: true });
+    
+            panel.getDiff = () => [
+                { added: "line added" },
+                { removed: "line removed" }
+            ];
+    
+            // Spy internal methods
+            spyOn(platform, "closeAllModalsExcept");
+            spyOn(platform, "togglePanelChangeVisibility");
+            spyOn(platform, "toggleReviewChangesVisibility");
+    
+            // Set up fake DOM
+            document.body.innerHTML = `
+                <div id="panel-changes-container" style="width:100px; height:100px;"></div>
+                <div id="panel-changes-close-button"></div>
+                <div id="panel-changes-back-button"></div>
+                <div id="panel-title"></div>
+                <div id="diff-content"></div>
+            `;
+        });
+    
+        it("shows the modal and displays the panel title and diff content", () => {
+            platform.displayChangesForPanel(panel);
+    
+            expect(platform.closeAllModalsExcept).toHaveBeenCalledWith("panel-changes-container");
+            expect(platform.togglePanelChangeVisibility).toHaveBeenCalledWith(true);
+    
+            const title = document.getElementById("panel-title");
+            expect(title.textContent).toBe(panel.getTitle());
+    
+            const diffLines = document.querySelectorAll(".diff-line");
+            expect(diffLines.length).toBe(2);
+            expect(diffLines[0].textContent).toBe("+ line added");
+            expect(diffLines[0].classList.contains("diff-added")).toBeTrue();
+            expect(diffLines[1].textContent).toBe("- line removed");
+            expect(diffLines[1].classList.contains("diff-removed")).toBeTrue();
+        });
+    
+        it("assigns close button to hide the modal", () => {
+            platform.displayChangesForPanel(panel);
+    
+            const closeButton = document.getElementById("panel-changes-close-button");
+            closeButton.click();
+    
+            expect(platform.togglePanelChangeVisibility).toHaveBeenCalledWith(false);
+        });
+    
+        it("assigns back button to toggle review modal", () => {
+            platform.displayChangesForPanel(panel);
+    
+            const backButton = document.getElementById("panel-changes-back-button");
+            backButton.click();
+    
+            expect(platform.togglePanelChangeVisibility).toHaveBeenCalledWith(false);
+            expect(platform.toggleReviewChangesVisibility).toHaveBeenCalledWith(true);
+        });
+    
+        it("resets panel container width/height", () => {
+            const container = document.getElementById("panel-changes-container");
+            container.style.width = "500px";
+            container.style.height = "400px";
+    
+            platform.displayChangesForPanel(panel);
+    
+            expect(container.style.width).toBe("");
+            expect(container.style.height).toBe("");
+        });
+    });
     
 })
