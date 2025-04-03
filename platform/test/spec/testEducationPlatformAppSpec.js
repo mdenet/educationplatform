@@ -1,7 +1,6 @@
 /*global describe, it, expect, spyOn, beforeEach, expectAsync --  functions provided by Jasmine */
 /*global jasmine --  object provided by Jasmine */
 
-export var TOKEN_SERVER_URL = "test://ts.url";
 import {EducationPlatformApp} from "../../src/EducationPlatformApp.js";
 import { ActionFunction } from "../../src/ActionFunction.js";
 import { Panel } from "../../src/Panel.js";
@@ -10,6 +9,8 @@ import { PlaygroundUtility } from "../../src/PlaygroundUtility.js";
 import { createVariousPanels, createSaveablePanel } from "../resources/TestPanels.js";
 import { DEFAULT_COMMIT_MESSAGE } from "../../src/EducationPlatformApp.js";
 import { utility } from "../../src/Utility.js";
+import { createTestButton } from "../resources/TestUtility.js";
+
 
 describe("EducationPlatformApp", () => {
     let platform;
@@ -276,16 +277,13 @@ describe("EducationPlatformApp", () => {
         let saveButton, branchButton, reviewButton;
     
         beforeEach(() => {
-            saveButton = document.createElement("button");
-            saveButton.id = "save";
+            saveButton = createTestButton("save");
             saveButton.classList.add("hidden");
     
-            branchButton = document.createElement("button");
-            branchButton.id = "branch";
+            branchButton = createTestButton("branch");
             branchButton.classList.add("hidden");
     
-            reviewButton = document.createElement("button");
-            reviewButton.id = "review-changes";
+            reviewButton = createTestButton("review-changes");
             reviewButton.classList.add("hidden");
     
             document.body.append(saveButton, branchButton, reviewButton);
@@ -844,16 +842,13 @@ describe("EducationPlatformApp", () => {
             saveText.id = "save-body-text";
             document.body.appendChild(saveText);
     
-            closeBtn = document.createElement("button");
-            closeBtn.id = "save-confirmation-close-button";
+            closeBtn = createTestButton("save-confirmation-close-button");
             document.body.appendChild(closeBtn);
     
-            cancelBtn = document.createElement("button");
-            cancelBtn.id = "cancel-save-btn";
+            cancelBtn = createTestButton("cancel-save-btn");
             document.body.appendChild(cancelBtn);
     
-            saveBtn = document.createElement("button");
-            saveBtn.id = "confirm-save-btn";
+            saveBtn = createTestButton("confirm-save-btn");
             document.body.appendChild(saveBtn);
     
             eventMock = { preventDefault: jasmine.createSpy("preventDefault") };
@@ -1538,15 +1533,9 @@ describe("EducationPlatformApp", () => {
         let mergeButton, closeButton, backButton, mergeList, infoText;
     
         beforeEach(() => {
-            // Setup DOM
-            closeButton = document.createElement("button");
-            closeButton.id = "merge-branch-close-button";
-    
-            backButton = document.createElement("button");
-            backButton.id = "merge-branch-back-button";
-    
-            mergeButton = document.createElement("button");
-            mergeButton.id = "confirm-merge-button";
+            closeButton = createTestButton("merge-branch-close-button");
+            backButton = createTestButton("merge-branch-back-button");
+            mergeButton = createTestButton("confirm-merge-button");
     
             mergeList = document.createElement("ul");
             mergeList.id = "merge-branch-list";
@@ -1789,8 +1778,7 @@ describe("EducationPlatformApp", () => {
             infoText = document.createElement("div");
             infoText.id = "merge-branch-info-text";
     
-            mergeButton = document.createElement("button");
-            mergeButton.id = "confirm-merge-button";
+            mergeButton = createTestButton("confirm-merge-button");
     
             mergeList = document.createElement("ul");
             mergeList.id = "merge-branch-list";
@@ -1854,11 +1842,8 @@ describe("EducationPlatformApp", () => {
         let closeBtn, backBtn, headEl, baseEl;
     
         beforeEach(() => {
-            closeBtn = document.createElement("button");
-            closeBtn.id = "merge-conflict-close-button";
-    
-            backBtn = document.createElement("button");
-            backBtn.id = "merge-conflict-back-button";
+            closeBtn = createTestButton("merge-conflict-close-button");
+            backBtn = createTestButton("merge-conflict-back-button");
     
             headEl = document.createElement("span");
             headEl.id = "head-branch";
@@ -1934,14 +1919,9 @@ describe("EducationPlatformApp", () => {
         let closeButton, backButton, submitButton, branchInput;
 
         beforeEach(() => {
-            closeButton = document.createElement("button");
-            closeButton.id = "create-branch-close-button";
-
-            backButton = document.createElement("button");
-            backButton.id = "create-branch-back-button";
-
-            submitButton = document.createElement("button");
-            submitButton.id = "create-branch-submit-button";
+            closeButton = createTestButton("create-branch-close-button");
+            backButton = createTestButton("create-branch-back-button");
+            submitButton = createTestButton("create-branch-submit-button");
 
             branchInput = document.createElement("input");
             branchInput.id = "new-branch-name";
@@ -2051,17 +2031,10 @@ describe("EducationPlatformApp", () => {
         let newBranchSpans;
     
         beforeEach(() => {
-            confirmButton = document.createElement("button");
-            confirmButton.id = "confirm-bring-changes";
-    
-            discardButton = document.createElement("button");
-            discardButton.id = "discard-changes";
-    
-            closeButton = document.createElement("button");
-            closeButton.id = "create-branch-confirm-close-button";
-    
-            backButton = document.createElement("button");
-            backButton.id = "create-branch-confirm-back-button";
+            confirmButton = createTestButton("confirm-bring-changes");
+            discardButton = createTestButton("discard-changes");
+            closeButton = createTestButton("create-branch-confirm-close-button");
+            backButton = createTestButton("create-branch-confirm-back-button");
     
             newBranchSpans = [document.createElement("span"), document.createElement("span")];
             newBranchSpans.forEach(el => el.id = "new-branch");
