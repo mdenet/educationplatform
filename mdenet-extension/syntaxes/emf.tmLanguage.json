@@ -1,0 +1,72 @@
+{
+    "scopeName": "source.emfatic",
+    "fileTypes": ["emf"],
+    "name": "Emfatic",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#strings" },
+        { "include": "#numbers" },
+        { "include": "#keywords" },
+        { "include": "#constants" },
+        { "include": "#types" },
+        { "include": "#tildeRefs" },
+        { "include": "#identifiers" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                { "name": "comment.line.double-slash.emfatic", "match": "//.*$" },
+                { "name": "comment.line.annotation.emfatic", "match": "@.*$" },
+                { "name": "comment.block.emfatic", "begin": "/\\*", "end": "\\*/" }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                { "name": "string.quoted.double.emfatic", "match": "\".*?\"" },
+                { "name": "string.quoted.single.emfatic", "match": "'.*?'" }
+            ]
+        },
+        "numbers": {
+            "patterns": [
+                { "name": "constant.numeric.emfatic", "match": "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?\\b" }
+            ]
+        },
+        "keywords": {
+            "patterns": [
+                { 
+                    "name": "keyword.control.emfatic",
+                    "match": "\\b(abstract|attr|class|enum|extends|import|package|ref|val|op|readonly|volatile|transient|unsettable|derived|unique|ordered|resolve|id)\\b"
+                }
+            ]
+        },
+        "constants": {
+            "patterns": [
+                { "name": "constant.language.emfatic", "match": "\\b(true|false|self)\\b" }
+            ]
+        },
+        "types": {
+            "patterns": [
+                { 
+                    "name": "storage.type.emfatic",
+                    "match": "\\b(boolean|Boolean|byte|Byte|char|Character|double|Double|float|Float|int|Integer|long|Long|short|Short|Date|String|Object|Class|EObject|EClass)\\b"
+                }
+            ]
+        },
+        "tildeRefs": {
+            "patterns": [
+                { 
+                    "name": "text.tilde-reference.emfatic",
+                    "match": "~[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
+                }
+            ]
+        },
+        "identifiers": {
+            "patterns": [
+                { 
+                    "name": "variable.emfatic",
+                    "match": "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
+                }
+            ]
+        }
+    }
+}

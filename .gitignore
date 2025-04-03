@@ -1,1 +1,6 @@
 node_modules/*
+mdenet-extension/node_modules/*
+mdenet-extension/dist/*
+.vscode-test-web
+coverage
+.nyc_output

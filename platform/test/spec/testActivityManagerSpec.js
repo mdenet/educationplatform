@@ -92,7 +92,7 @@ describe("ActivityManager", () => {
         let am;
         const activityFile = ACTIVITY_2PANELS_1ACTION;
 
-        beforeEach( () => {
+        beforeEach( async () => {
             // Setup
             fileh = new FileHandler("test://th.url"); 
             refPanelDef = () => {};
@@ -105,7 +105,7 @@ describe("ActivityManager", () => {
 
             // Call the target object
             am = new ActivityManager(refPanelDef , fileh);
-            am.initializeActivities();
+            await am.initializeActivities();
         })
 
         // Check the expected results
@@ -188,7 +188,7 @@ describe("ActivityManager", () => {
         const toolConfig = JSON.parse(TOOL_1PANELDEF_1FUNCTION).tool;
         const panelDef = toolConfig.panelDefs[0];
 
-        beforeEach( () => {
+        beforeEach( async () => {
             // Setup
             fileh = new FileHandler("test://th.url"); 
             refPanelDef = () => {
@@ -203,7 +203,7 @@ describe("ActivityManager", () => {
 
             // Call the target object
             am = new ActivityManager(refPanelDef , fileh);
-            am.initializeActivities();
+            await am.initializeActivities();
             am.getSelectedActivity();
         }) 
 

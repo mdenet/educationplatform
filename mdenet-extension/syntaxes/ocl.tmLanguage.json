@@ -1,0 +1,60 @@
+{
+    "scopeName": "source.ocl",
+    "fileTypes": ["ocl"],
+    "name": "OCL",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#strings" },
+        { "include": "#numbers" },
+        { "include": "#keywords" },
+        { "include": "#constants" },
+        { "include": "#types" },
+        { "include": "#identifiers" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                { "name": "comment.line.double-slash.ocl", "match": "//.*$" },
+                { "name": "comment.block.ocl", "begin": "/\\*", "end": "\\*/" }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                { "name": "string.quoted.double.ocl", "match": "\".*?\"" },
+                { "name": "string.quoted.single.ocl", "match": "'.*?'" },
+                { "name": "string.quoted.backtick.ocl", "match": "`.*?`" }
+            ]
+        },
+        "numbers": {
+            "patterns": [
+                { "name": "constant.numeric.ocl", "match": "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?\\b" }
+            ]
+        },
+        "keywords": {
+            "patterns": [
+                { 
+                    "name": "keyword.control.ocl",
+                    "match": "\\b(package|endpackage|context|inv|pre|post|body|derive|init|def|@pre|self|result|true|false|null|OclInvalid|and|or|xor|implies|not|let|in|if|then|else|endif|attr|oper)\\b"
+                }
+            ]
+        },
+        "constants": {
+            "patterns": [
+                { "name": "constant.language.ocl", "match": "\\b(true|false|self)\\b" }
+            ]
+        },
+        "types": {
+            "patterns": [
+                { 
+                    "name": "storage.type.ocl",
+                    "match": "\\b(Any|String|Integer|Real|Boolean|Native|Bag|Set|List|Sequence|Map|OrderedSet|Collection|Tuple|ConcurrentBag|ConcurrentMap|ConcurrentSet)\\b"
+                }
+            ]
+        },
+        "identifiers": {
+            "patterns": [
+                { "name": "variable.ocl", "match": "[a-zA-Z_$][a-zA-Z0-9_$]*\\b" }
+            ]
+        }
+    }
+}

@@ -1,0 +1,68 @@
+{
+    "scopeName": "source.xtend",
+    "name": "Xtend",
+    "patterns": [
+      { "include": "#comments" },
+      { "include": "#keywords" },
+      { "include": "#strings" },
+      { "include": "#template-strings" },
+      { "include": "#numbers" },
+      { "include": "#parens" }
+    ],
+    "repository": {
+      "comments": {
+        "patterns": [
+          { "name": "comment.line.double-slash.xtend", "match": "//.*$" },
+          { 
+            "name": "comment.block.xtend", 
+            "begin": "/\\*", 
+            "end": "\\*/", 
+            "contentName": "comment.block.xtend",
+            "patterns": [
+              { "match": "[^*]+", "name": "comment.block.xtend" },
+              { "match": "\\*", "name": "comment.block.xtend" }
+            ]
+          }
+        ]
+      },
+      "keywords": {
+        "patterns": [
+          {
+            "name": "keyword.control.xtend",
+            "match": "\\b(AFTER|BEFORE|ELSE|ELSEIF|ENDFOR|ENDIF|FOR|IF|SEPARATOR|abstract|annotation|as|case|catch|class|create|def|default|dispatch|do|else|enum|extends|extension|false|final|finally|for|if|implements|import|instanceof|interface|native|new|null|override|package|private|protected|public|return|static|strictfp|super|switch|synchronized|throw|throws|transient|true|try|typeof|val|var|volatile|while)\\b"
+          }
+        ]
+      },
+      "strings": {
+        "patterns": [
+          { "name": "string.quoted.double.xtend", "begin": "\"", "end": "\"", "patterns": [{ "match": "\\\\.", "name": "constant.character.escape.xtend" }] },
+          { "name": "string.quoted.single.xtend", "begin": "'", "end": "'", "patterns": [{ "match": "\\\\.", "name": "constant.character.escape.xtend" }] }
+        ]
+      },
+      "template-strings": {
+        "patterns": [
+          {
+            "name": "string.quoted.triple.xtend",
+            "begin": "'''",
+            "end": "'''",
+            "patterns": [
+              { "name": "punctuation.definition.expression.begin.xtend", "begin": "«", "end": "»", "patterns": [{ "match": "[^»]+", "name": "source.xtend.embedded" }] }
+            ]
+          }
+        ]
+      },
+      "numbers": {
+        "patterns": [
+          { "name": "constant.numeric.decimal.xtend", "match": "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?\\b" },
+          { "name": "constant.numeric.hex.xtend", "match": "0[xX][0-9a-fA-F]+\\b" }
+        ]
+      },
+      "parens": {
+        "patterns": [
+          { "name": "punctuation.paren.lparen.xtend", "match": "[\\[({]" },
+          { "name": "punctuation.paren.rparen.xtend", "match": "[\\])}]" }
+        ]
+      }
+    }
+  }
+  

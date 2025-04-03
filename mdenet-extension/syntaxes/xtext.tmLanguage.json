@@ -1,0 +1,45 @@
+{
+    "scopeName": "source.xtext",
+    "name": "Xtext",
+    "patterns": [
+      { "include": "#comments" },
+      { "include": "#keywords" },
+      { "include": "#strings" },
+      { "include": "#numbers" },
+      { "include": "#parens" }
+    ],
+    "repository": {
+      "comments": {
+        "patterns": [
+          { "name": "comment.line.double-slash.xtext", "match": "//.*$" },
+          { "name": "comment.block.xtext", "begin": "/\\*", "end": "\\*/", "patterns": [{ "match": ".+", "name": "comment.block.xtext" }] }
+        ]
+      },
+      "keywords": {
+        "patterns": [
+          {
+            "name": "keyword.control.xtext",
+            "match": "\\b(EOF|as|current|enum|false|fragment|generate|grammar|hidden|import|returns|terminal|true|with)\\b"
+          }
+        ]
+      },
+      "strings": {
+        "patterns": [
+          { "name": "string.quoted.double.xtext", "begin": "\"", "end": "\"", "patterns": [{ "match": "\\\\.", "name": "constant.character.escape.xtext" }] },
+          { "name": "string.quoted.single.xtext", "begin": "'", "end": "'", "patterns": [{ "match": "\\\\.", "name": "constant.character.escape.xtext" }] }
+        ]
+      },
+      "numbers": {
+        "patterns": [
+          { "name": "constant.numeric.xtext", "match": "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?\\b" }
+        ]
+      },
+      "parens": {
+        "patterns": [
+          { "name": "punctuation.paren.lparen.xtext", "match": "[\\[({]" },
+          { "name": "punctuation.paren.rparen.xtext", "match": "[\\])}]" }
+        ]
+      }
+    }
+  }
+  

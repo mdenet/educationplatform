@@ -156,6 +156,11 @@ class ToolManager {
         let errors = [];
 
         for (let toolUrl of this.toolsUrls) {
+            // Check if the url is a placeholder, if so, skip it
+            if (this.isIDPlaceHolder(toolUrl.url)){
+                continue;
+            }
+
 
             let xhr = new XMLHttpRequest();
             xhr.open("GET", toolUrl.url, false);
