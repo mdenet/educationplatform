@@ -331,6 +331,7 @@ class EducationPlatformApp extends GeneralEducationPlatformApp {
         return $("#" + panelId)[0].dataset.titleCaption;
     }
 
+
     fit() {
         var splitter = document.getElementById(PANEL_HOLDER_ID);
         if (splitter){
