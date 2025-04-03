@@ -1046,5 +1046,84 @@ describe("EducationPlatformApp", () => {
             expect([...items].map(el => el.textContent)).not.toContain("itemToBeCleared");
         });
     });
+
+    describe("renderSwitchBranchList()", () => {
+        let switchList;
+    
+        const simulateSwitch = (branchName) => {
+            const createItem = platform.renderBranchList.calls.mostRecent().args[1];
+            const item = createItem(branchName);
+            item.click();
+            return item;
+        };
+    
+        beforeEach(() => {
+            switchList = document.createElement("ul");
+            switchList.id = "switch-branch-list";
+            document.body.appendChild(switchList);
+    
+            platform.branches = ["main", "dev", "feature"];
+            platform.currentBranch = "main";
+    
+            spyOn(platform, "renderBranchList").and.callThrough();
+            spyOn(platform, "changesHaveBeenMade").and.returnValue(false);
+            spyOn(platform, "discardPanelChanges");
+            spyOn(platform, "switchBranch");
+            spyOn(PlaygroundUtility, "warningNotification");
+            spyOn(window, "confirm").and.returnValue(true); // simulate user confirmation (OK)
+        });
+    
+        afterEach(() => {
+            document.body.removeChild(switchList);
+        });
+    
+        it("gives a special style to the current-branch", () => {
+            platform.renderSwitchBranchList();
+            const item = simulateSwitch("main");
+            expect(item.classList.contains("current-branch")).toBeTrue();
+        });
+    
+        it("prevents switching to the current branch", () => {
+            platform.renderSwitchBranchList();
+            simulateSwitch("main");
+            expect(PlaygroundUtility.warningNotification).toHaveBeenCalledWith("You are already on this branch.");
+        });
+    
+        it("checks for unsaved changes before switching branches", () => {
+            platform.changesHaveBeenMade.and.returnValue(true);
+            platform.renderSwitchBranchList();
+            simulateSwitch("dev");
+            expect(platform.changesHaveBeenMade).toHaveBeenCalled();
+        });
+    
+        it("calls switchBranch if no unsaved changes", () => {
+            platform.renderSwitchBranchList();
+            simulateSwitch("feature");
+            expect(platform.switchBranch).toHaveBeenCalledWith("feature");
+        });
+    
+        it("asks for confirmation before discarding unsaved changes and continuing", () => {
+            platform.changesHaveBeenMade.and.returnValue(true);
+    
+            platform.renderSwitchBranchList();
+            simulateSwitch("dev");
+    
+            expect(window.confirm).toHaveBeenCalled();
+            expect(platform.discardPanelChanges).toHaveBeenCalled();
+            expect(platform.switchBranch).toHaveBeenCalledWith("dev");
+        });
+    
+        it("cancels branch switch if the confirmation is rejected", () => {
+            platform.changesHaveBeenMade.and.returnValue(true);
+            window.confirm.and.returnValue(false); // click "Cancel"
+    
+            platform.renderSwitchBranchList();
+            simulateSwitch("dev");
+    
+            expect(platform.discardPanelChanges).not.toHaveBeenCalled();
+            expect(platform.switchBranch).not.toHaveBeenCalled();
+        });
+    });
+    
     
 })
