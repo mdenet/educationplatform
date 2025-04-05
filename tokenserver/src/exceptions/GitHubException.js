@@ -1,6 +1,6 @@
 import {OAuthException} from './OAuthException.js'
 
-export class GihubException extends OAuthException {
+export class GitHubException extends OAuthException {
     statusCode = 400
     code = 'invalid_request'
     githubStatusCode

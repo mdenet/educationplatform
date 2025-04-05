@@ -89,6 +89,13 @@
 	content: url("../images/save.png");
 }
 
+.mif-branch::before {
+	content: url("../images/branch.png");
+}
+
+.mif-review::before {
+	content: url("../images/review.png");
+}
 
 .mif-link::before {
 	content: url("../images/link.png");
@@ -204,7 +211,6 @@ body {
 	display: none !important;
 }
 
-
 .navview.js-compact:not(.expanded) .navview-menu .navview-menu a:hover .caption {
 	display: flex !important;
 	background-color: #cecece;
@@ -217,3 +223,221 @@ body {
 .splitter .gutter::before {
 	background-color: inherit;
 }
+
+.container-modal {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    font-family: sans-serif;
+    padding-bottom: 1rem;
+}
+
+.container-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #ccc;
+    border-radius: 4px 4px 0 0;
+}
+
+.container-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.close-button, .back-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.branch-input-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.branch-input-container input {
+    flex-grow: 1;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.list-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 0 1rem 1rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.ul-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ul-list li {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.ul-list li:not(.current-branch):not(.selected-branch):hover {
+    background-color: #fafafa;
+}
+
+.current-branch, .selected-branch {
+    background-color: #d9edf7;
+    border-left: 4px solid #46b8da;
+}
+
+.create-branch-based-on-container {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+
+.round-button {
+    border-radius: 20px;
+}
+
+.link {
+    text-align: center;
+    margin-top: 7.5px;
+}
+
+.link a {
+    text-decoration: none;
+	font-weight: 550;
+    color: #007bff;
+    font-size: 14px;
+}
+
+.link a:hover {
+    text-decoration: underline;
+    color: #e83e8c;
+}
+
+.container-body {
+    padding: 1rem;
+}
+
+.container-body p {
+    font-size: 0.95rem;
+    color: #333;
+	text-align: center;
+}
+
+.container-footer {
+    display: flex;
+    flex-wrap: wrap; /* Allows buttons to stack when needed */
+    justify-content: center;
+    gap: 10px; /* Space between buttons */
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid #ddd;
+    background-color: #f9f9f9;
+    margin-bottom: -1rem;
+}
+
+.container-footer button {
+    margin: 5px;
+    padding: 0.75rem;
+    width: auto; 
+    min-width: 150px; 
+    max-width: 100%; 
+    white-space: normal; 
+    word-break: break-word; 
+    text-align: center; 
+}
+
+.changed-panels p {
+    margin: 1rem 0;
+    font-size: 0.95rem;
+    color: #333;
+	text-align: center;
+}
+
+#panel-changes-container {
+    resize: both;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    min-width: fit-content;
+    max-width: 80vw;
+    width: calc(fit-content + 2rem);
+
+    min-height: 250px;
+    max-height: 70vh;
+    height: 325px;
+}
+
+#panel-changes-container > #diff-content {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.diff-content {
+    padding: 1rem;
+    height: 100%;
+    max-height: none;
+    overflow-y: auto;
+    background-color: #fefefe;
+    font-family: monospace;
+    white-space: pre-wrap; /* allows line wrapping */
+}
+
+.diff-line {
+    display: block;
+    width: max-content;       /* Expand to the content's width */
+    min-width: 100%;
+    box-sizing: border-box;   /* Include padding/borders in width calculation */
+    padding: 0.25rem;
+    margin-bottom: 0.25rem;
+    border-radius: 3px;
+}
+
+.diff-added {
+    background-color: #e6ffed;
+    color: #22863a;
+    border-left: 4px solid #2cbe4e;
+}
+
+.diff-removed {
+    background-color: #ffeef0;
+    color: #cb2431;
+    border-left: 4px solid #d73a49;
+}
+
+.button.primary:disabled,
+.button.primary[disabled] {
+    background-color: #267acc; /* slightly darker blue */
+    color: #e0e0e0;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+
+
+
+
+
+
+
