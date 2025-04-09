@@ -52,6 +52,16 @@ describe("SaveablePanel", () => {
             ]);
         });
 
+        it("clears diff when content matches last saved content", () => {
+            const content = "same line 1\nsame line 2\n";
+            panel.setLastSavedContent(content);
+            editor.setValue(content);
+        
+            panel.updatePanelDiff();
+        
+            expect(panel.getDiff()).toEqual([]);
+        });
+
         it("handles undefined lastSavedContent", () => {
             panel.setLastSavedContent(undefined);
             editor.setValue("new content");
