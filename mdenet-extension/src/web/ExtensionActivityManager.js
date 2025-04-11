@@ -39,7 +39,7 @@ class ExtensionActivityManager extends GeneralActivityManager {
 
     fetchFile(filePath){
         //if filePath starts with http or https, it is a URL so just return it
-        if(filePath.startsWith('http')){
+        if(filePath instanceof vscode.Uri || filePath.startsWith('http')){
             return filePath
         }
         else{
@@ -88,6 +88,9 @@ class ExtensionActivityManager extends GeneralActivityManager {
     }
 
     interpolate(someString){
+        if(typeof someString !== "string") {
+            return someString;
+        }
         let result = someString;
 
         // Retrieve all stored keys
