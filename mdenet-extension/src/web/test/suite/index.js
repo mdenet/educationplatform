@@ -24,6 +24,11 @@ export function run() {
 						body: JSON.stringify(self.__coverage__)
 					});
 				}
+				if (failures === 0) {
+					c();
+				} else {
+					e(new Error(`${failures} tests failed.`));
+				}
 			});
 		} catch (err) {
 			console.error(err);
