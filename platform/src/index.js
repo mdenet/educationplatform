@@ -9,7 +9,7 @@ const WS_URI = WEBSOCKETS_URI;
 let urlParameters = new URLSearchParams(window.location.search);  
 
 var platform = new EducationPlatformApp();
-platform.initialize(urlParameters, TOKEN_HANDLER_URL, WS_URI);
+await platform.initialize(urlParameters, TOKEN_HANDLER_URL, WS_URI);
 
 // Some functions and variables are accessed  
 // by onclick - or similer - events
