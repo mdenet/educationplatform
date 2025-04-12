@@ -1,6 +1,6 @@
-// global $ -- jquery is externally imported
-// global FEEDBACK_SURVEY_URL -- is set by environment variable
-// global Metro
+/*global $ -- jquery is externally imported*/
+/*global FEEDBACK_SURVEY_URL -- is set by environment variable*/
+/*global Metro -- Metro is externally imported*/
 
 import * as ace from 'ace-builds/src-min-noconflict/ace';
 import 'ace-builds/src-min-noconflict/theme-eclipse';
