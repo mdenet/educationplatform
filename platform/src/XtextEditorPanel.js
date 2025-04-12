@@ -1,13 +1,14 @@
 /*global ace -- ace is externally imported*/
-import { Panel } from "./Panel.js";
+import { SaveablePanel } from "./SaveablePanel";
 
 
-class XtextEditorPanel extends Panel {
+class XtextEditorPanel extends SaveablePanel {
 
     constructor(id = "program") {
         super(id);
     }
 
+    
     initialize(url, extension){
         let aceEditor;
         super.initialize(aceEditor);
@@ -32,10 +33,6 @@ class XtextEditorPanel extends Panel {
         this.editor.renderer.setShowGutter(true);
     }
 
-    canSave() {
-        // Only save if there are any actual changes to save -- this avoids empty commits.
-        return (this.getValueSha()) && (!(this.editor.session.getUndoManager().isClean()));
-    }
 
     /**
      *  Sets the mode of the editor for syntax highlighting
@@ -48,7 +45,6 @@ class XtextEditorPanel extends Panel {
     }
     
 
-
     fit() {
         var editorElement = document.getElementById(this.id + "Editor");
         if (editorElement != null) {
@@ -57,17 +53,9 @@ class XtextEditorPanel extends Panel {
         this.editor.resize();
     }
 
-
-    // TODO: Identical to ConsolePanel.createElement()
     createElement() {
-        var root = document.createElement("div");
-        root.setAttribute("data-role", "panel");
-        root.setAttribute("id", this.id + "Panel");
-
-        var editor = document.createElement("div");
-        editor.setAttribute("id", this.id + "Editor");
-        editor.setAttribute("class", "editor");
-
+        var root = super.createRootElement();
+        var editor = super.createEditorElement();
 
         let htmlObject = document.createElement("object");
         htmlObject.setAttribute( "type", "text/html" );

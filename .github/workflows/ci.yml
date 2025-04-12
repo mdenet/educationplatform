@@ -111,7 +111,9 @@ jobs:
       - name: Run the unit tests
         id: run-unit-tests
         if: success() || failure() && steps.build-platform.outcome == 'success'
-        run: npm test --workspaces -- --browsers SafariNative
+        run: |
+          npm test --workspace=platform -- --browsers SafariNative
+          npm test --workspace=tokenserver
     
       - name: Create test report
         uses: dorny/test-reporter@v1
@@ -171,7 +173,9 @@ jobs:
       - name: Run the unit tests
         id: run-unit-tests
         if: success() || failure() && steps.build-platform.outcome == 'success'
-        run: npm test --workspaces -- --browsers EdgeHeadless
+        run: |
+          npm test --workspace=platform -- --browsers EdgeHeadless
+          npm test --workspace=tokenserver
     
       - name: Create test report
         uses: dorny/test-reporter@v1

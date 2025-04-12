@@ -37,8 +37,12 @@ class PlaygroundUtility {
     }
 
     static errorNotification(message) {
-        console.log("ERROR: " + message);
+        console.error("ERROR: " + message);
         this.notification("Error:", message, "bg-red fg-white");
+    }
+
+    static warningNotification(message) {
+        this.notification("Warning:", message, "bg-orange fg-white");
     }
 
 }
