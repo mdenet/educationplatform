@@ -21,7 +21,7 @@ class InteractiveGuide{
         this.overlay.style.zIndex = "100";
         document.body.appendChild(this.overlay);
     
-        // Guide bubble with buttons
+        // Guide text bubble with buttons
         this.guide = document.createElement("div");
         this.guide.id = "guide";
         this.guide.innerHTML = `
@@ -45,7 +45,7 @@ class InteractiveGuide{
         document.getElementById("guide-close").addEventListener("click", () => this.closeGuide());
     }
 
-    // Makes the guide bubble draggable
+    // Makes the guide text bubble draggable
     makeDraggable(elem){
         let offsetX, offsetY, isDragging = false;
 
@@ -54,30 +54,29 @@ class InteractiveGuide{
         // Calculate offset relative to the element's top-left corner
         offsetX = e.clientX - elem.offsetLeft;
         offsetY = e.clientY - elem.offsetTop;
-        // Bring element to front
-        elem.style.zIndex = 105;
+        elem.style.zIndex = 105;    // Bring element to the front
         e.preventDefault();
         });
 
         document.addEventListener("mousemove", (e) => {
-        if(isDragging){
-            elem.style.top = `${e.clientY - offsetY}px`;
-            elem.style.left = `${e.clientX - offsetX}px`;
-            // Hide the tail while dragging
-            const tail = document.getElementById("guide-tail");
-            tail.style.display = "none";
-        }
+            if(isDragging){
+                elem.style.top = `${e.clientY - offsetY}px`;
+                elem.style.left = `${e.clientX - offsetX}px`;
+                // Hide the tail while dragging
+                const tail = document.getElementById("guide-tail");
+                tail.style.display = "none";
+            }
         });
 
         document.addEventListener("mouseup", () => {
-        if(isDragging){
-            isDragging = false;
-            // If the current step is pointed, reposition the tail
-            const step = this.instructions[this.currentStep];
-            if(step.pointed){
-                this.positionTail(step);
+            if(isDragging){
+                isDragging = false;
+                // If the current step is pointed, reposition the tail
+                const step = this.instructions[this.currentStep];
+                if(step.pointed){
+                    this.positionTail(step);
+                }
             }
-        }
         });
     }
 
@@ -126,7 +125,7 @@ class InteractiveGuide{
         }
     }
 
-
+    // Position a pointed text bubble on the screen where there is space available
     positionTextBubble(step){
         const guide = document.getElementById("guide");
         const tail = document.getElementById("guide-tail");
@@ -190,7 +189,6 @@ class InteractiveGuide{
     }
     
 
-    // Position the tail
     positionTail({ tailDirection, targetRect }){
         const guide = document.getElementById("guide");
         const tail = document.getElementById("guide-tail");
@@ -202,6 +200,7 @@ class InteractiveGuide{
 
         const guideRect = guide.getBoundingClientRect();
 
+        // Connect the tail to the text bubble with the correct orientation
         if(tailDirection === "right"){
             tail.style.borderWidth = "10px 0 10px 10px";
             tail.style.borderColor = "transparent transparent transparent #e7e7e7";
@@ -213,13 +212,11 @@ class InteractiveGuide{
             tail.style.top = `${targetRect.top + targetRect.height/2 - guideRect.top - 10}px`;
             tail.style.left = `-10px`;
         }else if(tailDirection === "bottom"){
-            // Tail at bottom of bubble (points up)
             tail.style.borderWidth = "10px 10px 0 10px";
             tail.style.borderColor = "#e7e7e7 transparent transparent transparent";
             tail.style.top = `${guideRect.height}px`;
             tail.style.left = `${targetRect.left + targetRect.width/2 - guideRect.left - 10}px`;
         }else if (tailDirection === "top"){
-            // Tail at top of bubble (points down)
             tail.style.borderWidth = "0 10px 10px 10px";
             tail.style.borderColor = "transparent transparent #e7e7e7 transparent";
             tail.style.top = `-10px`;
@@ -227,6 +224,7 @@ class InteractiveGuide{
         }
     }
 
+    // Dim every other panel so that the "spotlighted" panels appear brighter
     applySpotlighting(step){
         const panels = Array.from(document.querySelectorAll("[data-role='panel']")).map(elem => elem.parentElement).filter(elem => elem !== null);
 
@@ -237,7 +235,7 @@ class InteractiveGuide{
 
         let panelsToSpotlight = [];
 
-        // Check for pointed element and its parent
+        // Push the parent element of a pointed panel
         if(step.pointed){
             const element = document.querySelector(step.pointed);
             if(element && element.parentElement && !panelsToSpotlight.includes(element.parentElement)){
@@ -245,7 +243,7 @@ class InteractiveGuide{
             }
         }
     
-        // Check for spotlighted element and its parent
+        // Push the parent element of a spotlighted panel
         if(step.spotlighted){
             step.spotlighted.forEach(panel => {
                 const element = document.querySelector(panel);
@@ -262,12 +260,14 @@ class InteractiveGuide{
         });
     }
 
+    // Show the previous step of the guide
     prevStep(){
         if(this.currentStep > 0){
             this.showStep(this.currentStep - 1);
         }
     }
 
+    // Show the next step of the guide
     nextStep(){
         if(this.currentStep < this.instructions.length - 1){
             this.showStep(this.currentStep + 1);

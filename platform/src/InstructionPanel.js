@@ -1,4 +1,3 @@
-//! is import needed
 import { Panel } from "./Panel.js";
 import { InteractiveGuide } from "./InteractiveGuide.js";
 import { urlParamPrivateRepo } from './Utility.js';
@@ -15,8 +14,7 @@ class InstructionPanel extends Panel {
     }
 
     initialize(){
-        console.log("NEW!");
-        this.getElement();  // ! is this line necessary
+        this.getElement();
         this.loadInstructions();
         setTimeout(() => this.adjustPanelSize(), 0);    // setTimeout adjusts panel size after it has been created
     }
@@ -91,10 +89,9 @@ class InstructionPanel extends Panel {
             li.appendChild(checkbox);
         });
     }
-    createProgressBar(){
-        // const existingProgressBar = this.element.querySelector(`#${this.id}-progress-bar`);
-        // if (existingProgressBar) return;
 
+    // Add a progress bar at the bottom of the panel
+    createProgressBar(){
         const progressContainer = document.createElement("div");
         progressContainer.style.textAlign = "center";
         progressContainer.style.marginTop = "10px";
@@ -115,6 +112,7 @@ class InstructionPanel extends Panel {
         this.element.appendChild(progressContainer);
     }
 
+    // Update the progress bar based on the checkboxes checked
     updateProgressBar(){
         const listItems = this.element.querySelectorAll("li");
         const itemCount = listItems.length;
@@ -137,16 +135,19 @@ class InstructionPanel extends Panel {
         }
     }
 
+    // Get info on if the checkbox is checked or not
     getCheckboxState(index){
         const key = `${this.id}-checkbox-${index}`;
         return localStorage.getItem(key) === 'true';
     }
 
+    // Save checkbox state to localStorage
     saveCheckboxState(index, state){
         const key = `${this.id}-checkbox-${index}`;
         localStorage.setItem(key, state);
     }
 
+    // Create the "Start Guide" button if the markdown instructions split properly
     splitInstructions(text){
         try{
             const instructions = this.createInstructionsArray(text);
@@ -207,7 +208,7 @@ class InstructionPanel extends Panel {
         const getMetadata = (comment) => {
             if (!comment) return {};
 
-            const match = comment.match(/\{(.*?)\}/);
+            const match = comment.match(/\{(.*?)\}/);   // metadata regex matcher
             if (!match) return {};
 
             const metadata = {};
@@ -219,13 +220,14 @@ class InstructionPanel extends Panel {
                     let [key, value] = item.split(':').map(s => s.trim());
                     currentKey = key;
 
+                    // spotlighted panels are an array, pointed panels are a singular value
                     if(key === 'spotlighted'){
                         metadata[key] = [`#${value}Panel`];
                     }else{
                         metadata[key] = `#${value}Panel`;
                     }
                 }else{
-                    // If there is no colon, append to the spotlighted array if that was the current key.
+                    // If there is no colon, append to the spotlighted array if that is the current key
                     if(currentKey === 'spotlighted'){
                         metadata[currentKey].push(`#${item}Panel`);
                         // ! test this
@@ -234,7 +236,7 @@ class InstructionPanel extends Panel {
                     }
                 }
             }
-            // if only spotlighted is specified in the metadata, centred is added
+            // If only "spotlighted" is specified in the metadata, "centred" is added
             if(metadata.hasOwnProperty('spotlighted') && !metadata.hasOwnProperty('pointed')){
                 metadata.centred = true;
             }
