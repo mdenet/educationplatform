@@ -230,18 +230,30 @@ body {
 	z-index: 100;
 }
 
+#guide-header {
+    position: relative;
+    height: 20px;
+}
+
 #guide {
 	position: absolute;
     max-width: 350px;
-	max-height: 250px;
+	max-height: 300px;
     background: white;
-    padding: 15px;
+    padding: 12px;
     border-radius: 5px;
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
     z-index: 105;
     cursor: move;
     font-size: 14px;
     color: #363636;
+	background: #e7e7e7;
+}
+
+#guide-content-container {
+	max-height: 170px;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 #guide-tail {
@@ -282,7 +294,6 @@ body {
     font-weight: bold;
     color: #363636;
     cursor: pointer;
-    user-select: none;
 }
 
 /* Mess with the values */

@@ -15,6 +15,7 @@ class InstructionPanel extends Panel {
     }
 
     initialize(){
+        console.log("NEW!");
         this.getElement();  // ! is this line necessary
         this.loadInstructions();
         setTimeout(() => this.adjustPanelSize(), 0);    // setTimeout adjusts panel size after it has been created
@@ -232,6 +233,10 @@ class InstructionPanel extends Panel {
                         errorHandler.notify(`Multiple pointed values detected, ignoring ${part}`)
                     }
                 }
+            }
+            // if only spotlighted is specified in the metadata, centred is added
+            if(metadata.hasOwnProperty('spotlighted') && !metadata.hasOwnProperty('pointed')){
+                metadata.centred = true;
             }
             return metadata;
         };

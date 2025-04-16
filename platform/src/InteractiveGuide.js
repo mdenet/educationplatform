@@ -25,8 +25,12 @@ class InteractiveGuide{
         this.guide = document.createElement("div");
         this.guide.id = "guide";
         this.guide.innerHTML = `
-            <span id="guide-close" class="guide-close">X</span>
-            <div id="guide-content"></div>
+            <div id="guide-header">
+                <span id="guide-close" class="guide-close">X</span>
+            </div>
+            <div id="guide-content-container">
+                <div id="guide-content"></div>
+            </div>
             <div id="guide-tail"></div>
             <div id="guide-buttons">
                 <button id="guide-prev">Prev</button>
@@ -126,8 +130,6 @@ class InteractiveGuide{
     positionTextBubble(step){
         const guide = document.getElementById("guide");
         const tail = document.getElementById("guide-tail");
-        tail.style.display = "block";
-        tail.style.borderStyle = "solid";
     
         const targetElement = document.querySelector(step.pointed);
         if (!targetElement) return;
@@ -144,26 +146,33 @@ class InteractiveGuide{
         const spaceLeft = rect.left - 10;
         const spaceBelow = window.innerHeight - rect.bottom - 10;
         const spaceAbove = rect.top - 10;
+
+        // if(spaceLeft <= guideWidth && spaceRight <= guideWidth && spaceBelow <= guideHeight && spaceAbove <= guideHeight){
+        //       guide.style.top = `${targetCentreY - guideHeight / 2}px`;
+        //       guide.style.left = `${targetCentreX - guideWidth / 2}px`;
+        //       tail.style.display = "none";
+        //       return;
+        //  }
     
         let top, left, tailDirection;
     
         // Calculating the tail direction and bubble position
-        if(spaceRight > guideWidth){
-            left = rect.right + 10 + window.scrollX;
-            top = targetCentreY - guideHeight / 2;
-            tailDirection = "left";
-        }else if(spaceLeft > guideWidth){
+        if(spaceLeft > guideWidth){
             left = rect.left - guideWidth - 10 + window.scrollX;
             top = targetCentreY - guideHeight / 2;
             tailDirection = "right";
+        }else if(spaceRight > guideWidth){
+            left = rect.right + 10 + window.scrollX;
+            top = targetCentreY - guideHeight / 2;
+            tailDirection = "left";
         }else if(spaceBelow >= spaceAbove){
-            left = targetCentreX - (guideWidth / 2);
-            top = rect.top - guideHeight - 10 + window.scrollY;
-            tailDirection = "bottom";
-        }else{
             left = targetCentreX - (guideWidth / 2);
             top = rect.bottom + 10 + window.scrollY;
             tailDirection = "top";
+        }else{
+            left = targetCentreX - (guideWidth / 2);
+            top = rect.top - guideHeight - 10 + window.scrollY;
+            tailDirection = "bottom";
         }
     
         // Ensure the bubble remains within the viewport
@@ -175,6 +184,8 @@ class InteractiveGuide{
         guide.style.transform = "none";
     
         // Set up the tail
+        tail.style.display = "block";
+        tail.style.borderStyle = "solid";
         this.positionTail({ pointed: step.pointed, tailDirection, targetRect: rect });
     }
     
@@ -191,29 +202,29 @@ class InteractiveGuide{
 
         const guideRect = guide.getBoundingClientRect();
 
-        if(tailDirection === "left"){
-            tail.style.borderWidth = "10px 10px 10px 0";
-            tail.style.borderColor = "transparent white transparent transparent";
-            tail.style.top = `${targetRect.top + targetRect.height/2 - guideRect.top - 10}px`;
-            tail.style.left = `-10px`;
-        }else if(tailDirection === "right"){
+        if(tailDirection === "right"){
             tail.style.borderWidth = "10px 0 10px 10px";
-            tail.style.borderColor = "transparent transparent transparent white";
+            tail.style.borderColor = "transparent transparent transparent #e7e7e7";
             tail.style.top = `${targetRect.top + targetRect.height/2 - guideRect.top - 10}px`;
             tail.style.left = `${guideRect.width}px`;
+        }else if(tailDirection === "left"){
+            tail.style.borderWidth = "10px 10px 10px 0";
+            tail.style.borderColor = "transparent #e7e7e7 transparent transparent";
+            tail.style.top = `${targetRect.top + targetRect.height/2 - guideRect.top - 10}px`;
+            tail.style.left = `-10px`;
         }else if(tailDirection === "bottom"){
             // Tail at bottom of bubble (points up)
-            tail.style.borderWidth = "0 10px 10px 10px";
-            tail.style.borderColor = "transparent transparent white transparent";
+            tail.style.borderWidth = "10px 10px 0 10px";
+            tail.style.borderColor = "#e7e7e7 transparent transparent transparent";
             tail.style.top = `${guideRect.height}px`;
             tail.style.left = `${targetRect.left + targetRect.width/2 - guideRect.left - 10}px`;
         }else if (tailDirection === "top"){
             // Tail at top of bubble (points down)
-            tail.style.borderWidth = "10px 10px 0 10px";
-            tail.style.borderColor = "white transparent transparent transparent";
+            tail.style.borderWidth = "0 10px 10px 10px";
+            tail.style.borderColor = "transparent transparent #e7e7e7 transparent";
             tail.style.top = `-10px`;
             tail.style.left = `${targetRect.left + targetRect.width/2 - guideRect.left - 10}px`;
-        }        
+        }
     }
 
     applySpotlighting(step){
