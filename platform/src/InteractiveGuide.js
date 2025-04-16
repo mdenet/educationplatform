@@ -25,12 +25,12 @@ class InteractiveGuide{
         this.guide = document.createElement("div");
         this.guide.id = "guide";
         this.guide.innerHTML = `
+            <span id="guide-close" class="guide-close">X</span>
             <div id="guide-content"></div>
             <div id="guide-tail"></div>
             <div id="guide-buttons">
                 <button id="guide-prev">Prev</button>
                 <button id="guide-next">Next</button>
-                <button id="guide-close">Close</button>
             </div>`;
         this.guide.style.zIndex = "105";
         document.body.appendChild(this.guide);
@@ -56,7 +56,7 @@ class InteractiveGuide{
         });
 
         document.addEventListener("mousemove", (e) => {
-        if (isDragging) {
+        if(isDragging){
             elem.style.top = `${e.clientY - offsetY}px`;
             elem.style.left = `${e.clientX - offsetX}px`;
             // Hide the tail while dragging
@@ -66,12 +66,12 @@ class InteractiveGuide{
         });
 
         document.addEventListener("mouseup", () => {
-        if (isDragging) {
+        if(isDragging){
             isDragging = false;
             // If the current step is pointed, reposition the tail
             const step = this.instructions[this.currentStep];
-            if (step.pointed) {
-            this.positionTail(step);
+            if(step.pointed){
+                this.positionTail(step);
             }
         }
         });
@@ -100,7 +100,7 @@ class InteractiveGuide{
         }else if(step.pointed){
             this.positionTextBubble(step);
         }
-        this.applyHighlighting(step);
+        this.applySpotlighting(step);
         this.manageGuideButtons();
     }
 
@@ -128,54 +128,58 @@ class InteractiveGuide{
         const tail = document.getElementById("guide-tail");
         tail.style.display = "block";
         tail.style.borderStyle = "solid";
-
+    
         const targetElement = document.querySelector(step.pointed);
         if (!targetElement) return;
-
-        // Getting the target's position and size
+    
+        // Get target element's position and size
         const rect = targetElement.getBoundingClientRect();
-        // ! put brackets around rect.height and weidth / 2?
         const targetCentreX = rect.left + rect.width / 2 + window.scrollX;
         const targetCentreY = rect.top + rect.height / 2 + window.scrollY;
         const guideWidth = guide.offsetWidth;
         const guideHeight = guide.offsetHeight;
-
-        // Determine available space on left/right sides
+    
+        // Determine available space around the target
         const spaceRight = window.innerWidth - (rect.right + 10);
         const spaceLeft = rect.left - 10;
-
+        const spaceBelow = window.innerHeight - rect.bottom - 10;
+        const spaceAbove = rect.top - 10;
+    
         let top, left, tailDirection;
-
-        // Place bubble on the right if there is more space
+    
+        // Calculating the tail direction and bubble position
         if(spaceRight > guideWidth){
             left = rect.right + 10 + window.scrollX;
             top = targetCentreY - guideHeight / 2;
             tailDirection = "left";
-        }else if(spaceLeft > guideWidth) {
-            // Place bubble on the left
+        }else if(spaceLeft > guideWidth){
             left = rect.left - guideWidth - 10 + window.scrollX;
             top = targetCentreY - guideHeight / 2;
             tailDirection = "right";
-        }else{
-            // Place bubble above the target element
-            left = targetCentreX - guideWidth / 2;
+        }else if(spaceBelow >= spaceAbove){
+            left = targetCentreX - (guideWidth / 2);
             top = rect.top - guideHeight - 10 + window.scrollY;
             tailDirection = "bottom";
+        }else{
+            left = targetCentreX - (guideWidth / 2);
+            top = rect.bottom + 10 + window.scrollY;
+            tailDirection = "top";
         }
-
-        // Ensure the bubble stays within viewport
+    
+        // Ensure the bubble remains within the viewport
         top = Math.max(window.scrollY + 10, Math.min(top, window.scrollY + window.innerHeight - guideHeight - 10));
         left = Math.max(window.scrollX + 10, Math.min(left, window.scrollX + window.innerWidth - guideWidth - 10));
-
+    
         guide.style.top = `${top}px`;
         guide.style.left = `${left}px`;
         guide.style.transform = "none";
-
-        // Position the tail based on computed direction
+    
+        // Set up the tail
         this.positionTail({ pointed: step.pointed, tailDirection, targetRect: rect });
     }
+    
 
-    // Position the tail o
+    // Position the tail
     positionTail({ tailDirection, targetRect }){
         const guide = document.getElementById("guide");
         const tail = document.getElementById("guide-tail");
@@ -188,101 +192,91 @@ class InteractiveGuide{
         const guideRect = guide.getBoundingClientRect();
 
         if(tailDirection === "left"){
-            // Tail on left side of bubble, pointing to target's centre vertically
             tail.style.borderWidth = "10px 10px 10px 0";
             tail.style.borderColor = "transparent white transparent transparent";
             tail.style.top = `${targetRect.top + targetRect.height/2 - guideRect.top - 10}px`;
             tail.style.left = `-10px`;
         }else if(tailDirection === "right"){
-            // Tail on right side of bubble
             tail.style.borderWidth = "10px 0 10px 10px";
             tail.style.borderColor = "transparent transparent transparent white";
             tail.style.top = `${targetRect.top + targetRect.height/2 - guideRect.top - 10}px`;
             tail.style.left = `${guideRect.width}px`;
         }else if(tailDirection === "bottom"){
-            // Tail at bottom of bubble
+            // Tail at bottom of bubble (points up)
             tail.style.borderWidth = "0 10px 10px 10px";
             tail.style.borderColor = "transparent transparent white transparent";
             tail.style.top = `${guideRect.height}px`;
             tail.style.left = `${targetRect.left + targetRect.width/2 - guideRect.left - 10}px`;
         }else if (tailDirection === "top"){
-            // ! I have no top case. Figure it out
-            // Tail at top of bubble
+            // Tail at top of bubble (points down)
             tail.style.borderWidth = "10px 10px 0 10px";
             tail.style.borderColor = "white transparent transparent transparent";
             tail.style.top = `-10px`;
             tail.style.left = `${targetRect.left + targetRect.width/2 - guideRect.left - 10}px`;
-        }
+        }        
     }
 
-    applyHighlighting(step){
+    applySpotlighting(step){
         const panels = Array.from(document.querySelectorAll("[data-role='panel']")).map(elem => elem.parentElement).filter(elem => elem !== null);
-        console.log(panels);
 
         panels.forEach(panel => {
-        panel.style.opacity = "0.3";
-        panel.style.zIndex = "";
+            panel.style.opacity = "0.3";
+            panel.style.zIndex = "";
         });  
 
-        let panelsToHighlight = [];
+        let panelsToSpotlight = [];
 
         // Check for pointed element and its parent
         if(step.pointed){
-        console.log(step.pointed);
-        const element = document.querySelector(step.pointed);
-        if(element && element.parentElement && !panelsToHighlight.includes(element.parentElement)){
-            panelsToHighlight.push(element.parentElement);
-        }
-        }
-        console.log(panelsToHighlight);
-
-        // ! Remove?
-        if(panelsToHighlight.length < 1){
-        return;
+            const element = document.querySelector(step.pointed);
+            if(element && element.parentElement && !panelsToSpotlight.includes(element.parentElement)){
+                panelsToSpotlight.push(element.parentElement);
+            }
         }
     
-        // Check for highlighted element and its parent
-        console.log(step.highlighted);
-        if(step.highlighted){
-        step.highlighted.forEach(panel => {
-            const element = document.querySelector(panel);
-            if(element && element.parentElement){
-            console.log(element.parentElement);
-            panelsToHighlight.push(element.parentElement);
-            }
-        });
+        // Check for spotlighted element and its parent
+        if(step.spotlighted){
+            step.spotlighted.forEach(panel => {
+                const element = document.querySelector(panel);
+                if(element && element.parentElement){
+                    panelsToSpotlight.push(element.parentElement);
+                }
+            });
         }
-        console.log(panelsToHighlight);
 
-        panelsToHighlight.forEach(panel => {
-        panel.style.opacity = "1";
-        panel.style.position = "relative";
-        panel.style.zIndex = "102";
+        panelsToSpotlight.forEach(panel => {
+            panel.style.opacity = "1";
+            panel.style.position = "relative";
+            panel.style.zIndex = "102";
         });
     }
 
-    prevStep() {
-        if (this.currentStep > 0) {
-        this.showStep(this.currentStep - 1);
+    prevStep(){
+        if(this.currentStep > 0){
+            this.showStep(this.currentStep - 1);
         }
     }
 
-    nextStep() {
-        if (this.currentStep < this.instructions.length - 1) {
-        this.showStep(this.currentStep + 1);
+    nextStep(){
+        if(this.currentStep < this.instructions.length - 1){
+            this.showStep(this.currentStep + 1);
         }
     }
 
     // Close the guide and reset styles
-    closeGuide() {
-        document.getElementById("guide-overlay").remove();
-        document.getElementById("guide").remove();
+    closeGuide(){
+        const overlay = document.getElementById("guide-overlay");
+        const guide = document.getElementById("guide");
+        if (overlay) overlay.remove();
+        if (guide) guide.remove();
+
         const panels = Array.from(document.querySelectorAll("[data-role='panel']")).map(elem => elem.parentElement);
         panels.forEach(panel => {
             panel.style.opacity = "1";
             panel.style.zIndex = "";
         });
     }
+
 }
 
 export { InteractiveGuide };

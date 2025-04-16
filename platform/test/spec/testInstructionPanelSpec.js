@@ -1,10 +1,11 @@
 import { InstructionPanel } from "../../src/InstructionPanel";
+import { marked } from 'marked';
 
 const fileHandler = {
     fetchFile: jasmine.createSpy("fetchFile").and.callFake((url, isPrivate) => {
         // For testing, return an object with content
         return{
-            content: "# Header1 Introduction\nText\n- Step 1 <!-- { pointed: console, highlighted: panel1, panel2 } -->\n- Step 2"
+            content: "# Header1 Introduction\nText\n- Step 1 <!-- { pointed: console, spotlighted: panel1, panel2 } -->\n- Step 2"
         };
     })
 };
@@ -37,44 +38,6 @@ describe("InstructionPanel", () => {
         expect(elem.classList.contains("instruction-panel")).toBe(true);
         // expect(elem.style.overflow).toBe("auto");
         // expect(elem.style.padding).toBe("10px");
-    });
-
-    it("parses markdown headers correctly", () => {
-        const input = "# Header"
-        const output = panel.parseMarkdown(input);
-        expect(output).toBe("<h1>Header</h1>");
-    });
-
-    it("parses markdown bold text correctly", () => {
-        const input1 = "**Bold**";
-        const input2 = "__Bold__";
-
-        const output1 = panel.parseMarkdown(input1);
-        const output2 = panel.parseMarkdown(input2);
-
-        expect(output1).toBe("<b>Bold</b>");
-        expect(output2).toBe("<b>Bold</b>")
-    });
-
-    it("parses markdown italicised text correctly", () => {
-        const input1 = "*Italics*";
-        const input2 = "_Italics_";
-
-        const output1 = panel.parseMarkdown(input1);
-        const output2 = panel.parseMarkdown(input2);
-
-        expect(output1).toBe("<i>Italics</i>");
-        expect(output2).toBe("<i>Italics</i>")
-    });
-
-    it("parses markdown hyperlinks correctly", () => {
-        const input = ""
-
-        const output1 = panel.parseMarkdown(input1);
-        const output2 = panel.parseMarkdown(input2);
-
-        expect(output1).toBe("<b>Bold1</b>");
-        expect(output2).toBe("<b>Bold2</b>")
     });
 
     it("loads instructions via the file handler", async function(){
@@ -122,11 +85,20 @@ describe("InstructionPanel", () => {
         expect(panel.startGuide).toHaveBeenCalledWith(instructions);
     });
 
+    it("handles incorrect metadata correctly", () => {
+        const markdownText = "- Step <!-- { invalidMetadata } -->";
+        const instructionsArray = panel.createInstructionsArray(markdownText);
+        // no key set for incorrect metadata, default to centred
+        expect(instructionsArray[0].centred).toBe(true);
+        expect(instructionsArray[0].pointed).toBeUndefined();
+        expect(instructionsArray[0].spotlighted).toBeUndefined();
+    });
+
     it("creates the correct instructions array from the markdown input", () => {
         const markdownText = `
             # Header
             Text
-            - Step 1 <!-- { pointed: console, highlighted: panel1, panel2 } -->
+            - Step 1 <!-- { pointed: console, spotlighted: panel1, panel2 } -->
             - Step 2
         `;
         const instructionsArray = panel.createInstructionsArray(markdownText);
@@ -137,10 +109,21 @@ describe("InstructionPanel", () => {
 
         expect(instructionsArray[1].text).toContain("Step 1");
         expect(instructionsArray[1].pointed).toBe("#consolePanel");
-        expect(instructionsArray[1].highlighted).toEqual(["#panel1Panel", "#panel2Panel"]);
+        expect(instructionsArray[1].spotlighted).toEqual(["#panel1Panel", "#panel2Panel"]);
 
         expect(instructionsArray[2].text).toContain("Step 2");
         expect(instructionsArray[2].centred).toBe(true);
+    });
+
+    it("parses non-list text into one instruction block", () => {
+        const markdownText = `
+            Line 1
+            Line 2
+            Line 3
+        `;
+        const instructionsArray = panel.createInstructionsArray(markdownText);
+        expect(instructionsArray[0].centred).toBe(true);
+        expect(instructionsArray.length).toBe(1);
     });
 
     it("saves and retrieves checkbox state from localStorage", () => {
@@ -156,4 +139,6 @@ describe("InstructionPanel", () => {
         expect(panel.element.style.flexBasis).toBe("100%");
         expect(panel.element.style.overflow).toBe("auto");
     });
+
+    // ! test failed path?
 });

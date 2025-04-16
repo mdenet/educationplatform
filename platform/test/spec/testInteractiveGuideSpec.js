@@ -3,8 +3,8 @@ import { InteractiveGuide } from "../../src/InteractiveGuide";
 describe("InteractiveGuide", () => {
     let guide;
     const instructions = [
-        { text: "Step 1", highlighted: ["#panel1Panel"] },
-        { text: "Step 2", highlighted: ["#panel2Panel"] }
+        { text: "Step 1", spotlighted: ["#panel1Panel"] },
+        { text: "Step 2", spotlighted: ["#panel2Panel"] }
     ];
 
     beforeEach(() => {
@@ -55,7 +55,6 @@ describe("InteractiveGuide", () => {
         expect(prevButton).not.toBeNull();
       });
 
-
     it("removes the tail when the text box is dragged", () => {
         const tail = guide.container.querySelector("#guide-tail");
         expect(tail).not.toBeNull();
@@ -87,5 +86,60 @@ describe("InteractiveGuide", () => {
 
         expect(guide.showStep).toHaveBeenCalledWith(1);
         expect(textBox.innerHTML).toBe(instructions[1].text);
+    });
+
+    it("resets styles upon closing the guide", () => {
+        const panel = document.createElement("div");
+        panel.setAttribute("data-role", "panel");
+        const panelSpotlight = document.createElement("div");
+        panelSpotlight.appendChild(panel);
+        panelSpotlight.id = "spotlightWrapper";
+        document.body.appendChild(panelSpotlight);
+        
+        // Apply styles to simulate spotlighting.
+        panelSpotlight.style.opacity = "0.3";
+        panelSpotlight.style.zIndex = "102";
+        
+        guide.closeGuide();
+
+        // Check that the overlay and guide elements have been removed.
+        expect(document.getElementById("guide-overlay")).toBeNull();
+        expect(document.getElementById("guide")).toBeNull();
+        // Check that the dummy panel's parent wrapper has its style reset.
+        expect(panelSpotlight.style.opacity).toBe("1");
+        expect(panelSpotlight.style.zIndex).toBe("");
+        panelSpotlight.parentNode.removeChild(panelSpotlight);
+    });
+
+    it("applies spotlighting correctly", () => {
+        const panel1 = document.createElement("div");
+        panel1.setAttribute("data-role", "panel");
+        const panel1Spotlight = document.createElement("div");
+        panel1Spotlight.id = "panel1Panel";
+        panel1Spotlight.appendChild(panel1);
+        document.body.appendChild(panel1Spotlight);
+
+        const panel2 = document.createElement("div");
+        panel2.setAttribute("data-role", "panel");
+        const panel2Spotlight = document.createElement("div");
+        panel2Spotlight.id = "panel2Panel";
+        panel2Spotlight.appendChild(panel2);
+        document.body.appendChild(panel2Spotlight);
+
+        guide.applySpotlighting({ spotlighted: ["#panel1Panel"] });
+      
+        // Check the styling of both panels
+        document.querySelectorAll("[data-role='panel']").forEach(panel => {
+            const parent = panel.parentElement;
+            if(parent.id === "panel1Panel"){
+                expect(parent.style.opacity).toBe("1");
+                expect(parent.style.zIndex).toBe("102");
+            }else{
+                expect(parent.style.opacity).toBe("0.3");
+            }
+        });
+      
+        panel1Spotlight.parentNode.removeChild(panel1Spotlight);
+        panel2Spotlight.parentNode.removeChild(panel2Spotlight);
     });
 });

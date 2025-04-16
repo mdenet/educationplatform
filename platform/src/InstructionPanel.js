@@ -2,36 +2,38 @@
 import { Panel } from "./Panel.js";
 import { InteractiveGuide } from "./InteractiveGuide.js";
 import { urlParamPrivateRepo } from './Utility.js';
+import { marked } from 'marked';
+import { ErrorHandler } from "./ErrorHandler.js";
+
+const errorHandler = new ErrorHandler();
 
 class InstructionPanel extends Panel {
-    
     constructor(id, instructionUrl, fileHandler) {
         super(id);
         this.instructionUrl = instructionUrl;
         this.fileHandler = fileHandler;
     }
 
-    initialize() {
+    initialize(){
         this.getElement();  // ! is this line necessary
         this.loadInstructions();
         setTimeout(() => this.adjustPanelSize(), 0);    // setTimeout adjusts panel size after it has been created
     }
 
-    async loadInstructions() {
-        console.log("InstructionPanel.js: " + this.instructionUrl);
-        try {
+    async loadInstructions(){
+        try{
             // Fetches file depending on if public or private
             const isPrivate = urlParamPrivateRepo();
             const fileResult = this.fileHandler.fetchFile(this.instructionUrl, isPrivate);
-            if (fileResult) {
+            if(fileResult){
                 // Use the file content returned by the FileHandler
                 this.renderInstructionPanel(fileResult.content);
                 this.splitInstructions(fileResult.content);
-            } else {
-                console.error("Failed to load instructions via FileHandler.");
+            }else{
+                errorHandler.notify("Failed to load instructions from: " + this.instructionUrl);
             }
-        } catch (error) {
-            console.error("Error loading instructions:", error);
+        }catch(error){
+            errorHandler.notify("Error loading instructions:", error);
         }
     }
 
@@ -41,46 +43,11 @@ class InstructionPanel extends Panel {
     }
 
     renderMarkdown(text){
-        if (this.element) {
-            this.element.innerHTML = this.parseMarkdown(text);
+        if(this.element){
+            this.element.innerHTML = marked(text);
         }
-        console.log(this.createInstructionsArray(text));
     }
 
-    // ! https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
-    parseMarkdown(text){
-        // Headers
-        text = text.replace(/^(#{1,6})\s*(.*)$/gm, (_, hashes, content) => {
-            const level = Math.min(hashes.length, 6);
-            return `<h${level}>${content}</h${level}>`;
-        });
-    
-        // Bold, italic, hyperlink
-        text = text.replace(/(\*\*|__)(.*?)\1/g, '<b>$2</b>')
-                    .replace(/(\*|_)(.*?)\1/g, '<i>$2</i>')
-                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
-    
-        // Ordered lists
-        text = text.replace(/(?:^|\n)(\d+\.\s+.*(?:\n\d+\.\s+.*)*)/gm, match => {
-            let items = match.trim().split(/\n\d+\.\s+/).map(item => item.replace(/^\d+\.\s*/, ''));
-            return `<ol>${items.map(item => `<li>${item}</li>`).join('')}</ol>`;
-        });
-    
-        // Unordered lists
-        text = text.replace(/(?:^|\n)([-*]\s+.*(?:\n[-*]\s+.*)*)/gm, match => {
-            let items = match.trim().split(/\n[-*]\s+/).map(item => item.replace(/^[-*]\s*/, ''));
-            return `<ul>${items.map(item => `<li>${item}</li>`).join('')}</ul>`;
-        });
-
-        // Line breaks
-        text = text.replace(/(?<!<li>|<h\d+>)\n/g, '<br>');
-    
-        // Prevent extra line breaks after headers and lists
-        text = text.replace(/(<\/h\d+>|<\/ul>|<\/ol>)\s*<br>/g, '$1');
-    
-        return text;
-    }
-    
     createElement(){
         const root = document.createElement("div");
         root.setAttribute("data-role", "panel");
@@ -114,11 +81,13 @@ class InstructionPanel extends Panel {
             checkbox.className = "instruction-checkbox"
             // Get checkbox save state from local storage
             checkbox.checked = this.getCheckboxState(index);
+            checkbox.style.marginLeft = "auto";
+            
             checkbox.addEventListener("change", () => {
                 this.saveCheckboxState(index, checkbox.checked);
                 this.updateProgressBar();
             });
-            li.insertBefore(checkbox, li.firstChild);
+            li.appendChild(checkbox);
         });
     }
     createProgressBar(){
@@ -200,130 +169,117 @@ class InstructionPanel extends Panel {
 
     startGuide(instructions){
         if(instructions){
-            console.log("startGuide instructions:");
-            console.log(instructions);
-
             new InteractiveGuide(instructions);
         }else{
             console.error("Guide could not start as instructions array is not set")
         }
     }
 
-    // TODO CHECK THIS FUNCTION PROPERLY
     // Creates an array of instructions from the markdown
-    createInstructionsArray(text){
-        const lines = text.split('\n');
+    createInstructionsArray(markdownText) {
+        const lines = markdownText.split('\n');
         const instructionsArray = [];
-        let currentText = "";
+        let currentBlock = '';
 
-        const boldRegex = /\*\*(.*?)\*\*|__(.*?)__/g;
-        const italicRegex = /\*(.*?)\*|_(.*?)_/g;
-        const linkRegex = /\[(.*?)\]\((.*?)\)/g;
-        const metadataRegex = /\{(.*?)\}/;
+        // Convert block of text to HTML and push to array
+        const pushCurrentBlock = () => {
+            if(currentBlock.trim()){
+                const htmlText = marked.parseInline(currentBlock.trim());
+                instructionsArray.push({ text: htmlText, centred: true });
+                currentBlock = '';
+            }
+        };
 
-        function formatText(text){
-            return text
-                .replace(linkRegex, (_, txt, url) => `<a href="${url}" target="_blank">${txt}</a>`)
-                .replace(boldRegex, (_, g1, g2) => `<strong>${g1 || g2}</strong>`)
-                .replace(italicRegex, (_, g1, g2) => `<em>${g1 || g2}</em>`);
-        }
+        // Add a line to the current text block
+        const addLineToBlock = (line) => {
+            if(!currentBlock){
+                currentBlock = line;
+            }else if(/<\/h[1-6]>$/.test(currentBlock.trim())){
+                // If there is a header, the text after it is added to the block, rather than starting a new block
+                currentBlock += line;
+            }else{
+                currentBlock += "\n" + line;
+            }
+        };
 
-        function getMetadata(metaString){
-            if (!metaString) return {};
+        // Extract metadata from comments
+        const getMetadata = (comment) => {
+            if (!comment) return {};
 
-            const content = metaString.match(metadataRegex)?.[1];
-            if (!content) return {};
+            const match = comment.match(/\{(.*?)\}/);
+            if (!match) return {};
 
-            // Split metadata attributes based on commas in the comment and trim each part
-            const parts = content.split(',').map(part => part.trim());
-            const metaObj = {};
+            const metadata = {};
+            const metadataItems = match[1].split(',').map(part => part.trim());
             let currentKey = null;
-            for(let part of parts){
-                if(part.includes(':')){
-                    // When a colon is present, parse the key and value
-                    let [key, value] = part.split(':').map(s => s.trim());
+
+            for(let item of metadataItems){
+                if(item.includes(':')){
+                    let [key, value] = item.split(':').map(s => s.trim());
                     currentKey = key;
 
-                    if(key === 'highlighted'){
-                        metaObj[key] = [`#${value}Panel`];
+                    if(key === 'spotlighted'){
+                        metadata[key] = [`#${value}Panel`];
                     }else{
-                        metaObj[key] = `#${value}Panel`;
+                        metadata[key] = `#${value}Panel`;
                     }
                 }else{
-                    // Create an array for highlighted values
-                    if(currentKey === 'highlighted'){
-                        metaObj[currentKey].push(`#${part}Panel`);
+                    // If there is no colon, append to the spotlighted array if that was the current key.
+                    if(currentKey === 'spotlighted'){
+                        metadata[currentKey].push(`#${item}Panel`);
+                        // ! test this
+                    }else if(currentKey === 'pointed'){
+                        errorHandler.notify(`Multiple pointed values detected, ignoring ${part}`)
                     }
                 }
             }
-            return metaObj;
-        }
-
-        // Push the currentText as a new instruction if not empty.
-        const pushCurrentText = () => {
-            if (currentText.trim()) {
-                instructionsArray.push({ text: formatText(currentText.trim()), centred: true });
-                currentText = "";
-            }
+            return metadata;
         };
 
-        // Append a new line to currentText.
-        const appendLine = (line) => {
-            if(!currentText){
-                currentText = line;
-            }else if (/<\/h[1-6]>$/.test(currentText)){
-                // If currentText ends with a header, append without a <br>
-                currentText += line;
-            }else{
-                currentText += "<br>" + line;
-            }
-        };
-
+        // Process each line
         for(const line of lines){
             const trimmedLine = line.trim();
             if (!trimmedLine) continue;
 
-            // Process headers
+            // Check if the line is a header
             const headerMatch = trimmedLine.match(/^(#{1,6})\s*(.*)$/);
             if(headerMatch){
-                pushCurrentText(); // push previous text block
+                pushCurrentBlock(); // Push the current text block before starting a header
                 const level = headerMatch[1].length;
-                currentText = `<h${level}>${headerMatch[2]}</h${level}>`;
+                const headerContent = marked.parseInline(headerMatch[2].trim());
+                currentBlock = `<h${level}>${headerContent}</h${level}>`;
+                // Continue to next line so that non-list lines are added to this block
                 continue;
             }
 
-            // Process list items
-            // ! Test if the x3C match is even necessary
-            const listMatch = trimmedLine.match(/^[*-]\s*(.*?)\s*(?:(?:<|\\x3C)!--\s*(\{.*\})\s*-->)?$/) ||
-                              trimmedLine.match(/^\d+\.\s*(.*?)\s*(?:(?:<|\\x3C)!--\s*(\{.*\})\s*-->)?$/);
+            // Check for list items
+            const listMatch =
+                trimmedLine.match(/^[*-]\s*(.*?)\s*(?:(?:<|\\x3C)!--\s*(\{.*\})\s*-->)?$/) ||
+                trimmedLine.match(/^\d+\.\s*(.*?)\s*(?:(?:<|\\x3C)!--\s*(\{.*\})\s*-->)?$/);
+
             if(listMatch){
-                pushCurrentText();
-                const [, listText, meta] = listMatch;
-                const metaObj = getMetadata(meta);
-                if(!meta || Object.keys(metaObj).length === 0){
-                    metaObj.centred = true;
+                pushCurrentBlock(); // Push the current text block before the new list item
+                const listItemText = listMatch[1];
+                const metadataComment = listMatch[2];
+                const metadata = getMetadata(metadataComment);
+
+                // If no metadata is provided, default to centred
+                if(!metadataComment || Object.keys(metadata).length === 0){
+                    metadata.centred = true;
                 }
-                instructionsArray.push({
-                    text: formatText(listText),
-                    ...metaObj
-                });
-                // ? The above version makes lists centred if they have no metadata
-                // const [, text, meta] = match;
-                // instructionsArray.push({
-                //     text: formatText(text),
-                //     ...getMetadata(meta)
-                // });
+
+                const htmlText = marked.parseInline(listItemText.trim());
+                instructionsArray.push({ text: htmlText, ...metadata });
                 continue;
             }
 
-            // Default case: append line to currentText
-            appendLine(line);
+            // For any other line of text, treat it as part of the header block
+            addLineToBlock(line);
         }
         
-        pushCurrentText();
+        pushCurrentBlock();
         return instructionsArray;
     }
-
 }
 
 export { InstructionPanel };
