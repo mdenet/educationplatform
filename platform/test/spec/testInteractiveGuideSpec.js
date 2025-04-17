@@ -8,40 +8,20 @@ describe("InteractiveGuide", () => {
     ];
 
     beforeEach(() => {
+        const existingOverlay = document.getElementById("guide-overlay");
+        if (existingOverlay) existingOverlay.remove()
+        const existingGuide = document.getElementById("guide");
+        if (existingGuide) existingGuide.remove();
         guide = new InteractiveGuide(instructions);
-
-        // For the test, a container element is appended to the document
-        if (!guide.container) {
-            guide.container = document.createElement("div");
-            guide.container.id = "guide";
-
-            const nextButton = document.createElement("button");
-            nextButton.id = "guide-next";
-            nextButton.innerText = "Next";
-            guide.container.appendChild(nextButton);
-
-            const textBox = document.createElement("div");
-            textBox.id = "guide-content";
-            textBox.setAttribute("draggable", "true");
-            guide.container.appendChild(textBox);
-
-            const tail = document.createElement("div");
-            tail.id = "guide-tail";
-            guide.container.appendChild(tail);
-
-            document.body.appendChild(guide.container);
-        }
     });
 
     afterEach(() => {
-        if(guide.container && guide.container.parentNode){
-            guide.container.parentNode.removeChild(guide.container);
-        }
+        guide.closeGuide();
     });
 
     it("displays no previous button on the first step", () => {
-        const prevButton = guide.container.querySelector("#guide-prev");
-        expect(prevButton).toBeNull();
+        const prevButton = document.getElementById("guide-prev");
+        expect(prevButton.style.display).toBe("none");
     });
 
     it("displays no next button on the final step", () => {
@@ -56,19 +36,14 @@ describe("InteractiveGuide", () => {
       });
 
     it("removes the tail when the text box is dragged", () => {
-        const tail = guide.container.querySelector("#guide-tail");
+        const tail = document.getElementById("guide-tail");
         expect(tail).not.toBeNull();
 
-        const textBox = guide.container.querySelector("#guide-content");
+        const textBox = document.getElementById("guide-content");
 
-        textBox.addEventListener("dragStart", () => {
-            tail.style.display = "none";
-        });
-
-        textBox.dispatchEvent(new Event("dragStart"));
-
-        const tailAfterDrag = guide.container.querySelector("#guide-tail");
-        expect(tailAfterDrag.style.display).toBe("none");
+        textBox.dispatchEvent(new MouseEvent("mousedown", { clientX: 100, clientY: 100, bubbles: true }));
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 150, clientY: 150, bubbles: true }));
+        expect(tail.style.display).toBe("none");
       });
 
     it("updates the text box when navigating steps", () => {
@@ -91,14 +66,14 @@ describe("InteractiveGuide", () => {
     it("resets styles upon closing the guide", () => {
         const panel = document.createElement("div");
         panel.setAttribute("data-role", "panel");
-        const panelSpotlight = document.createElement("div");
-        panelSpotlight.appendChild(panel);
-        panelSpotlight.id = "spotlightWrapper";
-        document.body.appendChild(panelSpotlight);
+
+        const panelContainer = document.createElement("div");
+        panelContainer.appendChild(panel);
+        document.body.appendChild(panelContainer);
         
         // Apply styles to simulate spotlighting.
-        panelSpotlight.style.opacity = "0.3";
-        panelSpotlight.style.zIndex = "102";
+        panelContainer.style.opacity = "0.3";
+        panelContainer.style.zIndex = "102";
         
         guide.closeGuide();
 
@@ -106,40 +81,42 @@ describe("InteractiveGuide", () => {
         expect(document.getElementById("guide-overlay")).toBeNull();
         expect(document.getElementById("guide")).toBeNull();
         // Check that the dummy panel's parent wrapper has its style reset.
-        expect(panelSpotlight.style.opacity).toBe("1");
-        expect(panelSpotlight.style.zIndex).toBe("");
-        panelSpotlight.parentNode.removeChild(panelSpotlight);
+        expect(panelContainer.style.opacity).toBe("1");
+        expect(panelContainer.style.zIndex).toBe("");
+        panelContainer.remove();
     });
 
     it("applies spotlighting correctly", () => {
         const panel1 = document.createElement("div");
         panel1.setAttribute("data-role", "panel");
-        const panel1Spotlight = document.createElement("div");
-        panel1Spotlight.id = "panel1Panel";
-        panel1Spotlight.appendChild(panel1);
-        document.body.appendChild(panel1Spotlight);
+        panel1.id = "panel1Panel";
+        const container1 = document.createElement("div");
+        container1.appendChild(panel1);
+        document.body.appendChild(container1);
 
         const panel2 = document.createElement("div");
         panel2.setAttribute("data-role", "panel");
-        const panel2Spotlight = document.createElement("div");
-        panel2Spotlight.id = "panel2Panel";
-        panel2Spotlight.appendChild(panel2);
-        document.body.appendChild(panel2Spotlight);
+        panel2.id = "panel2Panel";
+        const container2 = document.createElement("div");
+        container2.appendChild(panel2);
+        document.body.appendChild(container2);
 
         guide.applySpotlighting({ spotlighted: ["#panel1Panel"] });
       
         // Check the styling of both panels
-        document.querySelectorAll("[data-role='panel']").forEach(panel => {
+        const panels = Array.from(document.querySelectorAll("[data-role='panel']"));
+        panels.forEach(panel => {
             const parent = panel.parentElement;
             if(parent.id === "panel1Panel"){
                 expect(parent.style.opacity).toBe("1");
                 expect(parent.style.zIndex).toBe("102");
-            }else{
+            }else if (panel.id === "panel2Panel"){
                 expect(parent.style.opacity).toBe("0.3");
+                expect(parent.style.zIndex).toBe("");
             }
         });
       
-        panel1Spotlight.parentNode.removeChild(panel1Spotlight);
-        panel2Spotlight.parentNode.removeChild(panel2Spotlight);
+        container1.remove();
+        container2.remove();
     });
 });

@@ -36,8 +36,6 @@ describe("InstructionPanel", () => {
         expect(elem.getAttribute("data-role")).toBe("panel");
         expect(elem.id).toBe("testPanel");
         expect(elem.classList.contains("instruction-panel")).toBe(true);
-        // expect(elem.style.overflow).toBe("auto");
-        // expect(elem.style.padding).toBe("10px");
     });
 
     it("loads instructions via the file handler", async function(){
@@ -140,5 +138,15 @@ describe("InstructionPanel", () => {
         expect(panel.element.style.overflow).toBe("auto");
     });
 
-    // ! test failed path?
+    it("returns an empty array for whitespace input", () => {
+        const result = panel.createInstructionsArray("  \n \n ");
+        expect(result.length).toBe(0);
+    });
+
+    it("adds a checkbox to each list item", () => {
+        panel.element.innerHTML = "<ul><li>Text 1</li><li>Text 2</li></ul>";
+        panel.addCheckboxesToSteps();
+        let checkboxes = panel.element.querySelectorAll("input.instruction-checkbox");
+        expect(checkboxes.length).toBe(2);
+    });
 });

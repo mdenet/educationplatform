@@ -218,8 +218,6 @@ body {
 	background-color: inherit;
 }
 
-/* is px really okay? */
-
 #guide-overlay {
 	position: fixed;
 	top: 0;
@@ -232,7 +230,7 @@ body {
 
 #guide-header {
     position: relative;
-    height: 20px;
+    height: 22px;
 }
 
 #guide {
@@ -253,7 +251,7 @@ body {
 #guide-content-container {
 	max-height: 170px;
 	overflow-y: auto;
-	overflow-x: hidden;
+	overflow-x: auto;
 }
 
 #guide-tail {
@@ -264,7 +262,6 @@ body {
 
 #guide-buttons {
 	display: flex;
-    /* justify-content: space-between; */
     margin-top: 10px;
 }
 
@@ -288,15 +285,14 @@ body {
 
 .guide-close {
     position: absolute;
-    top: 3px;
-    right: 7px;
+    top: 0px;
+    right: 4px;
     font-size: 14px;
     font-weight: bold;
     color: #363636;
     cursor: pointer;
 }
 
-/* Mess with the values */
 .instruction-panel {
     background-color: #f9f9f9;
     border: 1px solid #ddd;

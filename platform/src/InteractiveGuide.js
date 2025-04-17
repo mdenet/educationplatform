@@ -146,12 +146,12 @@ class InteractiveGuide{
         const spaceBelow = window.innerHeight - rect.bottom - 10;
         const spaceAbove = rect.top - 10;
 
-        // if(spaceLeft <= guideWidth && spaceRight <= guideWidth && spaceBelow <= guideHeight && spaceAbove <= guideHeight){
-        //       guide.style.top = `${targetCentreY - guideHeight / 2}px`;
-        //       guide.style.left = `${targetCentreX - guideWidth / 2}px`;
-        //       tail.style.display = "none";
-        //       return;
-        //  }
+        if(spaceLeft <= guideWidth && spaceRight <= guideWidth && spaceBelow <= guideHeight && spaceAbove <= guideHeight){
+              guide.style.top = `${targetCentreY - guideHeight / 2}px`;
+              guide.style.left = `${targetCentreX - guideWidth / 2}px`;
+              tail.style.display = "none";
+              return;
+         }
     
         let top, left, tailDirection;
     

@@ -6,8 +6,8 @@ import { ErrorHandler } from "./ErrorHandler.js";
 
 const errorHandler = new ErrorHandler();
 
-class InstructionPanel extends Panel {
-    constructor(id, instructionUrl, fileHandler) {
+class InstructionPanel extends Panel{
+    constructor(id, instructionUrl, fileHandler){
         super(id);
         this.instructionUrl = instructionUrl;
         this.fileHandler = fileHandler;
@@ -151,7 +151,7 @@ class InstructionPanel extends Panel {
     splitInstructions(text){
         try{
             const instructions = this.createInstructionsArray(text);
-
+            
             if(instructions.length > 0){
                 this.createStartGuideButton(instructions);
             }else{
