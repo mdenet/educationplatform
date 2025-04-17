@@ -151,7 +151,7 @@ class InstructionPanel extends Panel{
     splitInstructions(text){
         try{
             const instructions = this.createInstructionsArray(text);
-            
+
             if(instructions.length > 0){
                 this.createStartGuideButton(instructions);
             }else{
@@ -230,7 +230,6 @@ class InstructionPanel extends Panel{
                     // If there is no colon, append to the spotlighted array if that is the current key
                     if(currentKey === 'spotlighted'){
                         metadata[currentKey].push(`#${item}Panel`);
-                        // ! test this
                     }else if(currentKey === 'pointed'){
                         errorHandler.notify(`Multiple pointed values detected, ignoring ${part}`)
                     }
