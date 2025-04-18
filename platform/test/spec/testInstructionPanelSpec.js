@@ -1,33 +1,39 @@
 import { InstructionPanel } from "../../src/InstructionPanel";
 import { marked } from 'marked';
-
-const fileHandler = {
-    fetchFile: jasmine.createSpy("fetchFile").and.callFake((url, isPrivate) => {
-        // For testing, return an object with content
-        return{
-            content: "# Header1 Introduction\nText\n- Step 1 <!-- { pointed: console, spotlighted: panel1, panel2 } -->\n- Step 2"
-        };
-    })
-};
-
-// Assume public repo for tests
-window.urlParamPrivateRepo = () => false;
+import { ErrorHandler } from "../../src/ErrorHandler";
 
 describe("InstructionPanel", () => {
     let panel;
+    let fileHandler;
+    let errorHandlerSpy;
 
     // create new instruction panel
     beforeEach( () => {
-       panel = new InstructionPanel("test", "url", fileHandler);
-       panel.element = panel.createElement();
-       document.body.appendChild(panel.element) 
+        fileHandler = {
+            fetchFile: jasmine.createSpy("fetchFile").and.callFake((url, isPrivate) => ({
+                content:
+                    "# Header1 \n" +
+                    "Text\n" +
+                    "- Step 1 <!-- { pointed: console, spotlighted: panel1, panel2 } -->\n" +
+                    "- Step 2\n",
+            })),
+        };
+
+        // assume public repositories for tests
+        window.urlParamPrivateRepo = () => false;
+
+        panel = new InstructionPanel("test", "url", fileHandler);
+        panel.element = panel.createElement();
+        document.body.appendChild(panel.element)
+
+        const errorHandler = new ErrorHandler();
+        errorHandlerSpy = spyOn(errorHandler, "notify");
+        InstructionPanel.prototype.errorHandler = errorHandler;
     });
 
     // clean up after each test
     afterEach( () =>{
-        if(panel.element && panel.element.parentNode){
-            panel.element.parentNode.removeChild(panel.element);
-        }
+        document.body.innerHTML = "";
         localStorage.clear();
     });
 
@@ -46,6 +52,19 @@ describe("InstructionPanel", () => {
         expect(panel.renderInstructionPanel).toHaveBeenCalledWith(fileHandler.fetchFile.calls.mostRecent().returnValue.content);
         // check that some of the expected text is present after rendering
         expect(panel.element.innerHTML).toContain("Step 1");
+    });
+
+    it("returns errors when fetch fetching returns null", async () => {
+        fileHandler.fetchFile.and.returnValue(null);
+        await panel.loadInstructions();
+        expect(errorHandlerSpy).toHaveBeenCalledWith("Failed to load instructions from: " + panel.instructionUrl);
+    });
+
+    it("catches thrown errors and notifies", async () => {
+        fileHandler.fetchFile.and.throwError("network");
+        await panel.loadInstructions();
+        expect(errorHandlerSpy).toHaveBeenCalledWith("Error loading instructions:", jasmine.any(Error)
+        );
     });
 
     it("adds checkboxes to list items and update the progress bar correctly", () => {
@@ -71,7 +90,7 @@ describe("InstructionPanel", () => {
         expect(percentageLabel.innerText).toBe("50%");
     });
 
-    it("creates a 'Begin Guide' button if the instructions are in the correct format", () => {
+    it("creates a 'Start Guide' button if the instructions are in the correct format", () => {
         const instructions = [{text: "Text 1", centred: true }];
         spyOn(panel, "startGuide");
 
@@ -141,6 +160,15 @@ describe("InstructionPanel", () => {
     it("returns an empty array for whitespace input", () => {
         const result = panel.createInstructionsArray("  \n \n ");
         expect(result.length).toBe(0);
+    });
+
+    it("parses regular plaintext lines into a single block", () => {
+        const instructions = panel.createInstructionsArray("A\nB\nC");
+        expect(instructions.length).toBe(1);
+        expect(instructions[0].centred).toBe(true);
+        expect(instructions[0].text).toContain("A");
+        expect(instructions[0].text).toContain("B");
+        expect(instructions[0].text).toContain("C");
     });
 
     it("adds a checkbox to each list item", () => {

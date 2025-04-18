@@ -303,16 +303,22 @@ body {
 }
 
 .instruction-panel li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 0;
+    display: block;
+    position: relative;
+    padding-right: 40px;
     border-bottom: 1px dashed #ededed;
 }
 
 .instruction-panel li:last-child {
     border-bottom: none;
 }
+
+.instruction-panel input.instruction-checkbox {
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+  }
 
 .instruction-panel button {
     display: block;

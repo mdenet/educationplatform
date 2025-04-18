@@ -29,10 +29,10 @@ class InstructionPanel extends Panel{
                 this.renderInstructionPanel(fileResult.content);
                 this.splitInstructions(fileResult.content);
             }else{
-                errorHandler.notify("Failed to load instructions from: " + this.instructionUrl);
+                this.errorHandler.notify("Failed to load instructions from: " + this.instructionUrl);
             }
         }catch(error){
-            errorHandler.notify("Error loading instructions:", error);
+            this.errorHandler.notify("Error loading instructions:", error);
         }
     }
 
@@ -164,7 +164,7 @@ class InstructionPanel extends Panel{
 
     createStartGuideButton(instructions){
         const startButton = document.createElement("button");
-        startButton.innerText = "Begin Guide";
+        startButton.innerText = "Start Guide";
         startButton.addEventListener("click", () => this.startGuide(instructions));
         this.element.appendChild(startButton);
     }
