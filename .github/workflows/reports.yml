@@ -55,7 +55,7 @@ jobs:
         if: success() || failure() && steps.run-unit-tests.outcome == 'success'
         run: cat ./platform/reports/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
 
-    build-mac: 
+  report-mac: 
     runs-on: macos-latest
 
     steps:
