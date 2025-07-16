@@ -33,17 +33,6 @@ jobs:
       - name: Code linting
         run: npm run lint --workspaces
 
-      - name: Create lint report
-        if: success() || failure()
-        uses: dorny/test-reporter@v1
-        with:
-            name: Lint Results
-            path: "\
-             platform/reports/lint-results.xml,\
-             tokenserver/reports/lint-results.xml"
-            reporter: java-junit
-            fail-on-error: true
-
       - name: Build the education platform
         id: build-platform
         if: success() || failure()
@@ -53,36 +42,7 @@ jobs:
         id: run-unit-tests
         if: success() || failure() && steps.build-platform.outcome == 'success'
         run: npm test --workspaces
-    
-      - name: Create test report
-        uses: dorny/test-reporter@v1
-        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        with:
-          name: Unit Test Results
-          path: platform/reports/TESTS*.xml
-          reporter: java-junit
-          fail-on-error: true
-
-      - name: Setup .NET Core - for coverage report # Required to execute ReportGenerator
-        uses: actions/setup-dotnet@v4
-        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        with:
-            dotnet-version: 8.x
-            dotnet-quality: 'ga'
-
-      - name: Create coverage md report 
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.1
-        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        with:
-            reports: ./platform/reports/coverage-report.xml
-            targetdir: ./platform/reports/
-            reporttypes: MarkdownSummaryGithub
-      
-      - name: Output coverage to summary
-        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        run: cat ./platform/reports/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
-
-
+        
   build-mac: 
     runs-on: macos-latest
 
@@ -112,35 +72,6 @@ jobs:
         id: run-unit-tests
         if: success() || failure() && steps.build-platform.outcome == 'success'
         run: npm test --workspaces -- --browsers SafariNative
-    
-      - name: Create test report
-        uses: dorny/test-reporter@v1
-        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        with:
-          name: Unit Test Results - mac
-          path: platform/reports/TESTS*.xml
-          reporter: java-junit
-          fail-on-error: true
-
-      - name: Setup .NET Core - for coverage report # Required to execute ReportGenerator
-        uses: actions/setup-dotnet@v4
-        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        with:
-            dotnet-version: 8.x
-            dotnet-quality: 'ga'
-
-      - name: Create coverage md report 
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.1
-        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        with:
-            reports: ./platform/reports/coverage-report.xml
-            targetdir: ./platform/reports/
-            reporttypes: MarkdownSummaryGithub
-      
-      - name: Output coverage to summary
-        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        run: cat ./platform/reports/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
-
 
   build-win: 
     runs-on: windows-latest
@@ -172,31 +103,3 @@ jobs:
         id: run-unit-tests
         if: success() || failure() && steps.build-platform.outcome == 'success'
         run: npm test --workspaces -- --browsers EdgeHeadless
-    
-      - name: Create test report
-        uses: dorny/test-reporter@v1
-        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        with:
-          name: Unit Test Results - win
-          path: platform/reports/TESTS*.xml
-          reporter: java-junit
-          fail-on-error: true
-
-      - name: Setup .NET Core - for coverage report # Required to execute ReportGenerator
-        uses: actions/setup-dotnet@v4
-        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        with:
-            dotnet-version: 8.x
-            dotnet-quality: 'ga'
-
-      - name: Create coverage md report 
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.1
-        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        with:
-            reports: ./platform/reports/coverage-report.xml
-            targetdir: ./platform/reports/
-            reporttypes: MarkdownSummaryGithub
-      
-      - name: Output coverage to summary
-        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
-        run: Get-Content -Path ".\platform\reports\SummaryGithub.md" >> $Env:GITHUB_STEP_SUMMARY
