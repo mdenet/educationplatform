@@ -14,8 +14,6 @@ jobs:
   report-ubuntu: 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
       - name: Create lint report
         if: success() || failure()
         uses: dorny/test-reporter@v1
@@ -59,8 +57,6 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v4
-
       - name: Create lint report
         if: success() || failure()
         uses: dorny/test-reporter@v1
@@ -104,9 +100,7 @@ jobs:
     runs-on: windows-latest
     env:
       EDGE_BIN: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
-    steps:
-      - uses: actions/checkout@v4
-    
+    steps:    
       - name: Create test report
         uses: dorny/test-reporter@v1
         if: success() || failure() && steps.run-unit-tests.outcome == 'success'
