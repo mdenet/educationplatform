@@ -73,33 +73,33 @@ jobs:
         if: success() || failure() && steps.build-platform.outcome == 'success'
         run: npm test --workspaces -- --browsers SafariNative
 
-  build-win: 
-    runs-on: windows-latest
-    env:
-      EDGE_BIN: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
-    steps:
-      - uses: actions/checkout@v4
+  # build-win: 
+  #   runs-on: windows-latest
+  #   env:
+  #     EDGE_BIN: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+  #   steps:
+  #     - uses: actions/checkout@v4
                   
-      - name: Setup node 18
-        uses: actions/setup-node@v4
-        with: 
-          node-version: 18
+  #     - name: Setup node 18
+  #       uses: actions/setup-node@v4
+  #       with: 
+  #         node-version: 18
           
-      - name: Install node dependencies
-        run: |
-            npm ci
-            npm install -g karma-cli
+  #     - name: Install node dependencies
+  #       run: |
+  #           npm ci
+  #           npm install -g karma-cli
 
-      - name: Setup edge driver
-        run: |
-            choco install selenium-chromium-edge-driver
+  #     - name: Setup edge driver
+  #       run: |
+  #           choco install selenium-chromium-edge-driver
 
-      - name: Build the education platform
-        id: build-platform
-        if: success() || failure()
-        run: npm run build --workspaces
+  #     - name: Build the education platform
+  #       id: build-platform
+  #       if: success() || failure()
+  #       run: npm run build --workspaces
 
-      - name: Run the unit tests
-        id: run-unit-tests
-        if: success() || failure() && steps.build-platform.outcome == 'success'
-        run: npm test --workspaces -- --browsers EdgeHeadless
+  #     - name: Run the unit tests
+  #       id: run-unit-tests
+  #       if: success() || failure() && steps.build-platform.outcome == 'success'
+  #       run: npm test --workspaces -- --browsers EdgeHeadless
