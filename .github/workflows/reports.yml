@@ -2,8 +2,7 @@ name: 'Test Report'
 on:
   workflow_run:
     workflows: ['run-unit-tests']                     # runs after run-unit-tests workflow
-    types:
-      - completed
+    types: [completed]
 
 permissions:
   contents: read
