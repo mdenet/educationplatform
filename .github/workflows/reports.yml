@@ -12,13 +12,11 @@ permissions:
   checks: write
 
 jobs:
-  report-ubuntu: 
+  report: 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
+
       - name: Create lint report
-        if: success() || failure()
         uses: dorny/test-reporter@v2
         with:
             name: Lint Results
@@ -27,7 +25,10 @@ jobs:
             reporter: java-junit
             fail-on-error: true
     
-      - name: Create test report
+
+      # Ubuntu reports
+
+      - name: Create Ubuntu test report
         uses: dorny/test-reporter@v2
         if: success() || failure() 
         with:
@@ -36,13 +37,6 @@ jobs:
           path: "*.xml"
           reporter: java-junit
           fail-on-error: true
-
-      - name: Setup .NET Core - for coverage report # Required to execute ReportGenerator
-        uses: actions/setup-dotnet@v4
-        if: success() || failure() 
-        with:
-            dotnet-version: 8.x
-            dotnet-quality: 'ga'
 
       - name: Download Ubuntu Coverage Files 
         uses: actions/download-artifact@v4
@@ -57,6 +51,8 @@ jobs:
         run: cat ./platform/reports/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
         shell: bash
 
+
+      # MacOS reports
 
       - name: Create MacOS test report
         uses: dorny/test-reporter@v2
@@ -81,7 +77,10 @@ jobs:
         run: cat ./platform/reports/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
         shell: bash
 
-      - name: Create test report
+
+      # Win reports
+
+      - name: Create Win test report
         uses: dorny/test-reporter@v2
         if: success() || failure() 
         with:
