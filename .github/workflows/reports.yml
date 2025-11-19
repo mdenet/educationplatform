@@ -1,8 +1,7 @@
 name: test-reports
 on:
   workflow_run:
-    workflows:
-      - run-unit-tests             
+    workflows: [ run-unit-tests ]
     types: 
       - completed
 
