@@ -20,7 +20,7 @@ jobs:
         with:
             name: Lint Results
             artifact: lint-results
-            path: "*.xml"
+            path: "**/*.xml"
             reporter: java-junit
             fail-on-error: true
     
