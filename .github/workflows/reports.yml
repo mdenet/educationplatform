@@ -39,6 +39,7 @@ jobs:
 
       - name: Download Ubuntu Coverage Files 
         uses: actions/download-artifact@v5
+        if: success() || failure() 
         with:
             name: coverage-results-ubuntu
             path: "platform/reports/ubuntu/"
@@ -65,6 +66,7 @@ jobs:
 
       - name: Download MacOS Coverage Files 
         uses: actions/download-artifact@v5
+        if: success() || failure() 
         with:
             name: coverage-results-macos
             path: "platform/reports/macos/"
@@ -91,6 +93,7 @@ jobs:
 
       - name: Download Win Coverage Files 
         uses: actions/download-artifact@v5
+        if: success() || failure() 
         with:
             name: coverage-results-win
             path: "platform/reports/win/"
