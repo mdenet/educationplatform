@@ -6,6 +6,10 @@ on:
   pull_request:
     branches:
       - main
+
+permissions:
+  contents: read
+  actions: read
   
 jobs: 
   build: 
@@ -34,7 +38,7 @@ jobs:
         run: npm run lint --workspaces
       
       - name: Upload Lint Results
-        uses: actions/upload-artifact@v4  # upload test results  
+        uses: actions/upload-artifact@v4  
         if: ${{ !cancelled() }}           # run this step even if previous step failed
         with:
           name: lint-results
@@ -44,7 +48,7 @@ jobs:
              
       - name: Build the education platform
         id: build-platform
-        if: success() || failure()
+        if: ${{ !cancelled() }}           # run this step even if previous step failed
         run: npm run build --workspaces
 
       - name: Run the unit tests
@@ -53,18 +57,40 @@ jobs:
         run: npm test --workspaces
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v4  # upload test results  
+        uses: actions/upload-artifact@v4  
         if: ${{ !cancelled() }}           # run this step even if previous step failed
         with:
           name: test-results-ubuntu
-          path: "platform/reports/*.xml"
+          path: "platform/reports/TESTS*.xml"
+
+      - name: Setup .NET Core - for coverage report # Required to execute ReportGenerator
+        uses: actions/setup-dotnet@v4
+        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
+        with:
+            dotnet-version: 8.x
+            dotnet-quality: 'ga'
+
+      - name: Create coverage md report 
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.5.0
+        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
+        with:
+            reports: ./platform/reports/coverage-report.xml
+            targetdir: ./platform/reports/
+            reporttypes: MarkdownSummaryGithub
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4  
+        if: ${{ !cancelled() }}           # run this step even if previous step failed
+        with:
+          name: coverage-results-ubuntu
+          path: "platform/reports/SummaryGithub.md"
         
   build-mac: 
     runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v4
-                  
+
       - name: Setup node 18
         uses: actions/setup-node@v4
         with: 
@@ -94,7 +120,29 @@ jobs:
         if: ${{ !cancelled() }}           # run this step even if previous step failed
         with:
           name: test-results-mac
-          path: "platform/reports/*.xml"
+          path: "platform/reports/TESTS*.xml"
+
+      - name: Setup .NET Core - for coverage report # Required to execute ReportGenerator
+        uses: actions/setup-dotnet@v4
+        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
+        with:
+            dotnet-version: 8.x
+            dotnet-quality: 'ga'
+
+      - name: Create coverage md report 
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.1
+        if: success() || failure() && steps.run-unit-tests.outcome == 'success'
+        with:
+            reports: ./platform/reports/coverage-report.xml
+            targetdir: ./platform/reports/
+            reporttypes: MarkdownSummaryGithub
+      
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4  
+        if: ${{ !cancelled() }}           # run this step even if previous step failed
+        with:
+          name: coverage-results-macos
+          path: "platform/reports/SummaryGithub.md"
 
   build-win: 
      runs-on: windows-latest
@@ -132,4 +180,27 @@ jobs:
          if: ${{ !cancelled() }}           # run this step even if previous step failed
          with:
           name: test-results-win
-          path: "platform/reports/*.xml"
+          path: "platform/reports/TESTS*.xml"
+
+       - name: Setup .NET Core - for coverage report # Required to execute ReportGenerator
+         uses: actions/setup-dotnet@v4
+         if: success() || failure() && steps.run-unit-tests.outcome == 'success'
+         with:
+            dotnet-version: 8.x
+            dotnet-quality: 'ga'
+
+       - name: Create coverage md report 
+         uses: danielpalme/ReportGenerator-GitHub-Action@5.2.1
+         if: success() || failure() && steps.run-unit-tests.outcome == 'success'
+         with:
+            reports: ./platform/reports/coverage-report.xml
+            targetdir: ./platform/reports/
+            reporttypes: MarkdownSummaryGithub
+      
+       - name: Upload Coverage Report
+         uses: actions/upload-artifact@v4  
+         if: ${{ !cancelled() }}           # run this step even if previous step failed
+         with:
+          name: coverage-results-win
+          path: "platform/reports/SummaryGithub.md"
+
