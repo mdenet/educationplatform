@@ -1,0 +1,106 @@
+name: test-reports
+on:
+  workflow_run:
+    workflows: [ run-unit-tests ]
+    types: 
+      - completed
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  report: 
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Create lint report
+        uses: dorny/test-reporter@v2
+        with:
+            name: Lint Results
+            artifact: lint-results
+            path: "**/*.xml"
+            reporter: java-junit
+            fail-on-error: true
+    
+
+      # Ubuntu reports
+
+      - name: Create Ubuntu test report
+        uses: dorny/test-reporter@v2
+        if: success() || failure() 
+        with:
+          name: Unit Test Results
+          artifact: test-results-ubuntu
+          path: "*.xml"
+          reporter: java-junit
+          fail-on-error: true
+
+      - name: Download Ubuntu Coverage Files 
+        uses: actions/download-artifact@v5
+        if: success() || failure() 
+        with:
+            name: coverage-results-ubuntu
+            path: "platform/reports/ubuntu/"
+            run-id: ${{ github.event.workflow_run.id }}
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Output Ubuntu coverage to summary
+        if: success() || failure() 
+        run: cat ./platform/reports/ubuntu/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+        shell: bash
+
+
+      # MacOS reports
+
+      - name: Create MacOS test report
+        uses: dorny/test-reporter@v2
+        if: success() || failure() 
+        with:
+          name: Unit Test Results - mac
+          artifact: test-results-mac
+          path: "*.xml"
+          reporter: java-junit
+          fail-on-error: true
+
+      - name: Download MacOS Coverage Files 
+        uses: actions/download-artifact@v5
+        if: success() || failure() 
+        with:
+            name: coverage-results-macos
+            path: "platform/reports/macos/"
+            run-id: ${{ github.event.workflow_run.id }}
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Output MacOS coverage to summary
+        if: success() || failure() 
+        run: cat ./platform/reports/macos/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+        shell: bash
+
+
+      # Win reports
+
+      - name: Create Win test report
+        uses: dorny/test-reporter@v2
+        if: success() || failure() 
+        with:
+          name: Unit Test Results - win
+          artifact: test-results-win
+          path: "*.xml"
+          reporter: java-junit
+          fail-on-error: true
+
+      - name: Download Win Coverage Files 
+        uses: actions/download-artifact@v5
+        if: success() || failure() 
+        with:
+            name: coverage-results-win
+            path: "platform/reports/win/"
+            run-id: ${{ github.event.workflow_run.id }}
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Output Win coverage to summary
+        if: success() || failure() 
+        run: cat ./platform/reports/win/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+        shell: bash
