@@ -1,6 +1,8 @@
 
 
-const errorHandlingMiddleware = (err, req, res) => {
+// 'next' is required for Express error-handling middleware signature, even if unused — disable ESLint warning.
+/* eslint-disable-next-line no-unused-vars */
+const errorHandlingMiddleware = (err, req, res, next) => {
   if (err.status != null) {
     res.status(err.status).json({
         msg: err.response.data.message,

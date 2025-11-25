@@ -29,18 +29,15 @@ class ActivityManager {
 
         this.configValidator = new ActivityConfigValidator();
 
-        this.accessPanelDef = panelDefAccessor; // Obtain tool panel definitions from thier ID
+        this.accessPanelDef = panelDefAccessor; // Obtain tool panel definitions from their ID
         this.fileHandler = fileHandler;
 
         // Retrieve the url of the activities configuration
-        var parameters = new URLSearchParams(utility.getWindowLocationSearch());
-        if (parameters.has("activities")) {
-            this.customActivitiesUrl = true;
-            this.activitiesUrl = parameters.get("activities");
-        }
+        this.activitiesUrl = utility.getActivityURL();
+        this.activitiesUrl ? this.customActivitiesUrl = true : this.customActivitiesUrl = false;
 
-
-        var parameterKeys = Array.from(parameters.keys());
+        const parameters = new URLSearchParams(utility.getWindowLocationSearch());
+        const parameterKeys = Array.from(parameters.keys());
 
         // Retrieve selected activity from the url parameters 
         for (const key of parameterKeys) {
@@ -133,6 +130,7 @@ class ActivityManager {
             let file = this.fileHandler.fetchFile( this.activitiesUrl , urlParamPrivateRepo() );
             fileContent = file.content;
         } catch (err) {
+            console.error(err);
             errors.push( new EducationPlatformError(`The activity configuration file was not accessible at: ${this.activitiesUrl}. 
                                                     Check the activity file is available at the given url and you have the correct access rights.`) );
         }
