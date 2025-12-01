@@ -231,7 +231,7 @@ class EducationPlatformApp {
                 // Prevent the default save action to the webpage
                 event.preventDefault();
 
-                // Can use this to trigger savePanelContents()
+                // TODO: Can use this to trigger savePanelContents()
                 // this.savePanelContents();
             }
         });
