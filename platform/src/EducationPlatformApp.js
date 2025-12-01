@@ -92,6 +92,15 @@ class EducationPlatformApp {
         document.getElementById("btnnologin").onclick = async () => {
             utility.setAuthenticated(false);
             PlaygroundUtility.hideLogin();
+
+            // Try to initialise the activity in un-authenticated mode. Might get errors, which we then dutifully report.
+            try {
+                this.initializeActivity(urlParameters);
+            }
+            catch (error) {
+                console.error("Error during activity initialization:", error);
+                return false;
+            }
         }
 
         document.getElementById("btnlogin").onclick = async () => {
