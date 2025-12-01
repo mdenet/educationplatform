@@ -15,6 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: Linter heading
+        run: echo "<h1>Linter report</h1>" >> $GITHUB_STEP_SUMMARY
+        shell: bash
+
       - name: Create lint report
         uses: dorny/test-reporter@v2
         with:
@@ -26,6 +30,11 @@ jobs:
     
 
       # Ubuntu reports
+
+      - name: Ubuntu heading
+        if: success() || failure()
+        run: echo "<h1>Ubuntu reports</h1>" >> $GITHUB_STEP_SUMMARY
+        shell: bash
 
       - name: Create Ubuntu test report
         uses: dorny/test-reporter@v2
@@ -54,6 +63,11 @@ jobs:
 
       # MacOS reports
 
+      - name: MacOS heading
+        if: success() || failure()
+        run: echo "<h1>MacOS reports</h1>" >> $GITHUB_STEP_SUMMARY
+        shell: bash
+
       - name: Create MacOS test report
         uses: dorny/test-reporter@v2
         if: success() || failure() 
@@ -80,6 +94,11 @@ jobs:
 
 
       # Win reports
+
+      - name: Win heading
+        if: success() || failure()
+        run: echo "<h1>Win reports</h1>" >> $GITHUB_STEP_SUMMARY
+        shell: bash
 
       - name: Create Win test report
         uses: dorny/test-reporter@v2
