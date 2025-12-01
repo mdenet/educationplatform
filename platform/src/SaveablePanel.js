@@ -69,7 +69,7 @@ class SaveablePanel extends Panel {
     }
 
     /**
-     * Currently only supports GitHub URLs.
+     * FIXME: Currently only supports GitHub URLs.
      */
     getFilePath() {
         return this.getFileUrl().split("/").slice(6).join("/");
