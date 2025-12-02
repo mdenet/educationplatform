@@ -120,47 +120,49 @@ class EducationPlatformApp {
         this.cleanAuthParams(urlParameters);
     }
 
-    async handleAuthRedirect(urlParameters, tokenHandlerUrl) {
-        PlaygroundUtility.hideLogin();
-
-        // Complete authentication
-        const tokenRequest = {};
-        tokenRequest.state = urlParameters.get("state");
-        tokenRequest.code = urlParameters.get("code");
-
+    async handleAuthRedirect(urlParameters, tokenHandlerUrl) {        
         try {
+            // Complete authentication
+            const tokenRequest = {};
+            tokenRequest.state = urlParameters.get("state");
+            tokenRequest.code = urlParameters.get("code");
             //TODO loading box
             await utility.jsonRequest(tokenHandlerUrl + "/mdenet-auth/login/token",
                 JSON.stringify(tokenRequest), true );
             
-            const success = this.setupAuthenticatedState(urlParameters);
-            success ? PlaygroundUtility.hideLogin() : PlaygroundUtility.showLogin();
         }
         catch (error) {
             console.error("Error while completing authentication:", error);
             PlaygroundUtility.showLogin();
+            return;
         }
+
+        const success = this.setupAuthenticatedState(urlParameters);
+        // TODO: Not sure we need this. Should we just hide the login regardless?
+        success ? PlaygroundUtility.hideLogin() : PlaygroundUtility.showLogin();
     }
 
     async handleInitialLoad(urlParameters, tokenHandlerUrl) {
+        let hasAuthCookie = {};
         try {
             // Check if there is a valid authentication cookie, if there is then skip login process
-            let hasAuthCookie = await utility.getRequest(tokenHandlerUrl + "/mdenet-auth/login/validate", true);
+            hasAuthCookie = await utility.getRequest(tokenHandlerUrl + "/mdenet-auth/login/validate", true);
             hasAuthCookie = JSON.parse(hasAuthCookie);
 
-            if (hasAuthCookie.authenticated) {
-                console.log("User has previously logged in - redirecting to activity.");
-
-                const success = this.setupAuthenticatedState(urlParameters);
-                success ? PlaygroundUtility.hideLogin() : PlaygroundUtility.showLogin();
-            } 
-            else {
-                console.log("User is not authenticated - showing login.");
-                PlaygroundUtility.showLogin();
-            }
         }
         catch (error) {
             console.error("Error while checking authentication cookie:", error);
+            hasAuthCookie.authenticated = false;
+        }
+
+        if (hasAuthCookie.authenticated) {
+            console.log("User has previously logged in - redirecting to activity.");
+
+            const success = this.setupAuthenticatedState(urlParameters);
+            success ? PlaygroundUtility.hideLogin() : PlaygroundUtility.showLogin();
+        } 
+        else {
+            console.log("User is not authenticated - showing login.");
             PlaygroundUtility.showLogin();
         }
     }
@@ -196,14 +198,6 @@ class EducationPlatformApp {
      */
     setupAuthenticatedState(urlParameters) {
         try {
-            this.initializeActivity(urlParameters);
-        }
-        catch (error) {
-            console.error("Error during activity initialization:", error);
-            return false;
-        }
-
-        try {
             utility.setAuthenticated(true);
             this.setupEventListeners();
 
@@ -213,13 +207,15 @@ class EducationPlatformApp {
 
             this.activityURL = utility.getActivityURL();
             this.currentBranch = utility.getCurrentBranch();
-
-            return true;
         }
         catch (error) {
             console.error(error);
             return false;
         }
+
+        this.initializeActivity(urlParameters);
+
+        return true;
     }
 
     setupEventListeners() {
@@ -302,6 +298,8 @@ class EducationPlatformApp {
 
         if (errors.length > 0) {
             this.displayErrors(errors);
+
+            console.error("Errors during activity initialization:", errors);
         }
     }
 
@@ -319,7 +317,7 @@ class EducationPlatformApp {
         Metro.init();
         this.fit();
     
-        var contentPanelDiv = document.getElementById(contentPanelName);
+        var contentPanelDiv = document.getElementById(contentPanelName+"Panel"); // Grab the panel div
 
         // EP Errors
         const platformErrors= errors.filter((e)=> e.constructor.name === EducationPlatformError.name);
