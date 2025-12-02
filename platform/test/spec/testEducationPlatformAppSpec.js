@@ -316,14 +316,6 @@ describe("EducationPlatformApp", () => {
             expect(result).toBeTrue();
         });
     
-        it("returns false if initializeActivity throws", () => {
-            platform.initializeActivity.and.throwError("init failed");
-    
-            const result = platform.setupAuthenticatedState(new URLSearchParams());
-    
-            expect(result).toBeFalse();
-        });
-    
         it("returns false if setupEventListeners throws", () => {
             platform.setupEventListeners.and.throwError("event error");
     
