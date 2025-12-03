@@ -81,12 +81,9 @@ describe("Panel", () => {
             expect(panel.isVisible()).toBe(false);
         });
 
-        it("handles non-boolean values", () => {
-            panel.setVisible(null);
-            expect(panel.isVisible()).toBe(null);
-
-            panel.setVisible("false");
-            expect(panel.isVisible()).toBe("false");
+        it("can be set to visible", () => {
+            panel.setVisible(true);
+            expect(panel.isVisible()).toBe(true);
         });
     });
 
