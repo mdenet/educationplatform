@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node -r dotenv/config ./dist/server.js",
-    "test": "echo \"Warning: no tests to run.\"",
+    "test": "jasmine --config=test/support/jasmine.json",
     "lint": "eslint src/**/*.js --format junit --output-file ./reports/lint-results.xml; exit 0"
   },
   "dependencies": {
@@ -22,10 +22,14 @@
   },
   "devDependencies": {
     "@types/cookie": "^0.5.1",
+    "@types/jasmine": "^5.1.7",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
     "eslint": "^8.56.0",
+    "jasmine": "^5.6.0",
+    "supertest": "^7.1.0",
     "ts-loader": "^9.4.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5.0.3"
   }
 }

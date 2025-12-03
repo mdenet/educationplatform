@@ -59,20 +59,6 @@ class ConsolePanel extends Panel {
         this.editor.resize();
     }
 
-    createElement() {
-        var root = document.createElement("div");
-        root.setAttribute("data-role", "panel");
-        root.setAttribute("id", this.id + "Panel");
-
-        var editor = document.createElement("div");
-        editor.setAttribute("class", "editor");
-        editor.setAttribute("id", this.id + "Editor");
-
-        root.appendChild(editor);
-
-        return root;
-    }
-
     detectHyperlinks(editor) {
         var locationRegexp = /\(((.+?)@(\d+):(\d+)-(\d+):(\d+))\)/i;
 

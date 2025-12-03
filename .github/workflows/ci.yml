@@ -115,8 +115,10 @@ jobs:
       - name: Run the unit tests
         id: run-unit-tests
         if: success() || failure() && steps.build-platform.outcome == 'success'
-        run: npm test --workspaces -- --browsers SafariNative
-
+        run: |
+          npm test --workspace=platform -- --browsers SafariNative
+          npm test --workspace=tokenserver
+          
       - name: Upload Test Results
         uses: actions/upload-artifact@v4  # upload test results  
         if: ${{ !cancelled() }}           # run this step even if previous step failed
@@ -175,7 +177,9 @@ jobs:
        - name: Run the unit tests
          id: run-unit-tests
          if: success() || failure() && steps.build-platform.outcome == 'success'
-         run: npm test --workspaces -- --browsers EdgeHeadless
+         run: |
+           npm test --workspace=platform -- --browsers EdgeHeadless
+           npm test --workspace=tokenserver
 
        - name: Upload Test Results
          uses: actions/upload-artifact@v4  # upload test results  

@@ -3,16 +3,14 @@
 class Panel {
 
     id;
+    title;
     editor;
     element;
     visible;
     type;
-    valueSha;
-    fileUrl;
 
     constructor(id) {
         this.id = id;
-        
     }
 
     initialize(editor) {
@@ -44,12 +42,17 @@ class Panel {
         return this.id;
     }
 
+    getTitle() {
+        return this.title;
+    }
+
     setTitleAndIcon(title, icon) {
         this.setTitle(title);
         this.setIcon(icon);
     }
 
     setTitle(title) {
+        this.title = title;
         this.element.dataset.titleCaption = title;
     }
 
@@ -65,30 +68,6 @@ class Panel {
         return this.visible;
     }
 
-    /**
-     * Can the contents of this panel (or at least some of it) be saved in a meaningful way -- in other words, is this stuff we would expect the student to change?
-     *
-     * @returns true if the panel should be considered when saving contents.
-     */
-    canSave() {
-        return false;
-    }
-
-    /**
-     * Save the contents of this panel using the filehandler given. Return a promise that will complete when the saving completes.
-     * 
-     * Only called if {#canSave} returns true.
-     * 
-     * @param {*} fileHandler the handler to be used for saving
-     * @returns a promise
-     */
-    save(fileHandler) {
-        let thisEditor = this.editor;
-        return fileHandler.storeFile(this.getFileUrl(), this.getValueSha(), this.getValue())
-                          // Mark the editor clean if the save completed
-                          .then(() => { thisEditor.session.getUndoManager().markClean(); });
-    }
-
     getEditor() {
         return this.editor;
     }
@@ -101,22 +80,6 @@ class Panel {
         this.editor.setValue((value+""), 1);
         // Reset undo manager
         this.editor.session.getUndoManager().markClean();
-    }
-
-    getValueSha() {
-        return this.valueSha;
-    }
-
-    setValueSha(sha) {
-        this.valueSha = sha;
-    }
-
-    getFileUrl() {
-        return this.fileUrl;
-    }
-
-    setFileUrl(url) {
-        this.fileUrl = url;
     }
 
     setType(type){
@@ -152,7 +115,13 @@ class Panel {
 
     fit() {}
 
-    createElement() {}
+    createElement() {
+        var root = this.createRootElement();
+        var editor = this.createEditorElement();
+        root.appendChild(editor);
+
+        return root;
+    }
 
     getElement() {
         if (!this.element) {
@@ -160,6 +129,22 @@ class Panel {
         }
         return this.element;
     }
+
+    createRootElement() {
+        var root = document.createElement("div");
+        root.setAttribute("data-role", "panel");
+        root.setAttribute("id", this.id + "Panel");
+
+        return root;
+    }
+
+    createEditorElement() {
+        var editor = document.createElement("div");
+        editor.setAttribute("class", "editor");
+        editor.setAttribute("id", this.id + "Editor");
+
+        return editor;
+    }   
 
 }
 
