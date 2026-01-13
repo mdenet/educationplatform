@@ -17,7 +17,7 @@
         "panelclass": {
             "description": "The type of panel.",
             "type": "string",
-            "enum": [ "ProgramPanel", "ConsolePanel", "OutputPanel", "XtextEditorPanel", "CompositePanel"]
+            "enum": [ "ProgramPanel", "ConsolePanel", "OutputPanel", "XtextEditorPanel", "CompositePanel", "InstructionPanel"]
         },
         "icon": {
             "description": "Reference to the name of the icon to use.",

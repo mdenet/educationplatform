@@ -33,6 +33,9 @@ class FileHandler {
                 xhr.withCredentials = true;
                 xhr.send();
                 
+                console.log("Raw response text soon");
+                console.log("Raw response text:", xhr.responseText);
+                
                 if (xhr.status === 200) {  
                     
                     let response = JSON.parse(xhr.responseText);
