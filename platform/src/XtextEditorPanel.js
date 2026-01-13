@@ -26,7 +26,8 @@ class XtextEditorPanel extends SaveablePanel {
                 enableCors: true,
                 syntaxDefinition: modeName,
                 parent: editorContainer,
-                xtextLang: extension
+                xtextLang: extension,
+                sendFullText: true // For some reason, otherwise the interaction with the generated editors breaks...
             });
         });
 
