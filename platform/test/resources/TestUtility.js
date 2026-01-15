@@ -67,3 +67,16 @@ export function checkErrorPopulated(error, category, type, messageKeywords, loca
     expect(error.message).toContainAllKeywords(messageKeywords);
     expect(error.location).toEqual(location);
 }
+
+/**
+ * Creates a button element with the specified ID, appends it to the document body, and returns the created button.
+ *
+ * @param {string} id - The ID to assign to the created button element.
+ * @returns {HTMLButtonElement} The created button element.
+ */
+export function createTestButton(id) {
+    const btn = document.createElement("button");
+    btn.id = id;
+    document.body.appendChild(btn);
+    return btn;
+}

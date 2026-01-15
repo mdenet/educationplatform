@@ -29,18 +29,15 @@ class ActivityManager {
 
         this.configValidator = new ActivityConfigValidator();
 
-        this.accessPanelDef = panelDefAccessor; // Obtain tool panel definitions from thier ID
+        this.accessPanelDef = panelDefAccessor; // Obtain tool panel definitions from their ID
         this.fileHandler = fileHandler;
 
         // Retrieve the url of the activities configuration
-        var parameters = new URLSearchParams(utility.getWindowLocationSearch());
-        if (parameters.has("activities")) {
-            this.customActivitiesUrl = true;
-            this.activitiesUrl = parameters.get("activities");
-        }
+        this.activitiesUrl = utility.getActivityURL();
+        this.activitiesUrl ? this.customActivitiesUrl = true : this.customActivitiesUrl = false;
 
-
-        var parameterKeys = Array.from(parameters.keys());
+        const parameters = new URLSearchParams(utility.getWindowLocationSearch());
+        const parameterKeys = Array.from(parameters.keys());
 
         // Retrieve selected activity from the url parameters 
         for (const key of parameterKeys) {
@@ -127,21 +124,14 @@ class ActivityManager {
      */
     fetchActivities() {
         let errors = []; 
-        let fileContent
 
-        try {
-            let file = this.fileHandler.fetchFile( this.activitiesUrl , urlParamPrivateRepo() );
-            fileContent = file.content;
-        } catch (err) {
-            errors.push( new EducationPlatformError(`The activity configuration file was not accessible at: ${this.activitiesUrl}. 
-                                                    Check the activity file is available at the given url and you have the correct access rights.`) );
-        }
-
-        if (fileContent != null){
+        let file = this.fileHandler.fetchFileFromRepository(this.activitiesUrl);
+        if (file && file.content) {
+            const fileContent = file.content;
 
             let validatedConfig = this.parseAndValidateActivityConfig(fileContent);
 
-            if ( validatedConfig.errors.length == 0 ){
+            if ( validatedConfig.errors.length == 0 ) {
 
                 this.createActivitiesMenu(validatedConfig.config);
 
@@ -150,6 +140,12 @@ class ActivityManager {
                 errors = errors.concat(validatedConfig.errors);
             }
         } 
+        else {
+            errors.push(new EducationPlatformError(`
+                The activity configuration file was not accessible at: ${this.activitiesUrl}. 
+                Check the activity file is available at the given url and you have the correct access rights.
+            `));
+        }
 
         return errors;
     }
@@ -383,6 +379,9 @@ class ActivityManager {
                 if (file) {
                     apanel.file = file.content;
                     apanel.sha = file.sha; 
+                } 
+                else {
+                    this.configErrors.push(new EducationPlatformError(`Could not fetch file: ${panelURLString}`));
                 }
             }
 
@@ -428,14 +427,21 @@ class ActivityManager {
     }
 
     /**
-     * Fetches the content of a file under the activities folder
+     * Fetches the content of a file - either from repository or directly from tools
      * This could be an Epsilon program, a Flexmi model or an Emfatic metamodel
      */
     fetchFile(name) {
 
-        let fileUrl = new URL(name, this.activitiesUrl).href 
+        // Convert relative paths to full URLs using activity base, preserve full URLs as-is
+        let fileUrl = new URL(name, this.activitiesUrl).href;
 
-        return this.fileHandler.fetchFile( fileUrl, urlParamPrivateRepo() );
+        // Route to appropriate fetch method based on final URL
+        if (this.fileHandler.isSupportedHost(fileUrl)) {
+            return this.fileHandler.fetchFileFromRepository(fileUrl);
+        }
+        else {
+            return this.fileHandler.fetchFileDirectly(fileUrl);
+        }
     }
 
 

@@ -21,8 +21,8 @@ class Layout {
         var panelHolderElement;
 
         if ( panels.length == 1 ) {
-            panelHolderElement = panels[0].getElement(); // only the element to add
-
+            panelHolderElement = document.createElement("div");
+            panelHolderElement.appendChild (panels[0].getElement()); // only the element to add, but wrap in div so id etc aren't affected by panel holder attributes
         } else if ( panels.length == 2  ) {
                 panelHolderElement = Layout.createVerticalSplitter([panels[0].getElement(), panels[1].getElement()], "50, 50" );
 

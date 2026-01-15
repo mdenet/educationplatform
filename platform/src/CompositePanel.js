@@ -1,10 +1,11 @@
-import { Panel } from "./Panel.js";
 import { Layout } from "./Layout.js";
+import { Panel } from "./Panel.js";
 
 class CompositePanel extends Panel {
-    childPanels = [];
+
     constructor(id = "composite") {
         super(id);
+        this.childPanels = [];
     }
 
     initialize(editor) {
@@ -13,34 +14,6 @@ class CompositePanel extends Panel {
             panel.initialize(editor);
             panel.parentComposite = this;
         });
-    }
-
-    /**
-     * Check whether there are saveable changes to a child panels contents.
-     * @override
-     * @returns true if there are changes that can be saved.
-     */
-    canSave(){
-        let childrenCanSave = false;
-
-        this.childPanels.forEach( (cp) => childrenCanSave = childrenCanSave || cp.canSave() );
-
-        return childrenCanSave;
-    }
-
-    /**
-     * @override
-     */
-    save(fileHandler){
-        let savePromises =  this.childPanels.map( (cp) => { 
-            if (cp.canSave()) { 
-                //save each child panel
-                return cp.save(fileHandler); 
-            } else { 
-                return null; 
-            }
-        });
-        return Promise.all(savePromises);
     }
 
     addPanel(panel) {
@@ -52,14 +25,9 @@ class CompositePanel extends Panel {
         this.childPanels = this.childPanels.filter(p => p !== panel);
     }
 
-
-
     createElement() {
-        var root = document.createElement("div");
+        var root = super.createRootElement();
         root.setAttribute("class", "compositePanel");
-        root.setAttribute("data-role", "panel");
-        root.setAttribute("id", this.id + "Panel");
-
         root.style.display = "flex";
         root.style.flexDirection = "column";
         root.style.flex = "1";
