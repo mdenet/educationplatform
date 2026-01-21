@@ -19,11 +19,6 @@ describe("PlaygroundUtility", () => {
 
             PlaygroundUtility.notification(NOTIFICATION_TITLE, NOTIFICATION_MESSAGE);
 
-            // SZ: These checks seem to be unreliable in CI environments, commenting out for now and replacing with spy checks
-            // const documentMessages = $(".notify-message");
-            // expect(documentMessages).toHaveSize(1);
-            // expect(documentMessages.text()).toContain(NOTIFICATION_TITLE);
-            // expect(documentMessages.text()).toContain(NOTIFICATION_MESSAGE);
             expect(Metro.notify.create).toHaveBeenCalled();
             const callArgs = Metro.notify.create.calls.mostRecent().args;
             const notificationContent = callArgs[0];
