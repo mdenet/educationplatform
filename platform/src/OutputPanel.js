@@ -105,6 +105,16 @@ class OutputPanel extends Panel {
     generatedFileSelected() {
         this.displayGeneratedFile(this.getSelect().getSelected()[0]);
     }
+    
+    fit() {
+        var editorElement = document.getElementById(this.id + "Editor");
+        if (editorElement != null) {
+            editorElement.parentElement.style = "flex-basis: calc(100% - 4px);";
+        }
+        if (this.editor) {
+            this.editor.resize();
+        }
+    }
 
     createElement() {
         var root = super.createElement();
